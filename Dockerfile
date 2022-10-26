@@ -13,4 +13,4 @@ RUN git clone --depth 1 --branch v1_8_0 https://github.com/eclipse/sumo \
 ENV SUMO_HOME "/usr/local/share/sumo"
 COPY requirements.txt .
 RUN pip3 install -r requirements.txt
-COPY . .
+# COPY . .
