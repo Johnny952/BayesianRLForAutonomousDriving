@@ -15,8 +15,8 @@ eval_freq = 50000 if not debug_run else 1000   # Number of training steps betwee
 nb_eval_eps = 100 if not debug_run else 5   # Number of test episodedes
 
 agent_par = {}
-agent_par["ensemble"] = True   # Ensemble RPF or standard DQN agent
-agent_par["parallel"] = True   # Parallel execution of backpropagation for ensemble RPF
+agent_par["ensemble"] = False   # Ensemble RPF or standard DQN agent
+agent_par["parallel"] = False   # Parallel execution of backpropagation for ensemble RPF
 agent_par["number_of_networks"] = 10 if not debug_run else 5   # Number of ensemble members
 agent_par["prior_scale_factor"] = 50.   # Prior scale factor, beta
 agent_par["adding_prob"] = 0.5   # Probability of adding an experience to each individual ensemble replay memory
