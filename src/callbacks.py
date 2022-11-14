@@ -1,5 +1,6 @@
 import numpy as np
 from rl.callbacks import Callback
+import h5py
 
 
 class SaveWeights(Callback):
@@ -43,6 +44,12 @@ class EvaluateAgent(Callback):
         self.nb_evaluation_runs = 0
         self.store_data_callback = StoreTestEpisodeData(save_path)
         self.env = None
+        self.path = self.save_path + '/data.hdf5'
+        with h5py.File(self.path, "w") as f:
+            pass
+
+    def _set_env(self, env):
+        pass
 
     def on_episode_end(self, episode_step, logs=None):   # Necessary to run testing at the end of an episode
         if (self.nb_evaluation_runs == 0 or
@@ -56,6 +63,19 @@ class EvaluateAgent(Callback):
             with open(self.save_path + '/test_steps.csv', 'ab') as f:
                 np.savetxt(f, test_result.history['nb_steps'], newline=' ')
                 f.write(b'\n')
+            
+            train_step = str(self.model.step)
+            with h5py.File(self.path, "a") as f:
+                if train_step in f.keys():
+                    del f[train_step]
+                train_group = f.create_group(train_step)
+
+                train_group.create_dataset('reward', data=test_result.history['episode_reward'])
+                train_group.create_dataset('steps', data=test_result.history['nb_steps'])
+                train_group.create_dataset('uncertainties', data=test_result.history['uncertainty'])
+                train_group.create_dataset('collision', data=test_result.history['collision'])
+                train_group.create_dataset('collision_speed', data=test_result.history['collision_speed'])
+
             self.model.training = True   # training is set to False in test function, so needs to be reset here
             self.nb_evaluation_runs += 1
 

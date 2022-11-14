@@ -1,4 +1,7 @@
-docker run --name bayesianrl-sumo -it --rm \
+docker run --name bayesianrl -it --rm \
+    -p 47913:47913 \
+    -p 37665:37665 \
+    -p 47131:47131 \
     --runtime=nvidia -e NVIDIA_VISIBLE_DEVICES=0 \
     --env="DISPLAY" \
     --volume="/etc/group:/etc/group:ro" \
@@ -8,5 +11,5 @@ docker run --name bayesianrl-sumo -it --rm \
     --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
     --user=$USER \
     -v $(pwd):/app \
-    bayesianrl-sumo \
+    bayesianrl \
     bash

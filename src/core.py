@@ -323,6 +323,7 @@ class Agent(object):
             callbacks.on_episode_begin(episode)
             episode_reward = 0.
             episode_step = 0
+            uncertainty = 0.
 
             # Obtain the initial observation by resetting the environment.
             self.reset_states()
@@ -360,13 +361,15 @@ class Agent(object):
                 callbacks.on_step_begin(episode_step)
 
                 action, action_info = self.forward(observation)
+                if "coefficient_of_variation" in action_info:
+                    uncertainty += action_info["coefficient_of_variation"]
                 if self.processor is not None:
                     action = self.processor.process_action(action)
                 reward = 0.
                 accumulated_info = {}
                 for _ in range(action_repetition):
                     callbacks.on_action_begin(action)
-                    observation, r, d, info = env.step(action)
+                    observation, r, d, info, more_info = env.step(action)
                     observation = deepcopy(observation)
                     if self.processor is not None:
                         observation, r, d, info = self.processor.process_step(observation, r, d, info)
@@ -411,6 +414,9 @@ class Agent(object):
             episode_logs = {
                 'episode_reward': episode_reward,
                 'nb_steps': episode_step,
+                'uncertainty': np.mean(uncertainty),
+                'collision': more_info["collision"] and more_info["ego_collision"],
+                'collision_speed': more_info["ego_speed"] if more_info["collision"] and more_info["ego_collision"] else -1,
             }
             callbacks.on_episode_end(episode, episode_logs)
 

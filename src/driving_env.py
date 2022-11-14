@@ -35,7 +35,7 @@ class Highway(object):
         use_gui (bool): Run simulation w/wo GUI
         start_time (str): Optional label
     """
-    def __init__(self, sim_params, road_params, use_gui=True, start_time=''):
+    def __init__(self, sim_params, road_params, use_gui=True, start_time='', label='sim1', return_more_info=False):
         self.step_ = 0
         self.max_steps = sim_params['max_steps']
         self.max_dist = sim_params['max_dist']
@@ -75,6 +75,8 @@ class Highway(object):
         self.state_t0 = None
         self.state_t1 = None
 
+        self.return_more_info = return_more_info
+
         self.use_gui = use_gui
         if self.use_gui:
             sumo_binary = checkBinary('sumo-gui')
@@ -83,11 +85,12 @@ class Highway(object):
 
         # this is the normal way of using traci. sumo is started as a
         # subprocess and then the python script connects and runs
+        self.label = label
         if sim_params['remove_sumo_warnings']:
             traci.start([sumo_binary, "-c", self.road.road_path + self.road.name + ".sumocfg", "--start",
-                         "--no-warnings"])
+                         "--no-warnings"], label=label)
         else:
-            traci.start([sumo_binary, "-c", self.road.road_path + self.road.name + ".sumocfg", "--start"])
+            traci.start([sumo_binary, "-c", self.road.road_path + self.road.name + ".sumocfg", "--start"], label=label)
 
     def reset(self, sumo_ctrl=False):
         """
@@ -104,6 +107,7 @@ class Highway(object):
         Returns:
             observation (ndarray): The observation of the traffic situation, according to the sensor model.
         """
+        traci.switch(self.label)
         # Remove all vehicles
         for veh in traci.vehicle.getIDList():
             traci.vehicle.remove(veh)
@@ -241,6 +245,7 @@ class Highway(object):
                 info (list): List of information on what caused the terminal condition.
 
         """
+        traci.switch(self.label)
         self.state_t0 = np.copy(self.state_t1)
 
         long_action, lat_action = self.action_interp[action]
@@ -312,6 +317,7 @@ class Highway(object):
 
         collision = traci.simulation.getCollidingVehiclesNumber() > 0
         info = []
+        more_info = {}
         ego_collision = False
         ego_near_collision = False
         done = False
@@ -336,10 +342,15 @@ class Highway(object):
                         ego_near_collision = True
         # Second if statement because a situation that is considered a collision by SUMO can be reclassified to a
         # near collision
+        more_info["collision"] = False
         if collision:
             info.append(colliding_ids)
             info.append(colliding_positions)
             info.append([traci.vehicle.getSpeed(veh) for veh in info[0]])
+            more_info["colliding_ids"] = colliding_ids
+            more_info["colliding_positions"] = colliding_positions
+            more_info["collision"] = True
+            more_info["colliding_veh"] = [{"speed": traci.vehicle.getSpeed(veh), "vehicle": veh} for veh in info[0]]
             if self.step_ == 0:
                 warnings.warn('Collision during reset phase. This should not happen.')
                 print(info)
@@ -347,6 +358,8 @@ class Highway(object):
                 if self.ego_id in info[0]:
                     ego_collision = True
                     done = True
+                    more_info["ego_collision"] = True
+                    more_info["ego_speed"] = traci.vehicle.getSpeed(self.ego_id)
                 else:
                     warnings.warn('Collision not involving ego vehicle. This should normally not happen.')
                     print(self.step_, info)
@@ -362,13 +375,18 @@ class Highway(object):
                 done = True
                 outside_road = True
                 info.append('Outside of road')
+        more_info["outside_road"] = outside_road
 
+        more_info["max_steps"] = False
         if self.step_ == self.max_steps:
             done = True
+            more_info["max_steps"] = True
             info.append('Max steps')
 
+        more_info["max_dist"] = False
         if self.positions[0, 0] - self.init_ego_position >= self.max_dist:
             done = True
+            more_info["max_dist"] = True
             info.append('Max dist')
 
         self.state_t1 = copy.deepcopy([self.positions, self.speeds, done])
@@ -380,6 +398,8 @@ class Highway(object):
         if self.use_gui:
             self.print_info_in_gui(reward=reward, action=[long_action, lat_action], info=info, action_info=action_info)
 
+        if self.return_more_info:
+            return observation, reward, done, info, more_info
         return observation, reward, done, info
 
     def reward_model(self, s0, s1, a, term, accs, ego_collision=False, ego_near_collision=False, outside_road=False):
@@ -463,6 +483,7 @@ class Highway(object):
         """
         Prints information in the GUI.
         """
+        traci.switch(self.label)
         polygons = traci.polygon.getIDList()
         for polygon in polygons:
             traci.polygon.remove(polygon)

@@ -45,10 +45,10 @@ rcParams['ps.fonttype'] = 42
 """ Options: """
 filepath = '../logs/rpf/'
 agent_name = '4950004'
-case = 'rerun_test_scenarios'   # 'rerun_test_scenarios', 'fast_overtaking', 'standstill'
+case = 'standstill'   # 'rerun_test_scenarios', 'fast_overtaking', 'standstill'
 use_ensemble_test_policy = False
 safety_threshold = 0.02   # Only used if ensemble test policy is chosen
-save_video = False
+save_video = True
 """ End options """
 
 # These import statements need to come after the choice of which agent that should be used.
@@ -334,7 +334,8 @@ elif case == 'standstill':
         for action in range(0, np.shape(q_log)[1]):
             ax0.plot(q_log[:, action], label=str(action))
         ax0.legend()
-        f0.show()
+        f0.savefig('../videos/f0.png')
+        # f0.show()
 
         f1 = plt.figure(1)
         f1.set_size_inches(7.5, 4.5)
@@ -365,12 +366,15 @@ elif case == 'standstill':
         ax1_.legend(loc='upper right')
 
         plt.tight_layout()
-        f1.show()
+        f1.savefig('../videos/f1.png')
+        # f1.show()
 
         f2 = plt.figure(2)
         ax2 = plt.gca()
         ax2.plot(v_log)
-        f2.show()
+        f2.savefig('../videos/f2.png')
+        # f2.show()
+        plt.close('all')
 
 else:
     raise Exception('Case not defined.')
