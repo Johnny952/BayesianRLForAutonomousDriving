@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 import sys
-sys.path.append('../src')
+sys.path.append('../src/base')
 import parameters_simulation as p
 from driving_env import Highway
 import traci

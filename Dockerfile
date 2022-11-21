@@ -1,4 +1,5 @@
-FROM ubuntu:18.04
+FROM pytorch/pytorch:1.9.0-cuda10.2-cudnn7-devel
+RUN apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/3bf863cc.pub
 RUN apt-get update \
    && apt-get install -y git cmake python3.7 python3-pip g++ libxerces-c-dev libfox-1.6-dev libgdal-dev libproj-dev libgl2ps-dev mesa-utils
 WORKDIR /app

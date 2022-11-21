@@ -3,7 +3,7 @@ import numpy as np
 import copy
 from keras import backend as K
 import sys
-sys.path.append('../src')
+sys.path.append('../src/base')
 from network_architecture import NetworkMLP, NetworkCNN
 
 
