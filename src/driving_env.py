@@ -343,6 +343,7 @@ class Highway(object):
         # Second if statement because a situation that is considered a collision by SUMO can be reclassified to a
         # near collision
         more_info["collision"] = False
+        more_info["ego_collision"] = False
         if collision:
             info.append(colliding_ids)
             info.append(colliding_positions)
