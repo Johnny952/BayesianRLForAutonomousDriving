@@ -43,9 +43,9 @@ rcParams['pdf.fonttype'] = 42   # To avoid Type 3 fonts in figures
 rcParams['ps.fonttype'] = 42
 
 """ Options: """
-filepath = '../logs/rpf/'
-agent_name = '4950004'
-case = 'standstill'   # 'rerun_test_scenarios', 'fast_overtaking', 'standstill'
+filepath = '../logs/dqn_20221115_200203/'
+agent_name = '4950005'
+case = 'fast_overtaking'   # 'rerun_test_scenarios', 'fast_overtaking', 'standstill'
 use_ensemble_test_policy = False
 safety_threshold = 0.02   # Only used if ensemble test policy is chosen
 save_video = True
