@@ -43,9 +43,9 @@ rcParams['pdf.fonttype'] = 42   # To avoid Type 3 fonts in figures
 rcParams['ps.fonttype'] = 42
 
 """ Options: """
-filepath = '../logs/dqn_20221115_200203/'
-agent_name = '4950005'
-case = 'fast_overtaking'   # 'rerun_test_scenarios', 'fast_overtaking', 'standstill'
+filepath = '../logs/rpf_20221123_195838/'
+agent_name = '4950083'
+case = 'standstill'   # 'rerun_test_scenarios', 'fast_overtaking', 'standstill'
 use_ensemble_test_policy = False
 safety_threshold = 0.02   # Only used if ensemble test policy is chosen
 save_video = True
@@ -343,6 +343,7 @@ elif case == 'standstill':
         ax1 = plt.gca()
         ax1_ = ax1.twinx()
         cv_log = np.array(cv_log)
+        print(cv_log)
         ax1.plot(cv_log[:, 0], label='$\dot{v}_{x,0} = 0$')
         ax1.plot(cv_log[:, 1], label='$\dot{v}_{x,0} = 1$')
         ax1.plot(cv_log[:, 2], label='$\dot{v}_{x,0} = -1$')

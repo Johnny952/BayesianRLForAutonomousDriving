@@ -216,16 +216,26 @@ class DQNBNNAgent(AbstractDQNAgent):
         q_values_list = np.stack(q_values_list)
         q_values = np.mean(q_values_list, axis=0)
         if self.training:
-            action = self.policy.select_action(q_values=q_values)
+            if hasattr(self.policy, 'custom'):
+                action, policy_info = self.policy.select_action(q_values_list)
+            else:
+                action = self.policy.select_action(q_values=q_values)
         else:
-            action = self.test_policy.select_action(q_values=q_values)
+            if hasattr(self.test_policy, 'custom'):
+                action, policy_info = self.test_policy.select_action(q_values_list)
+            else:
+                action = self.test_policy.select_action(q_values=q_values)
 
         # Book-keeping.
         self.recent_observation = observation
         self.recent_action = action
-        coefficient_of_variation = np.sum(np.var(q_values_list, axis=0))
+        coefficient_of_variation = np.std(q_values_list[:, :], axis=0) / \
+                                   np.mean(q_values_list[:, :], axis=0)
+        
+        # np.sum(np.var(q_values_list, axis=0))
 
         return action, {
+            "mean": q_values,
             "q_values": q_values,
             "coefficient_of_variation": coefficient_of_variation,
         }

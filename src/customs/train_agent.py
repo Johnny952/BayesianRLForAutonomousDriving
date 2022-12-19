@@ -36,9 +36,13 @@ if not os.path.isdir(save_path):
         os.mkdir("../logs")
     os.mkdir(save_path)
     os.mkdir(save_path + "/src")
+for file in os.listdir("../base"):
+    if file[-3:] == ".py":
+        copyfile("../base/" + file, save_path + "/src/" + file[:-3] + "_stored.py")
 for file in os.listdir("."):
     if file[-3:] == ".py":
         copyfile("./" + file, save_path + "/src/" + file[:-3] + "_stored.py")
+
 
 env = Highway(sim_params=ps.sim_params, road_params=ps.road_params, use_gui=False)
 env_test = Highway(

@@ -86,7 +86,7 @@ def read_file(path):
 if __name__ == "__main__":
     models = [
         {
-            "path": './logs/rpf_broken_20221121_200049/data.hdf5',
+            "path": './logs/rpf_20221123_195838/data.hdf5',
             "name": "Ensemble RPF DQN",
             "show_uncertainty": True,
             "color": "red",
@@ -96,6 +96,12 @@ if __name__ == "__main__":
             "name": "Standar DQN",
             "show_uncertainty": False,
             "color": "blue",
+        },
+        {
+            "path": './logs/bnn_broken_20221213_203952/data.hdf5',
+            "name": "BNN DQN",
+            "show_uncertainty": True,
+            "color": "green",
         },
     ]
 

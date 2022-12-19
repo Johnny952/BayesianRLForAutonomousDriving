@@ -41,10 +41,10 @@ agent_par['delta_clip'] = 10.   # Huber loss parameter
 agent_par["window_length"] = 1   # How many historic states to include (1 uses only current state)
 agent_par["tensorboard_log"] = "../logs/"
 
-agent_par["device"] = 'cpu'
+agent_par["device"] = 'cuda'
 agent_par["bnn"] = True
 agent_par["prior_mu"] = 0
 agent_par["prior_sigma"] = 0.1
 agent_par["complexity_kld_weight"] = 1
-agent_par["sample_forward"] = 10
+agent_par["sample_forward"] = 100
 agent_par["sample_backward"] = 5
