@@ -2,6 +2,7 @@ import h5py
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mtick
+from scipy.ndimage import gaussian_filter1d
 
 def read_file(path):
     steps = []
@@ -98,7 +99,7 @@ if __name__ == "__main__":
             "color": "blue",
         },
         {
-            "path": './logs/bnn_broken_20221213_203952/data.hdf5',
+            "path": './logs/bnn_20221221_233315/data.hdf5',
             "name": "BNN DQN",
             "show_uncertainty": True,
             "color": "green",
@@ -132,7 +133,8 @@ if __name__ == "__main__":
     for model in models:
         if model["show_uncertainty"]:
             steps, (uncertainty, uncertainty_up, uncertainty_low, uncertainty_std), _, _ = read_file(model["path"])
-            plt.plot(steps, uncertainty, color=model["color"], label="Mean {}".format(model["name"]))
+            # print(f"Max: {np.max(uncertainty)}\tMin: {np.min(uncertainty)}\tMean: {np.mean(uncertainty)}\t Std: {np.std(uncertainty)}")
+            plt.plot(steps, np.abs(uncertainty), color=model["color"], label="Mean {}".format(model["name"]))
             # plt.fill_between(
             #     steps,
             #     (uncertainty - uncertainty_std),
@@ -170,14 +172,16 @@ if __name__ == "__main__":
     plt.subplot(224, sharex = ax2)
     for model in models:
         steps, _, (_, collision_speed, collision_speed_up, collision_speed_low), _ = read_file(model["path"])
-        plt.plot(steps, collision_speed, color=model["color"], label="Mean {}".format(model["name"]))
-        plt.fill_between(
-            steps,
-            (collision_speed_up),
-            (collision_speed_low),
-            color=model["color"],
-            alpha=0.1,
-        )
+        plt.plot(steps, collision_speed, color=model["color"], label="Mean {}".format(model["name"]), alpha=0.1)
+        filtered_speeds = gaussian_filter1d(collision_speed.astype(np.float32), sigma=2)
+        plt.plot(steps, filtered_speeds, color=model["color"], label="Mean {}".format(model["name"]), alpha=1)
+        # plt.fill_between(
+        #     steps,
+        #     (collision_speed_up),
+        #     (collision_speed_low),
+        #     color=model["color"],
+        #     alpha=0.1,
+        # )
         plt.xlabel('Traning step', fontsize=14)
         plt.ylabel('Collision Speed', fontsize=14)
         plt.grid(True)

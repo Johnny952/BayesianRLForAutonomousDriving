@@ -44,10 +44,10 @@ rcParams["pdf.fonttype"] = 42  # To avoid Type 3 fonts in figures
 rcParams["ps.fonttype"] = 42
 
 """ Options: """
-filepath = "../logs/bnn_broken_20221213_203952/"
-agent_name = "2400063"
+filepath = "../logs/bnn_20221221_233315/"
+agent_name = "4950023"
 case = "fast_overtaking"  # 'rerun_test_scenarios', 'fast_overtaking', 'standstill'
-safety_threshold = 0.006  # Only used if ensemble test policy is chosen
+safety_threshold = 0.0045  # Only used if ensemble test policy is chosen 0.0045
 save_video = True
 """ End options """
 
