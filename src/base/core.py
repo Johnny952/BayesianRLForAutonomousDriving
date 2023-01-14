@@ -414,7 +414,7 @@ class Agent(object):
             episode_logs = {
                 'episode_reward': episode_reward,
                 'nb_steps': episode_step,
-                'uncertainty': np.mean(uncertainty),
+                'uncertainty': np.sum(uncertainty),
                 'collision': more_info["collision"] and more_info["ego_collision"],
                 'collision_speed': more_info["ego_speed"] if more_info["collision"] and more_info["ego_collision"] else -1,
             }

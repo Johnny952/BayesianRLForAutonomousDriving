@@ -222,6 +222,11 @@ elif case == 'fast_overtaking':
             traci.vehicle.setSpeed(veh, -1)
 
         # Run fast overtaking case
+        action_log = []
+        q_log = []
+        cv_log = []
+        v_log = []
+        nb_safe_actions = 0
         for i in range(8):
             if save_video:
                 traci.gui.screenshot("View #0", video_folder + "/images/" + str(i+1) + ".png")
@@ -229,6 +234,45 @@ elif case == 'fast_overtaking':
             observation, reward, done, info = env.step(action, action_info)
             if env.use_gui:
                 traci.vehicle.setColor('veh2', (178, 102, 255))
+            if 'safe_action' in action_info:
+                if action_info['safe_action']:
+                    nb_safe_actions += 1
+            action_log.append(action)
+            q_log.append(action_info['mean'] if p.agent_par['ensemble'] else action_info['q_values'])
+            cv_log.append(action_info['coefficient_of_variation'] if p.agent_par['ensemble'] else action_info['q_values']*0)
+            v_log.append(env.speeds[0, 0])
+
+        f1 = plt.figure(1)
+        f1.set_size_inches(7.5, 4.5)
+        plt.rc('font', size=14)
+        ax1 = plt.gca()
+        ax1_ = ax1.twinx()
+        cv_log = np.array(cv_log)
+        ax1.plot(cv_log[:, 0], label='$\dot{v}_{x,0} = 0$')
+        ax1.plot(cv_log[:, 1], label='$\dot{v}_{x,0} = 1$')
+        ax1.plot(cv_log[:, 2], label='$\dot{v}_{x,0} = -1$')
+        ax1.plot(cv_log[:, 3], label='$\dot{v}_{x,0} = -4$')
+        ax1.legend(loc='upper left')
+        ax1.axis([0, 10, 0, 0.1])
+        ax1.set_xlabel("Time (s)")
+        ax1.set_ylabel("Uncertainty, $c_\mathrm{v}$")
+        ax1.axhline(y=0.02, color='k', linestyle='--')
+        ax1.text(0.5, 0.025, '$c_\mathrm{v}^\mathrm{safe}$', rotation=0)
+        ax1.set_yticks([0, 0.05, 0.1])
+        ax1.spines['right'].set_visible(False)
+        ax1.spines['top'].set_visible(False)
+
+        h1_ = ax1_.plot(v_log, color='tab:gray', linestyle='-.', label='$v_{x,0}$')
+        ax1_.axis([0, 10, -0.05, 25.05])
+        ax1_.set_ylabel("Speed (m/s)")
+        ax1_.set_yticks([0, 10, 20])
+        ax1_.spines['left'].set_visible(False)
+        ax1_.spines['top'].set_visible(False)
+        ax1_.legend(loc='upper right')
+
+        plt.tight_layout()
+        f1.savefig('../videos/g1.png')
+        # f1.show()
 
 elif case == 'standstill':
     ps.sim_params['nb_vehicles'] = 7
@@ -343,7 +387,6 @@ elif case == 'standstill':
         ax1 = plt.gca()
         ax1_ = ax1.twinx()
         cv_log = np.array(cv_log)
-        print(cv_log)
         ax1.plot(cv_log[:, 0], label='$\dot{v}_{x,0} = 0$')
         ax1.plot(cv_log[:, 1], label='$\dot{v}_{x,0} = 1$')
         ax1.plot(cv_log[:, 2], label='$\dot{v}_{x,0} = -1$')
