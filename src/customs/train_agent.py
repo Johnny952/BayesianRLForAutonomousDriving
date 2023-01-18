@@ -5,19 +5,21 @@ import sys
 from shutil import copyfile
 import numpy as np
 
-sys.path.append("..")
+sys.path.append("../base")
 
-import base.parameters as p
-import base.parameters_simulation as ps
+import parameters as p
+import parameters_simulation as ps
+
+from driving_env import Highway
+from callbacks import SaveWeights, EvaluateAgent
 
 from keras.callbacks import TensorBoard
 from rl.policy import EpsGreedyQPolicy, LinearAnnealedPolicy, GreedyQPolicy
 from rl.memory import SequentialMemory
 
 from dqn_bnn import DQNBNNAgent
-from base.driving_env import Highway
 from network_architecture import NetworkMLPBNN, NetworkCNNBNN
-from base.callbacks import SaveWeights, EvaluateAgent
+
 
 
 # Set log path and name
