@@ -415,7 +415,7 @@ class Agent(object):
                 'episode_reward': episode_reward,
                 'nb_steps': episode_step,
                 'uncertainty': uncertainty,
-                'collision': more_info["collision"] and more_info["ego_collision"] if "collision" in more_info else False,
+                'collision': more_info["collision"] and more_info["ego_collision"],
                 'collision_speed': more_info["ego_speed"] if "collision" in more_info and more_info["collision"] and more_info["ego_collision"] else -1,
             }
             callbacks.on_episode_end(episode, episode_logs)
