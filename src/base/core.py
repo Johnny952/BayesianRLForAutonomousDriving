@@ -291,6 +291,7 @@ class Agent(object):
 
         self.training = False
         self.test_step = 0
+        env.return_more_info = True
 
         callbacks = [] if not callbacks else callbacks[:]
 
@@ -343,7 +344,7 @@ class Agent(object):
                 if self.processor is not None:
                     action = self.processor.process_action(action)
                 callbacks.on_action_begin(action)
-                observation, r, done, info = env.step(action)
+                observation, r, done, info, more_info = env.step(action)
                 observation = deepcopy(observation)
                 if self.processor is not None:
                     observation, r, done, info = self.processor.process_step(observation, r, done, info)
@@ -423,6 +424,7 @@ class Agent(object):
             np.random.set_state(internal_random_state)
         callbacks.on_train_end()
         self._on_test_end()
+        env.return_more_info = False
 
         return history
 

@@ -48,9 +48,6 @@ class EvaluateAgent(Callback):
         with h5py.File(self.path, "w") as f:
             pass
 
-    def _set_env(self, env):
-        pass
-
     def on_episode_end(self, episode_step, logs=None):   # Necessary to run testing at the end of an episode
         if (self.nb_evaluation_runs == 0 or
             self.model.step - (self.nb_evaluation_runs-1) * self.eval_freq >= self.eval_freq) \

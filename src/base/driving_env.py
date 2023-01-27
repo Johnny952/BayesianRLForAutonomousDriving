@@ -35,7 +35,7 @@ class Highway(object):
         use_gui (bool): Run simulation w/wo GUI
         start_time (str): Optional label
     """
-    def __init__(self, sim_params, road_params, use_gui=True, start_time='', label='sim1', return_more_info=False):
+    def __init__(self, sim_params, road_params, use_gui=True, start_time='', return_more_info=False):
         self.step_ = 0
         self.max_steps = sim_params['max_steps']
         self.max_dist = sim_params['max_dist']
@@ -85,12 +85,11 @@ class Highway(object):
 
         # this is the normal way of using traci. sumo is started as a
         # subprocess and then the python script connects and runs
-        self.label = label
         if sim_params['remove_sumo_warnings']:
             traci.start([sumo_binary, "-c", self.road.road_path + self.road.name + ".sumocfg", "--start",
-                         "--no-warnings"], label=label)
+                         "--no-warnings"])
         else:
-            traci.start([sumo_binary, "-c", self.road.road_path + self.road.name + ".sumocfg", "--start"], label=label)
+            traci.start([sumo_binary, "-c", self.road.road_path + self.road.name + ".sumocfg", "--start"])
 
     def reset(self, sumo_ctrl=False):
         """
@@ -107,7 +106,6 @@ class Highway(object):
         Returns:
             observation (ndarray): The observation of the traffic situation, according to the sensor model.
         """
-        traci.switch(self.label)
         # Remove all vehicles
         for veh in traci.vehicle.getIDList():
             traci.vehicle.remove(veh)
@@ -245,7 +243,6 @@ class Highway(object):
                 info (list): List of information on what caused the terminal condition.
 
         """
-        traci.switch(self.label)
         self.state_t0 = np.copy(self.state_t1)
 
         long_action, lat_action = self.action_interp[action]
@@ -484,7 +481,6 @@ class Highway(object):
         """
         Prints information in the GUI.
         """
-        traci.switch(self.label)
         polygons = traci.polygon.getIDList()
         for polygon in polygons:
             traci.polygon.remove(polygon)

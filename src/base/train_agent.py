@@ -66,7 +66,6 @@ for file in os.listdir('.'):
         copyfile('./' + file, save_path + '/src/' + file[:-3] + '_stored.py')
 
 env = Highway(sim_params=ps.sim_params, road_params=ps.road_params, use_gui=False)
-env_test = Highway(sim_params=ps.sim_params, road_params=ps.road_params, use_gui=False, label='sim2', return_more_info=True)
 nb_actions = env.nb_actions
 nb_observations = env.nb_observations
 
@@ -75,7 +74,6 @@ random.seed(p.random_seed)   # memory.py uses random module
 
 save_weights_callback = SaveWeights(p.save_freq, save_path)
 evaluate_agent_callback = EvaluateAgent(eval_freq=p.eval_freq, nb_eval_eps=p.nb_eval_eps, save_path=save_path)
-evaluate_agent_callback.env = env_test
 tensorboard_callback = TensorBoard(log_dir=save_path, histogram_freq=0, write_graph=True, write_images=False)
 callbacks = [tensorboard_callback, save_weights_callback, evaluate_agent_callback]
 
