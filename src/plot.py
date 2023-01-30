@@ -73,7 +73,7 @@ if __name__ == "__main__":
     models = [
         {
             "paths": [
-                './logs/train_agent_20230114_122329/data.hdf5'
+                './logs/train_agent_20221123_195838/data.hdf5'
             ],
             "name": "Ensemble RPF DQN",
             "show_uncertainty": True,

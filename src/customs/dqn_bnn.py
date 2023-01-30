@@ -321,7 +321,7 @@ class DQNBNNAgent(AbstractDQNAgent):
             
             kl_loss = self.kl_loss(self.model)
             loss = q_loss + self.complexity_kld_weight * kl_loss
-            # wandb.log({'Q Loss': q_loss, 'KL Loss': kl_loss})
+            # wandb.log({'Q Loss': q_loss, 'KL Loss': kl_loss, 'Loss': loss})
 
             self.optimizer.zero_grad()
             loss.backward()

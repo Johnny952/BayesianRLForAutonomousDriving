@@ -43,10 +43,10 @@ rcParams['pdf.fonttype'] = 42   # To avoid Type 3 fonts in figures
 rcParams['ps.fonttype'] = 42
 
 """ Options: """
-filepath = '../logs/train_agent_20230124_184332/'
-agent_name = '1000085'
+filepath = '../logs/train_agent_20221123_195838/'
+agent_name = '4950083'
 case = 'standstill'   # 'rerun_test_scenarios', 'fast_overtaking', 'standstill'
-use_ensemble_test_policy = False
+use_ensemble_test_policy = True
 safety_threshold = 0.02   # Only used if ensemble test policy is chosen0.02
 save_video = True
 """ End options """
@@ -253,7 +253,7 @@ elif case == 'fast_overtaking':
         ax1.plot(cv_log[:, 2], label='$\dot{v}_{x,0} = -1$')
         ax1.plot(cv_log[:, 3], label='$\dot{v}_{x,0} = -4$')
         ax1.legend(loc='upper left')
-        ax1.axis([0, 10, 0, 0.1])
+        ax1.axis([0, 7, 0, 0.1])
         ax1.set_xlabel("Time (s)")
         ax1.set_ylabel("Uncertainty, $c_\mathrm{v}$")
         ax1.axhline(y=0.02, color='k', linestyle='--')
@@ -263,7 +263,7 @@ elif case == 'fast_overtaking':
         ax1.spines['top'].set_visible(False)
 
         h1_ = ax1_.plot(v_log, color='tab:gray', linestyle='-.', label='$v_{x,0}$')
-        ax1_.axis([0, 10, -0.05, 25.05])
+        ax1_.axis([0, 7, -0.05, 25.05])
         ax1_.set_ylabel("Speed (m/s)")
         ax1_.set_yticks([0, 10, 20])
         ax1_.spines['left'].set_visible(False)
@@ -273,6 +273,7 @@ elif case == 'fast_overtaking':
         plt.tight_layout()
         f1.savefig('../videos/g1.png')
         # f1.show()
+        plt.close('all')
 
 elif case == 'standstill':
     ps.sim_params['nb_vehicles'] = 7
