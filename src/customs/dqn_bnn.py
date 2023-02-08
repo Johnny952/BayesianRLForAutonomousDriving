@@ -9,12 +9,12 @@ import numpy as np
 from rl.policy import EpsGreedyQPolicy, GreedyQPolicy
 from rl.util import get_object_config
 import sys
-# import wandb
+import wandb
 
 sys.path.append("..")
 from base.core import Agent
 
-# wandb.init(project="highway-bnn")
+wandb.init(project="highway-bnn")
 
 
 def max_q(y_true, y_pred):  # Returns average maximum Q-value of training batch
@@ -321,7 +321,7 @@ class DQNBNNAgent(AbstractDQNAgent):
             
             kl_loss = self.kl_loss(self.model)
             loss = q_loss + self.complexity_kld_weight * kl_loss
-            # wandb.log({'Q Loss': q_loss, 'KL Loss': kl_loss, 'Loss': loss})
+            wandb.log({'Q Loss': q_loss, 'KL Loss': kl_loss, 'Loss': loss})
 
             self.optimizer.zero_grad()
             loss.backward()
