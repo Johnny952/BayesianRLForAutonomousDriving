@@ -41,10 +41,24 @@ agent_par['delta_clip'] = 10.   # Huber loss parameter
 agent_par["window_length"] = 1   # How many historic states to include (1 uses only current state)
 agent_par["tensorboard_log"] = "../logs/"
 
+
+
 agent_par["device"] = 'cuda'
-agent_par["bnn"] = True
+agent_par["model"] = 'ae' # bnn or ae
 agent_par["prior_mu"] = 0
 agent_par["prior_sigma"] = 0.1
 agent_par["complexity_kld_weight"] = 0.1
 agent_par["sample_forward"] = 10
 agent_par["sample_backward"] = 1
+
+agent_par["obs_encoder_arc"] = [64, 32]
+agent_par["act_encoder_arc"] = [4, 16]
+agent_par["shared_encoder_arc"] = [512, 512]
+agent_par["obs_decoder_arc"] = [32, 64]
+agent_par["act_decoder_arc"] = [16, 4]
+agent_par["shared_decoder_arc"] = [512, 512]
+agent_par["covar_decoder_arc"] = [512, 1024, 2048]
+agent_par["latent_dim"] = 8
+agent_par["act_loss_weight"] = 1
+agent_par["obs_loss_weight"] = 1
+agent_par["prob_loss_weight"] = 0.1

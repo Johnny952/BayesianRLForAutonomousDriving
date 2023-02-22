@@ -33,7 +33,8 @@ from rl.memory import Memory
 
 sys.path.append("..")
 from dqn_bnn import DQNBNNAgent
-from network_architecture import NetworkMLPBNN, NetworkCNNBNN
+from dqn_ae import DQNAEAgent
+from network_architecture import NetworkMLPBNN, NetworkCNNBNN, NetworkAE, NetworkMLP, NetworkCNN
 from base.driving_env import Highway
 import traci
 import matplotlib.pyplot as plt
@@ -44,11 +45,12 @@ rcParams["pdf.fonttype"] = 42  # To avoid Type 3 fonts in figures
 rcParams["ps.fonttype"] = 42
 
 """ Options: """
-filepath = "../logs/bnn_train_agent_20230119_205049/"
-agent_name = "4950057"
+filepath = "../logs/bnn_train_agent_20230210_195642/"
+agent_name = "4950061"
 case = "standstill"  # 'rerun_test_scenarios', 'fast_overtaking', 'standstill'
-safety_threshold = 0.006  # Only used if ensemble test policy is chosen 0.0045
+safety_threshold = 0.0045  # Only used if ensemble test policy is chosen 0.0045
 save_video = True
+use_safe_action = False
 """ End options """
 
 # These import statements need to come after the choice of which agent that should be used.
@@ -72,63 +74,137 @@ else:
     raise Exception("Case not defined.")
 
 nb_observations = env.nb_observations
-if p.agent_par["cnn"]:
-    model = NetworkCNNBNN(
-        env.nb_ego_states,
-        env.nb_states_per_vehicle,
-        ps.sim_params["sensor_nb_vehicles"],
-        nb_actions,
-        nb_conv_layers=p.agent_par["nb_conv_layers"],
-        nb_conv_filters=p.agent_par["nb_conv_filters"],
-        nb_hidden_fc_layers=p.agent_par["nb_hidden_fc_layers"],
-        nb_hidden_neurons=p.agent_par["nb_hidden_neurons"],
-        duel=p.agent_par["duel_q"],
-        prior=False,
-        activation="relu",
-        window_length=p.agent_par["window_length"],
-        duel_type="avg",
-        prior_mu=p.agent_par["prior_mu"],
-        prior_sigma=p.agent_par["prior_sigma"],
-    ).to(p.agent_par["device"])
-else:
-    model = NetworkMLPBNN(
+if p.agent_par["model"] == 'bnn':
+    if p.agent_par["cnn"]:
+        model = NetworkCNNBNN(
+            env.nb_ego_states,
+            env.nb_states_per_vehicle,
+            ps.sim_params["sensor_nb_vehicles"],
+            nb_actions,
+            nb_conv_layers=p.agent_par["nb_conv_layers"],
+            nb_conv_filters=p.agent_par["nb_conv_filters"],
+            nb_hidden_fc_layers=p.agent_par["nb_hidden_fc_layers"],
+            nb_hidden_neurons=p.agent_par["nb_hidden_neurons"],
+            duel=p.agent_par["duel_q"],
+            prior=False,
+            activation="relu",
+            window_length=p.agent_par["window_length"],
+            duel_type="avg",
+            prior_mu=p.agent_par["prior_mu"],
+            prior_sigma=p.agent_par["prior_sigma"],
+        ).to(p.agent_par["device"])
+    else:
+        model = NetworkMLPBNN(
+            nb_observations,
+            nb_actions,
+            nb_hidden_layers=p.agent_par["nb_hidden_fc_layers"],
+            nb_hidden_neurons=p.agent_par["nb_hidden_neurons"],
+            duel=p.agent_par["duel_q"],
+            prior=False,
+            activation="relu",
+            duel_type="avg",
+            window_length=p.agent_par["window_length"],
+            prior_mu=p.agent_par["prior_mu"],
+            prior_sigma=p.agent_par["prior_sigma"],
+        ).to(p.agent_par["device"])
+
+    memory = Memory(
+        window_length=p.agent_par["window_length"]
+    )  # Not used, simply needed to create the agent
+
+    policy = GreedyQPolicy()
+    safety_threshold_ = safety_threshold if use_safe_action else None
+    safe_action = 3 if use_safe_action else None
+    test_policy = SafeGreedyPolicy(policy_type='mean', safety_threshold=safety_threshold_, safe_action=safe_action)
+    dqn = DQNBNNAgent(
+        model=model,
+        policy=policy,
+        test_policy=test_policy,
+        enable_double_dqn=p.agent_par["double_q"],
+        enable_dueling_network=False,
+        nb_actions=nb_actions,
+        memory=memory,
+        gamma=p.agent_par["gamma"],
+        batch_size=p.agent_par["batch_size"],
+        nb_steps_warmup=p.agent_par["learning_starts"],
+        train_interval=p.agent_par["train_freq"],
+        target_model_update=p.agent_par["target_network_update_freq"],
+        delta_clip=p.agent_par["delta_clip"],
+        complexity_kld_weight=p.agent_par["complexity_kld_weight"],
+        sample_forward=p.agent_par["sample_forward"],
+        sample_backward=p.agent_par["sample_backward"],
+    )
+elif p.agent_par["model"] == 'ae':
+    ae = NetworkAE(
+        p.agent_par["window_length"],
         nb_observations,
         nb_actions,
-        nb_hidden_layers=p.agent_par["nb_hidden_fc_layers"],
-        nb_hidden_neurons=p.agent_par["nb_hidden_neurons"],
-        duel=p.agent_par["duel_q"],
-        prior=False,
-        activation="relu",
-        duel_type="avg",
-        window_length=p.agent_par["window_length"],
-        prior_mu=p.agent_par["prior_mu"],
-        prior_sigma=p.agent_par["prior_sigma"],
-    ).to(p.agent_par["device"])
+        obs_encoder_arc=p.agent_par["obs_encoder_arc"],
+        act_encoder_arc=p.agent_par["act_encoder_arc"],
+        shared_encoder_arc=p.agent_par["shared_encoder_arc"],
+        obs_decoder_arc=p.agent_par["obs_decoder_arc"],
+        act_decoder_arc=p.agent_par["act_decoder_arc"],
+        shared_decoder_arc=p.agent_par["shared_decoder_arc"],
+        covar_decoder_arc=p.agent_par["covar_decoder_arc"],
+        latent_dim=p.agent_par["latent_dim"],
+        act_loss_weight=p.agent_par["act_loss_weight"],
+        obs_loss_weight=p.agent_par["obs_loss_weight"],
+        prob_loss_weight=p.agent_par["prob_loss_weight"],
+    ).to(p.agent_par['device'])
+    if p.agent_par["cnn"]:
+        model = NetworkCNN(
+            env.nb_ego_states,
+            env.nb_states_per_vehicle,
+            ps.sim_params["sensor_nb_vehicles"],
+            nb_actions,
+            nb_conv_layers=p.agent_par["nb_conv_layers"],
+            nb_conv_filters=p.agent_par["nb_conv_filters"],
+            nb_hidden_fc_layers=p.agent_par["nb_hidden_fc_layers"],
+            nb_hidden_neurons=p.agent_par["nb_hidden_neurons"],
+            duel=p.agent_par["duel_q"],
+            prior=False,
+            activation="relu",
+            window_length=p.agent_par["window_length"],
+            duel_type="avg",
+        ).to(p.agent_par["device"])
+    else:
+        model = NetworkMLP(
+            nb_observations,
+            nb_actions,
+            nb_hidden_layers=p.agent_par["nb_hidden_fc_layers"],
+            nb_hidden_neurons=p.agent_par["nb_hidden_neurons"],
+            duel=p.agent_par["duel_q"],
+            prior=False,
+            activation="relu",
+            duel_type="avg",
+            window_length=p.agent_par["window_length"],
+        ).to(p.agent_par["device"])
 
-memory = Memory(
-    window_length=p.agent_par["window_length"]
-)  # Not used, simply needed to create the agent
+    memory = Memory(
+        window_length=p.agent_par["window_length"]
+    )  # Not used, simply needed to create the agent
 
-policy = GreedyQPolicy()
-test_policy = SafeGreedyPolicy(policy_type='mean', safety_threshold=safety_threshold, safe_action=3)
-dqn = DQNBNNAgent(
-    model=model,
-    policy=policy,
-    test_policy=test_policy,
-    enable_double_dqn=p.agent_par["double_q"],
-    enable_dueling_network=False,
-    nb_actions=nb_actions,
-    memory=memory,
-    gamma=p.agent_par["gamma"],
-    batch_size=p.agent_par["batch_size"],
-    nb_steps_warmup=p.agent_par["learning_starts"],
-    train_interval=p.agent_par["train_freq"],
-    target_model_update=p.agent_par["target_network_update_freq"],
-    delta_clip=p.agent_par["delta_clip"],
-    complexity_kld_weight=p.agent_par["complexity_kld_weight"],
-    sample_forward=p.agent_par["sample_forward"],
-    sample_backward=p.agent_par["sample_backward"],
-)
+    policy = GreedyQPolicy()
+    test_policy = GreedyQPolicy()
+    dqn = DQNAEAgent(
+        model,
+        ae,
+        policy,
+        test_policy,
+        enable_double_dqn=p.agent_par["double_q"],
+        enable_dueling_network=False,
+        nb_actions=nb_actions,
+        memory=memory,
+        gamma=p.agent_par["gamma"],
+        batch_size=p.agent_par["batch_size"],
+        nb_steps_warmup=p.agent_par["learning_starts"],
+        train_interval=p.agent_par["train_freq"],
+        target_model_update=p.agent_par["target_network_update_freq"],
+        delta_clip=p.agent_par["delta_clip"],
+        device=p.agent_par["device"],
+    )
+else:
+    raise Exception("Model not implemented.")
 dqn.compile(p.agent_par["learning_rate"])
 
 dqn.load_weights(filepath + agent_name)

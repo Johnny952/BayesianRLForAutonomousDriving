@@ -18,7 +18,8 @@ from rl.policy import EpsGreedyQPolicy, LinearAnnealedPolicy, GreedyQPolicy
 from rl.memory import SequentialMemory
 
 from dqn_bnn import DQNBNNAgent
-from network_architecture import NetworkMLPBNN, NetworkCNNBNN
+from dqn_ae import DQNAEAgent
+from network_architecture import NetworkMLPBNN, NetworkCNNBNN, NetworkMLP, NetworkCNN, NetworkAE
 
 
 
@@ -65,7 +66,7 @@ callbacks = [tensorboard_callback, save_weights_callback, evaluate_agent_callbac
 # This structure initializes the agent. The different options allows the choice of using a
 # convolutional or fully connected neural network architecture,
 # and to run the backpropagation of the ensemble members in parallel or sequential.
-if p.agent_par["bnn"]:
+if p.agent_par["model"] == 'bnn':
     if p.agent_par["cnn"]:
         model = NetworkCNNBNN(
             env.nb_ego_states,
@@ -129,8 +130,82 @@ if p.agent_par["bnn"]:
         sample_forward=p.agent_par["sample_forward"],
         sample_backward=p.agent_par["sample_backward"],
     )
+elif p.agent_par["model"] == 'ae':
+    ae = NetworkAE(
+        p.agent_par["window_length"],
+        nb_observations,
+        nb_actions,
+        obs_encoder_arc=p.agent_par["obs_encoder_arc"],
+        act_encoder_arc=p.agent_par["act_encoder_arc"],
+        shared_encoder_arc=p.agent_par["shared_encoder_arc"],
+        obs_decoder_arc=p.agent_par["obs_decoder_arc"],
+        act_decoder_arc=p.agent_par["act_decoder_arc"],
+        shared_decoder_arc=p.agent_par["shared_decoder_arc"],
+        covar_decoder_arc=p.agent_par["covar_decoder_arc"],
+        latent_dim=p.agent_par["latent_dim"],
+        act_loss_weight=p.agent_par["act_loss_weight"],
+        obs_loss_weight=p.agent_par["obs_loss_weight"],
+        prob_loss_weight=p.agent_par["prob_loss_weight"],
+    ).to(p.agent_par['device'])
+    if p.agent_par["cnn"]:
+        model = NetworkCNN(
+            env.nb_ego_states,
+            env.nb_states_per_vehicle,
+            ps.sim_params["sensor_nb_vehicles"],
+            nb_actions,
+            nb_conv_layers=p.agent_par["nb_conv_layers"],
+            nb_conv_filters=p.agent_par["nb_conv_filters"],
+            nb_hidden_fc_layers=p.agent_par["nb_hidden_fc_layers"],
+            nb_hidden_neurons=p.agent_par["nb_hidden_neurons"],
+            duel=p.agent_par["duel_q"],
+            prior=False,
+            activation="relu",
+            window_length=p.agent_par["window_length"],
+            duel_type="avg",
+        ).to(p.agent_par["device"])
+    else:
+        model = NetworkMLP(
+            nb_observations,
+            nb_actions,
+            nb_hidden_layers=p.agent_par["nb_hidden_fc_layers"],
+            nb_hidden_neurons=p.agent_par["nb_hidden_neurons"],
+            duel=p.agent_par["duel_q"],
+            prior=False,
+            activation="relu",
+            duel_type="avg",
+            window_length=p.agent_par["window_length"],
+        ).to(p.agent_par["device"])
+    policy = LinearAnnealedPolicy(
+        EpsGreedyQPolicy(),
+        attr="eps",
+        value_max=1.0,
+        value_min=p.agent_par["exploration_final_eps"],
+        value_test=0.0,
+        nb_steps=p.agent_par["exploration_steps"],
+    )
+    test_policy = GreedyQPolicy()
+    memory = SequentialMemory(
+        limit=p.agent_par["buffer_size"], window_length=p.agent_par["window_length"]
+    )
+    dqn = DQNAEAgent(
+        model,
+        ae,
+        policy,
+        test_policy,
+        enable_double_dqn=p.agent_par["double_q"],
+        enable_dueling_network=False,
+        nb_actions=nb_actions,
+        memory=memory,
+        gamma=p.agent_par["gamma"],
+        batch_size=p.agent_par["batch_size"],
+        nb_steps_warmup=p.agent_par["learning_starts"],
+        train_interval=p.agent_par["train_freq"],
+        target_model_update=p.agent_par["target_network_update_freq"],
+        delta_clip=p.agent_par["delta_clip"],
+        device=p.agent_par["device"],
+    )
 else:
-    raise Exception("Mode not implemented.")
+    raise Exception("Model not implemented.")
 
 dqn.compile(p.agent_par["learning_rate"])
 
