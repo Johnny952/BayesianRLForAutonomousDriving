@@ -116,7 +116,7 @@ class DQNAEAgent(AbstractDQNAgent):
         
         # Uncertainty for all actions
         obs = torch.from_numpy(observation).unsqueeze(dim=0).float().to(self.device)
-        act= torch.Tensor([action]).unsqueeze(dim=0).float()
+        act= torch.Tensor([action]).unsqueeze(dim=0).float().to(self.device)
         with torch.no_grad():
             uncertainty = self.autoencoder.log_prob(obs, act)
         uncertainty = uncertainty.cpu().numpy()

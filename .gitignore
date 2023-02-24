@@ -3,3 +3,5 @@ scratch
 road
 env
 *__pycache__
+wandb
+src/videos
