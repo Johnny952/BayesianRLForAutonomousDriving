@@ -50,7 +50,7 @@ agent_name = "4950061"
 case = "standstill"  # 'rerun_test_scenarios', 'fast_overtaking', 'standstill'
 safety_threshold = 0.0045  # Only used if ensemble test policy is chosen 0.0045
 save_video = True
-use_safe_action = False
+use_safe_action = True
 """ End options """
 
 # These import statements need to come after the choice of which agent that should be used.
@@ -202,6 +202,7 @@ elif p.agent_par["model"] == 'ae':
         target_model_update=p.agent_par["target_network_update_freq"],
         delta_clip=p.agent_par["delta_clip"],
         device=p.agent_par["device"],
+        update_ae_each=p.agent_par["update_ae_each"]
     )
 else:
     raise Exception("Model not implemented.")
@@ -487,7 +488,7 @@ elif case == "standstill":
             )
             cv_log.append(
                 action_info["coefficient_of_variation"]
-                if p.agent_par["bnn"]
+                if p.agent_par["model"] == "bnn"
                 else action_info["q_values"] * 0
             )
             v_log.append(env.speeds[0, 0])

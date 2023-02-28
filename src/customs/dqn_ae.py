@@ -26,6 +26,7 @@ class DQNAEAgent(AbstractDQNAgent):
         enable_double_dqn=True,
         enable_dueling_network=False,
         dueling_type="avg",
+        update_ae_each=1,
         *args,
         **kwargs
     ):
@@ -35,6 +36,7 @@ class DQNAEAgent(AbstractDQNAgent):
         self.enable_double_dqn = enable_double_dqn
         self.enable_dueling_network = enable_dueling_network
         self.dueling_type = dueling_type
+        self.update_ae_each = update_ae_each
 
         # Related objects.
         self.model = model
@@ -56,6 +58,9 @@ class DQNAEAgent(AbstractDQNAgent):
 
         # State.
         self.reset_states()
+
+        # Counter
+        self.backward_nb = 0
 
     def get_config(self):
         config = super(DQNAEAgent, self).get_config()
@@ -207,13 +212,14 @@ class DQNAEAgent(AbstractDQNAgent):
             loss.backward()
             self.optimizer.step()
 
-            act_batch = torch.from_numpy(np.array(action_batch)).unsqueeze(dim=1).float().to(self.device)
-            outputs = self.autoencoder(state0_batch, act_batch)
-            auto_loss = self.autoencoder.loss_function(*outputs)
+            if self.backward_nb % self.update_ae_each == 0:
+                act_batch = torch.from_numpy(np.array(action_batch)).unsqueeze(dim=1).float().to(self.device)
+                outputs = self.autoencoder(state0_batch, act_batch)
+                auto_loss = self.autoencoder.loss_function(*outputs)
 
-            self.autoencoder_optimizer.zero_grad()
-            auto_loss['loss'].backward()
-            self.autoencoder_optimizer.step()
+                self.autoencoder_optimizer.zero_grad()
+                auto_loss['loss'].backward()
+                self.autoencoder_optimizer.step()
 
             wandb.log({'Q Loss': loss, 'Auto Loss': auto_loss['loss'], 'Obs Loss': auto_loss['Obs Loss'], 'Act Loss': auto_loss['Act Loss'], 'Prob Loss': auto_loss['Prob Loss']})
 
@@ -224,6 +230,7 @@ class DQNAEAgent(AbstractDQNAgent):
                 self.target_model, self.model, self.target_model_update
             )
 
+        self.backward_nb += 1
         return metrics
 
     @property

@@ -13,7 +13,10 @@ else:
 from sumolib import checkBinary
 import traci
 
-from road import Road
+try:
+    from road import Road
+except ImportError:
+    from .road import Road
 
 # Sumo subscription constants
 POSITION = 66
