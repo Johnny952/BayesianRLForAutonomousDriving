@@ -9,7 +9,7 @@ debug_run = False
 env_seed = 13
 random_seed = env_seed+1
 
-nb_training_steps = int(5e6) if not debug_run else int(2e5)   # Number of training steps
+nb_training_steps = int(6e6) if not debug_run else int(2e5)   # Number of training steps
 save_freq = 50000 if not debug_run else 1000   # Number of training steps between saving the network weights
 eval_freq = 50000 if not debug_run else 1000   # Number of training steps between evaluating the agent on test episodes
 nb_eval_eps = 100 if not debug_run else 5   # Number of test episodedes
@@ -44,7 +44,7 @@ agent_par["tensorboard_log"] = "../logs/"
 
 
 agent_par["device"] = 'cuda'
-agent_par["model"] = 'ae' # bnn or ae
+agent_par["model"] = 'bnn' # bnn or ae
 agent_par["prior_mu"] = 0
 agent_par["prior_sigma"] = 0.1
 agent_par["complexity_kld_weight"] = 0.1
