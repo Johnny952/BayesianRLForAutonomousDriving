@@ -1,14 +1,11 @@
-from __future__ import division
-import warnings
-
 import torch
 import torch.nn as nn
-import torchbnn as bnn
 import numpy as np
 from rl.policy import EpsGreedyQPolicy, GreedyQPolicy
 from rl.util import get_object_config
 import sys
 import wandb
+from timeit import default_timer as timer
 
 sys.path.append("..")
 from base.core import Agent
@@ -90,6 +87,7 @@ class DQNAEAgent(AbstractDQNAgent):
         self.model.load_state_dict(checkpoint["model_state_disct"])
         self.optimizer.load_state_dict(checkpoint["optimizer_state_disct"])
         self.autoencoder.load_state_dict(checkpoint["autoencoder"])
+        self.autoencoder_optimizer.load_state_dict(checkpoint["autoencoder_optimizer"])
         self.target_model = clone_model(self.model)
 
     def save_weights(self, filepath, overwrite=False):
@@ -97,6 +95,7 @@ class DQNAEAgent(AbstractDQNAgent):
             "model_state_disct": self.model.state_dict(),
             "optimizer_state_disct": self.optimizer.state_dict(),
             "autoencoder": self.autoencoder.state_dict(),
+            "autoencoder_optimizer": self.autoencoder_optimizer.state_dict(),
         }
         torch.save(tosave, filepath)
 
@@ -155,6 +154,7 @@ class DQNAEAgent(AbstractDQNAgent):
 
         # Train the network on a single stochastic batch.
         if self.step > self.nb_steps_warmup and self.step % self.train_interval == 0:
+            tick = timer()
             experiences = self.memory.sample(self.batch_size)
             assert len(experiences) == self.batch_size
 
@@ -221,7 +221,8 @@ class DQNAEAgent(AbstractDQNAgent):
                 auto_loss['loss'].backward()
                 self.autoencoder_optimizer.step()
 
-            wandb.log({'Q Loss': loss, 'Auto Loss': auto_loss['loss'], 'Obs Loss': auto_loss['Obs Loss'], 'Act Loss': auto_loss['Act Loss'], 'Prob Loss': auto_loss['Prob Loss']})
+            tock = timer()
+            wandb.log({'Q Loss': loss, 'Auto Loss': auto_loss['loss'], 'Obs Loss': auto_loss['Obs Loss'], 'Act Loss': auto_loss['Act Loss'], 'Prob Loss': auto_loss['Prob Loss'], 'Back time': (tock - tick)})
 
         if self.target_model_update >= 1 and self.step % self.target_model_update == 0:
             self.target_model = hard_target_model_updates(self.target_model, self.model)

@@ -15,8 +15,8 @@ eval_freq = 50000 if not debug_run else 1000   # Number of training steps betwee
 nb_eval_eps = 100 if not debug_run else 5   # Number of test episodedes
 
 agent_par = {}
-agent_par["ensemble"] = True   # Ensemble RPF or standard DQN agent
-agent_par["parallel"] = True   # Parallel execution of backpropagation for ensemble RPF
+agent_par["ensemble"] = False   # Ensemble RPF or standard DQN agent
+agent_par["parallel"] = False   # Parallel execution of backpropagation for ensemble RPF
 agent_par["number_of_networks"] = 10 if not debug_run else 5   # Number of ensemble members
 agent_par["prior_scale_factor"] = 50.   # Prior scale factor, beta
 agent_par["adding_prob"] = 0.5   # Probability of adding an experience to each individual ensemble replay memory
@@ -44,7 +44,7 @@ agent_par["tensorboard_log"] = "../logs/"
 
 
 agent_par["device"] = 'cuda'
-agent_par["model"] = 'bnn' # bnn or ae
+agent_par["model"] = 'ae' # bnn or ae
 agent_par["prior_mu"] = 0
 agent_par["prior_sigma"] = 0.1
 agent_par["complexity_kld_weight"] = 0.1
@@ -53,11 +53,11 @@ agent_par["sample_backward"] = 1
 
 agent_par["obs_encoder_arc"] = [64, 32]
 agent_par["act_encoder_arc"] = [4, 16]
-agent_par["shared_encoder_arc"] = [512]
+agent_par["shared_encoder_arc"] = [128]
 agent_par["obs_decoder_arc"] = [32, 64]
 agent_par["act_decoder_arc"] = [16, 4]
-agent_par["shared_decoder_arc"] = [512]
-agent_par["covar_decoder_arc"] = [512, 1024]
+agent_par["shared_decoder_arc"] = [128]
+agent_par["covar_decoder_arc"] = [128, 256]
 agent_par["latent_dim"] = 8
 agent_par["act_loss_weight"] = 1/ 2.3
 agent_par["obs_loss_weight"] = 20

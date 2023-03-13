@@ -1,6 +1,4 @@
-from __future__ import division
 import warnings
-
 import torch
 import torch.nn as nn
 import torchbnn as bnn
@@ -10,6 +8,7 @@ from rl.policy import EpsGreedyQPolicy, GreedyQPolicy
 from rl.util import get_object_config
 import sys
 import wandb
+from timeit import default_timer as timer
 
 sys.path.append("..")
 from base.core import Agent
@@ -262,6 +261,7 @@ class DQNBNNAgent(AbstractDQNAgent):
 
         # Train the network on a single stochastic batch.
         if self.step > self.nb_steps_warmup and self.step % self.train_interval == 0:
+            tick = timer()
             experiences = self.memory.sample(self.batch_size)
             assert len(experiences) == self.batch_size
 
@@ -321,7 +321,8 @@ class DQNBNNAgent(AbstractDQNAgent):
             
             kl_loss = self.kl_loss(self.model)
             loss = q_loss + self.complexity_kld_weight * kl_loss
-            wandb.log({'Q Loss': q_loss, 'KL Loss': kl_loss, 'Loss': loss})
+            tock = timer()
+            wandb.log({'Q Loss': q_loss, 'KL Loss': kl_loss, 'Loss': loss, 'Back time': (tock - tick)})
 
             self.optimizer.zero_grad()
             loss.backward()
