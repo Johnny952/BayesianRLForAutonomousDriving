@@ -62,4 +62,4 @@ agent_par["latent_dim"] = 8
 agent_par["act_loss_weight"] = 1/ 2.3
 agent_par["obs_loss_weight"] = 20
 agent_par["prob_loss_weight"] = 1 / 40
-agent_par["update_ae_each"] = 1
+agent_par["update_ae_each"] = 5
