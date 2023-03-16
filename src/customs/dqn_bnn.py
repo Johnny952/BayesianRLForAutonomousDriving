@@ -13,9 +13,6 @@ from timeit import default_timer as timer
 sys.path.append("..")
 from base.core import Agent
 
-wandb.init(project="highway-bnn")
-
-
 def max_q(y_true, y_pred):  # Returns average maximum Q-value of training batch
     return torch.mean(torch.max(y_pred, dim=-1), dim=-1)
 
@@ -141,6 +138,8 @@ class DQNBNNAgent(AbstractDQNAgent):
     ):
         super(DQNBNNAgent, self).__init__(*args, **kwargs)
 
+        wandb.init(project="highway-bnn")
+
         # Parameters.
         self.enable_double_dqn = enable_double_dqn
         self.enable_dueling_network = enable_dueling_network
@@ -168,6 +167,10 @@ class DQNBNNAgent(AbstractDQNAgent):
 
         # State.
         self.reset_states()
+
+        # Counter
+        self.backward_nb = 0
+        self.forward_nb = 0
 
     def get_config(self):
         config = super(DQNBNNAgent, self).get_config()
@@ -210,6 +213,7 @@ class DQNBNNAgent(AbstractDQNAgent):
         self.recent_observation = None
 
     def forward(self, observation):
+        tick = timer()
         # Select an action.
         state = self.memory.get_recent_state(observation)
         q_values_list = []
@@ -235,7 +239,11 @@ class DQNBNNAgent(AbstractDQNAgent):
                                    np.mean(q_values_list[:, :], axis=0)
         
         # np.sum(np.var(q_values_list, axis=0))
+        if self.forward_nb % 1000 == 0:
+            tock = timer()
+            wandb.log({'Forward time': (tock - tick)})
 
+        self.forward_nb += 1
         return action, {
             "mean": q_values,
             "q_values": q_values,
@@ -321,8 +329,9 @@ class DQNBNNAgent(AbstractDQNAgent):
             
             kl_loss = self.kl_loss(self.model)
             loss = q_loss + self.complexity_kld_weight * kl_loss
-            tock = timer()
-            wandb.log({'Q Loss': q_loss, 'KL Loss': kl_loss, 'Loss': loss, 'Back time': (tock - tick)})
+            if self.backward_nb % 1000 == 0:
+                tock = timer()
+                wandb.log({'Q Loss': q_loss, 'KL Loss': kl_loss, 'Loss': loss, 'Back time': (tock - tick)})
 
             self.optimizer.zero_grad()
             loss.backward()
@@ -335,6 +344,7 @@ class DQNBNNAgent(AbstractDQNAgent):
                 self.target_model, self.model, self.target_model_update
             )
 
+        self.backward_nb += 1
         return metrics
 
     @property

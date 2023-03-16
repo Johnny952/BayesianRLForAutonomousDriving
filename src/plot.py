@@ -71,13 +71,50 @@ def read_file(path):
 
 if __name__ == "__main__":
     models = [
+        # {
+        #     "paths": [
+        #         './logs/dqn_train_agent_20230127_221037/data.hdf5',
+        #         './logs/dqn_train_agent_20230130_210827/data.hdf5',
+        #         './logs/dqn_train_agent_20230131_212058/data.hdf5',
+        #         './logs/dqn_train_agent_20230201_210132/data.hdf5',
+        #         './logs/dqn_train_agent_20230202_154709/data.hdf5',
+        #         './logs/dqn_train_agent_20230204_214252/data.hdf5',
+        #         './logs/dqn_train_agent_20230205_230839/data.hdf5',
+        #         './logs/dqn_train_agent_20230207_031945_this/data.hdf5',
+        #         './logs/dqn_train_agent_20230207_032002/data.hdf5',
+        #     ],
+        #     "name": "Standard DQN",
+        #     "show_uncertainty": False,
+        #     "color": "blue",
+        # },
         {
             "paths": [
-                './logs/train_agent_20221123_195838/data.hdf5'
+                # './logs/rpf_train_agent_20230127_221001_this/data.hdf5',
+                # './logs/rpf_train_agent_20230130_210919/data.hdf5',
+                # './logs/rpf_train_agent_20230202_154753/data.hdf5',
+                # './logs/rpf_train_agent_20230204_214216/data.hdf5',
+                # './logs/rpf_train_agent_20230210_195119/data.hdf5',
+                # './logs/rpf_train_agent_20230210_195214/data.hdf5',
+                # './logs/rpf_train_agent_20230213_211943/data.hdf5',
+                # './logs/rpf_train_agent_20230213_211945/data.hdf5',
+                # './logs/rpf_train_agent_20230217_173810/data.hdf5',
+                './logs/train_agent_20230310_171328_6M/data.hdf5',
             ],
             "name": "Ensemble RPF DQN",
             "show_uncertainty": True,
             "color": "red",
+        },
+        {
+            "paths": [
+                # './logs/bnn_train_agent_20230210_195642/data.hdf5',
+                # './logs/train_agent_20230220_205020/data.hdf5',
+                # './logs/train_agent_20230220_205123/data.hdf5',
+                # './logs/train_agent_20230222_234907/data.hdf5',
+                './logs/train_agent_20230310_171432_6M/data.hdf5',
+            ],
+            "name": "BNN DQN",
+            "show_uncertainty": True,
+            "color": "green",
         },
     ]
     MODEL_NB = 0
@@ -105,19 +142,19 @@ if __name__ == "__main__":
             (rewards_mean + rewards_std),
             color=model["color"],
             alpha=0.2,
-            label="Std",
+            #label="Std",
         )
-        ax2.spines["top"].set_visible(False)
-        plt.xlabel('Traning step', fontsize=14)
-        plt.ylabel('Normalized Reward', fontsize=14)
-        plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0), useMathText=True)
+    ax2.spines["top"].set_visible(False)
+    plt.xlabel('Traning step', fontsize=14)
+    plt.ylabel('Normalized Reward', fontsize=14)
+    plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0), useMathText=True)
+    plt.legend()
 
     # Uncertainty
     ax1 = plt.subplot(221, sharex = ax2)
     for model in models:
         if model["show_uncertainty"]:
             steps, (uncertainty, uncertainty_up, uncertainty_low, uncertainty_std), _, _ = read_file(model["paths"][MODEL_NB])
-            # print(f"Max: {np.max(uncertainty)}\tMin: {np.min(uncertainty)}\tMean: {np.mean(uncertainty)}\t Std: {np.std(uncertainty)}")
             plt.plot(steps, uncertainty, color=model["color"], label="Mean {}".format(model["name"]))
             # plt.fill_between(
             #     steps,
@@ -134,12 +171,12 @@ if __name__ == "__main__":
                 color=model["color"],
                 alpha=0.1,
             )
-            ax1.spines["top"].set_visible(False)
-            plt.xlabel('Traning step', fontsize=14)
-            plt.ylabel('Normalized Uncertainty', fontsize=14)
-            plt.ylim((0,0.5))
-            # plt.yscale('log')
-            plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0), useMathText=True)
+    ax1.spines["top"].set_visible(False)
+    plt.xlabel('Traning step', fontsize=14)
+    plt.ylabel('Normalized Uncertainty', fontsize=14)
+    # plt.ylim((0,0.1))
+    plt.yscale('log')
+    plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0), useMathText=True)
     
 
     # Collision rate
@@ -147,20 +184,19 @@ if __name__ == "__main__":
     for model in models:
         steps, _, (collision_rate, _), _ = read_file(model["paths"][MODEL_NB])
         plt.plot(steps, 1 - collision_rate, color=model["color"], label="Mean {}".format(model["name"]))
-        plt.xlabel('Traning step', fontsize=14)
-        plt.ylabel('Collision Free Episodes', fontsize=14)
-        plt.legend()
-        ax3.spines["top"].set_visible(False)
-        plt.ylim((-0.05,1.05))
-        plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0), useMathText=True)
-        plt.gca().yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0))
+    plt.xlabel('Traning step', fontsize=14)
+    plt.ylabel('Collision Free Episodes', fontsize=14)
+    ax3.spines["top"].set_visible(False)
+    plt.ylim((-0.05,1.05))
+    plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0), useMathText=True)
+    plt.gca().yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0))
     
 
     # Collision Speed
     ax4 = plt.subplot(224, sharex = ax2)
     for model in models:
         steps, _, (_, collision_speed), _ = read_file(model["paths"][MODEL_NB])
-        plt.plot(steps, collision_speed, color=model["color"], label="Mean {}".format(model["name"]), alpha=0.1)
+        plt.plot(steps, collision_speed, color=model["color"], label="Mean {}".format(model["name"]), alpha=.1)
         filtered_speeds = gaussian_filter1d(collision_speed.astype(np.float32), sigma=2)
         plt.plot(steps, filtered_speeds, color=model["color"], label="Mean {}".format(model["name"]), alpha=1)
         # plt.fill_between(
@@ -170,12 +206,12 @@ if __name__ == "__main__":
         #     color=model["color"],
         #     alpha=0.1,
         # )
-        plt.xlabel('Traning step', fontsize=14)
-        plt.ylabel('Collision Speed', fontsize=14)
-        ax4.spines["top"].set_visible(False)
-        plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0), useMathText=True)
+    plt.xlabel('Traning step', fontsize=14)
+    plt.ylabel('Collision Speed', fontsize=14)
+    ax4.spines["top"].set_visible(False)
+    plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0), useMathText=True)
 
-    plt.show()
-    #plt.savefig('./logs/fig.png')
-    #plt.close()
+    # plt.show()
+    plt.savefig('./logs/fig.png')
+    plt.close()
     

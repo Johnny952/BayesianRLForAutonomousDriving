@@ -11,8 +11,6 @@ sys.path.append("..")
 from base.core import Agent
 from dqn_bnn import max_q, mean_q, clone_model, soft_target_model_updates, hard_target_model_updates, AbstractDQNAgent
 
-wandb.init(project="highway-ae")
-
 class DQNAEAgent(AbstractDQNAgent):
     def __init__(
         self,
@@ -28,6 +26,8 @@ class DQNAEAgent(AbstractDQNAgent):
         **kwargs
     ):
         super(DQNAEAgent, self).__init__(*args, **kwargs)
+
+        wandb.init(project="highway-ae")
 
         # Parameters.
         self.enable_double_dqn = enable_double_dqn
@@ -58,6 +58,7 @@ class DQNAEAgent(AbstractDQNAgent):
 
         # Counter
         self.backward_nb = 0
+        self.forward_nb = 0
 
     def get_config(self):
         config = super(DQNAEAgent, self).get_config()
@@ -104,6 +105,7 @@ class DQNAEAgent(AbstractDQNAgent):
         self.recent_observation = None
 
     def forward(self, observation):
+        tick = timer()
         # Select an action.
         state = self.memory.get_recent_state(observation)
         q_values = self.compute_q_values(state, self.device)
@@ -129,6 +131,12 @@ class DQNAEAgent(AbstractDQNAgent):
         self.recent_observation = observation
         self.recent_action = action
 
+        if self.forward_nb % 1000 == 0:
+                tock = timer()
+                wandb.log({'Forward time': (tock - tick), 'Uncertainty': uncertainty})
+
+
+        self.forward_nb += 1
         return action, {
             "mean": q_values,
             "q_values": q_values,
@@ -221,8 +229,9 @@ class DQNAEAgent(AbstractDQNAgent):
                 auto_loss['loss'].backward()
                 self.autoencoder_optimizer.step()
 
-            tock = timer()
-            wandb.log({'Q Loss': loss, 'Auto Loss': auto_loss['loss'], 'Obs Loss': auto_loss['Obs Loss'], 'Act Loss': auto_loss['Act Loss'], 'Prob Loss': auto_loss['Prob Loss'], 'Back time': (tock - tick)})
+            if self.backward_nb % 1000 == 0:
+                tock = timer()
+                wandb.log({'Q Loss': loss, 'Auto Loss': auto_loss['loss'], 'Obs Loss': auto_loss['Obs Loss'], 'Act Loss': auto_loss['Act Loss'], 'Prob Loss': auto_loss['Prob Loss'], 'Back time': (tock - tick)})
 
         if self.target_model_update >= 1 and self.step % self.target_model_update == 0:
             self.target_model = hard_target_model_updates(self.target_model, self.model)
