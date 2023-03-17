@@ -61,5 +61,5 @@ agent_par["covar_decoder_arc"] = [128, 256]
 agent_par["latent_dim"] = 8
 agent_par["act_loss_weight"] = 1/ 2.3
 agent_par["obs_loss_weight"] = 1 / 0.16
-agent_par["prob_loss_weight"] = 1 / 15000
+agent_par["prob_loss_weight"] = 1
 agent_par["update_ae_each"] = 5
