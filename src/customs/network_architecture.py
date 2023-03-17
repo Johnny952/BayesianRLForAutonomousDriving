@@ -956,7 +956,7 @@ class NetworkAE(nn.Module):
         mu = torch.cat((obs_mu, act_mu), dim=-1)
         distribution = torch.distributions.multivariate_normal.MultivariateNormal(mu, covar)
         log_prob = distribution.log_prob(target_).sum()
-        return -log_prob
+        return -torch.exp(log_prob / 10000)
 
     def loss_function(self, *args, **kwargs) -> dict:
         obs_mu = args[0]
