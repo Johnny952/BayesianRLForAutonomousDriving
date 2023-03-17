@@ -918,6 +918,7 @@ class NetworkAE(nn.Module):
         self.covar = nn.Sequential(
             InverseBase(covar_decoder_arc[-1], architecture=covar_decoder_arc[:-1]),
             nn.Linear(covar_decoder_arc[-1], self.covar_dim**2),
+            nn.Softplus(),
         )
 
         self.act_mu = nn.Linear(act_decoder_arc[-1], nb_actions)
@@ -937,8 +938,7 @@ class NetworkAE(nn.Module):
         obs_mu = self.obs_mu(obs)
         act_mu = self.act_mu(act)
 
-        B = self.covar(x + 4).view(-1, self.covar_dim, self.covar_dim)
-        covar = torch.transpose(B, 1, 2) @ B + self.covar_dim * torch.eye(self.covar_dim).to(x.device)
+        covar = torch.diag_embed(self.covar(x))
         return obs_mu, act_mu, covar
 
     def forward(self, obs, act):
@@ -954,23 +954,9 @@ class NetworkAE(nn.Module):
         one_hot_act = nn.functional.one_hot(act.squeeze(dim=1).long(), num_classes=self.nb_actions)
         target_ = torch.cat((torch.flatten(obs, start_dim=1), one_hot_act), dim=-1)
         mu = torch.cat((obs_mu, act_mu), dim=-1)
-        log_prob = 0
-        for i in range(mu.shape[0]):
-            mu_i, covar_i, target_i = mu[i], covar[i], target_[i]
-            distribution = torch.distributions.multivariate_normal.MultivariateNormal(mu_i, covar_i)
-            log_prob += distribution.log_prob(target_i) / mu.shape[0]
-
+        distribution = torch.distributions.multivariate_normal.MultivariateNormal(mu, covar)
+        log_prob = distribution.log_prob(target_)
         return -log_prob
-
-    def get_sample(self, obs_mu, act_mu, covar):
-        mu = torch.cat((obs_mu, act_mu), dim=-1)
-        sample = []
-        for i in range(mu.shape[0]):
-            mu_i, covar_i = mu[i], covar[i]
-            distribution = torch.distributions.multivariate_normal.MultivariateNormal(mu_i, covar_i)
-            sample.append(distribution.rsample())
-        sample = torch.stack(sample)
-        return sample
 
     def loss_function(self, *args, **kwargs) -> dict:
         obs_mu = args[0]
@@ -980,17 +966,7 @@ class NetworkAE(nn.Module):
 
         obs_loss = self.obs_loss(obs_mu, torch.flatten(obs, start_dim=1))
         act_loss = self.act_loss(act_mu, act.squeeze(dim=1).long())
-
-        # one_hot_act = nn.functional.one_hot(act.squeeze(dim=1).long(), num_classes=self.nb_actions)
-
-        # target_ = torch.cat((torch.flatten(obs, start_dim=1), one_hot_act), dim=-1)
         prob_loss = self.log_prob_loss(obs_mu, obs, act_mu, act, covar)
-        
-        # prob_loss = 0
-        # nb_samples = 5
-        # for _ in range(nb_samples):
-        #     sample = self.get_sample(obs_mu, act_mu, covar)
-        #     prob_loss += nn.functional.mse_loss(sample, target_) / nb_samples
 
         loss = self.act_loss_weight * act_loss + self.obs_loss_weight * obs_loss + prob_loss * self.prob_loss_weight
 
