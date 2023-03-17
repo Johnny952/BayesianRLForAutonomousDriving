@@ -917,7 +917,7 @@ class NetworkAE(nn.Module):
         self.covar_dim = state_stack * obs_dim + nb_actions
         self.covar = nn.Sequential(
             InverseBase(covar_decoder_arc[-1], architecture=covar_decoder_arc[:-1]),
-            nn.Linear(covar_decoder_arc[-1], self.covar_dim**2),
+            nn.Linear(covar_decoder_arc[-1], self.covar_dim),
             nn.Softplus(),
         )
 
