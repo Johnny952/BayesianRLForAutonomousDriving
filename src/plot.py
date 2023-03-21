@@ -1,12 +1,27 @@
 import h5py
+import csv
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mtick
 from scipy.ndimage import gaussian_filter1d
+from matplotlib.ticker import FormatStrFormatter
 
 PERCENTILE_DOWN = 1
 PERCENTILE_UP = 99
 EPSILON = 1e-15
+
+def read_test(path):
+    thresholds = []
+    rewards = []
+    collision_rates = []
+    with open(path, 'r') as f:
+        csv_reader = csv.reader(f, delimiter=',')
+        for row in csv_reader:
+            thresholds.append(float(row[0]))
+            rewards.append(float(row[1]))
+            collision_rates.append(float(row[2]))
+    return np.array(thresholds), np.array(rewards), np.array(collision_rates)
+
 
 def read_file(path):
     steps = []
@@ -71,22 +86,27 @@ def read_file(path):
 
 if __name__ == "__main__":
     models = [
-        # {
-        #     "paths": [
-        #         './logs/dqn_train_agent_20230127_221037/data.hdf5',
-        #         './logs/dqn_train_agent_20230130_210827/data.hdf5',
-        #         './logs/dqn_train_agent_20230131_212058/data.hdf5',
-        #         './logs/dqn_train_agent_20230201_210132/data.hdf5',
-        #         './logs/dqn_train_agent_20230202_154709/data.hdf5',
-        #         './logs/dqn_train_agent_20230204_214252/data.hdf5',
-        #         './logs/dqn_train_agent_20230205_230839/data.hdf5',
-        #         './logs/dqn_train_agent_20230207_031945_this/data.hdf5',
-        #         './logs/dqn_train_agent_20230207_032002/data.hdf5',
-        #     ],
-        #     "name": "Standard DQN",
-        #     "show_uncertainty": False,
-        #     "color": "blue",
-        # },
+        {
+            "paths": [
+                # './logs/dqn_train_agent_20230127_221037/data.hdf5',
+                # './logs/dqn_train_agent_20230130_210827/data.hdf5',
+                # './logs/dqn_train_agent_20230131_212058/data.hdf5',
+                # './logs/dqn_train_agent_20230201_210132/data.hdf5',
+                # './logs/dqn_train_agent_20230202_154709/data.hdf5',
+                # './logs/dqn_train_agent_20230204_214252/data.hdf5',
+                # './logs/dqn_train_agent_20230205_230839/data.hdf5',
+                # './logs/dqn_train_agent_20230207_031945_this/data.hdf5',
+                './logs/train_agent_20230313_212418_dqn_6M/data.hdf5',
+            ],
+            'multiple_test': {
+                'rerun_test_scenarios': None,
+                'standstill': None,
+                'fast_overtaking': None,
+            },
+            "name": "Standard DQN",
+            "show_uncertainty": False,
+            "color": "blue",
+        },
         {
             "paths": [
                 # './logs/rpf_train_agent_20230127_221001_this/data.hdf5',
@@ -98,8 +118,13 @@ if __name__ == "__main__":
                 # './logs/rpf_train_agent_20230213_211943/data.hdf5',
                 # './logs/rpf_train_agent_20230213_211945/data.hdf5',
                 # './logs/rpf_train_agent_20230217_173810/data.hdf5',
-                './logs/train_agent_20230310_171328_6M/data.hdf5',
+                './logs/train_agent_20230310_171328_rpf_6M/data.hdf5',
             ],
+            'multiple_test': {
+                'rerun_test_scenarios': './logs/train_agent_20230310_171328_rpf_6M/rerun_test_scenarios.csv',
+                'standstill': None,
+                'fast_overtaking': None,
+            },
             "name": "Ensemble RPF DQN",
             "show_uncertainty": True,
             "color": "red",
@@ -110,11 +135,33 @@ if __name__ == "__main__":
                 # './logs/train_agent_20230220_205020/data.hdf5',
                 # './logs/train_agent_20230220_205123/data.hdf5',
                 # './logs/train_agent_20230222_234907/data.hdf5',
-                './logs/train_agent_20230310_171432_6M/data.hdf5',
+                './logs/train_agent_20230310_171432_bnn_6M/data.hdf5',
             ],
+            'multiple_test': {
+                'rerun_test_scenarios': './logs/train_agent_20230310_171432_bnn_6M/rerun_test_scenarios.csv',
+                'standstill': None,
+                'fast_overtaking': None,
+            },
             "name": "BNN DQN",
             "show_uncertainty": True,
             "color": "green",
+        },
+        {
+            "paths": [
+                # './logs/bnn_train_agent_20230210_195642/data.hdf5',
+                # './logs/train_agent_20230220_205020/data.hdf5',
+                # './logs/train_agent_20230220_205123/data.hdf5',
+                # './logs/train_agent_20230222_234907/data.hdf5',
+                './logs/train_agent_20230317_170246_ae_6M/data.hdf5',
+            ],
+            'multiple_test': {
+                'rerun_test_scenarios': './logs/train_agent_20230317_170246_ae_6M/rerun_test_scenarios.csv',
+                'standstill': None,
+                'fast_overtaking': None,
+            },
+            "name": "AE DQN",
+            "show_uncertainty": True,
+            "color": "blue",
         },
     ]
     MODEL_NB = 0
@@ -215,3 +262,26 @@ if __name__ == "__main__":
     plt.savefig('./logs/fig.png')
     plt.close()
     
+    # Rewards vs collision rate
+    fig, ax = plt.subplots()
+    fig.set_figheight(8)
+    fig.set_figwidth(13)
+    index = -1
+    scenario = 'rerun_test_scenarios'
+    for model in models:
+        if model['multiple_test'][scenario] is not None:
+            thresholds, rewards, collision_rates = read_test(model['multiple_test'][scenario])
+            idc = np.argsort(collision_rates)
+            sorted_rates, sorted_rewards = collision_rates[idc], rewards[idc]
+            # filtered_rewards = gaussian_filter1d(sorted_rewards.astype(np.float32), sigma=0.9)
+            # plt.plot(sorted_rates, filtered_rewards, color=model["color"], label="{}".format(model["name"]), alpha=1)
+            ax.plot(sorted_rates, sorted_rewards, color=model["color"], label=model["name"], alpha=1)
+    # ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+    plt.gca().xaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0))
+    plt.xlim(left=0)
+    plt.ylim(bottom=0)
+    plt.xlabel('Collision Rate', fontsize=14)
+    plt.ylabel('Reward', fontsize=14)
+    plt.legend()
+    plt.grid()
+    plt.show()

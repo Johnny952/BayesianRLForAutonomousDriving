@@ -38,19 +38,19 @@ from network_architecture import NetworkMLPBNN, NetworkCNNBNN, NetworkAE, Networ
 from base.driving_env import Highway
 import traci
 from matplotlib import rcParams
-from safe_greedy_policy import SafeGreedyPolicy
+from safe_greedy_policy import SafeGreedyPolicy, SimpleSafeGreedyPolicy
 
 rcParams['pdf.fonttype'] = 42   # To avoid Type 3 fonts in figures
 rcParams['ps.fonttype'] = 42
 
 """ Options: """
-filepath = "../logs/bnn_train_agent_20230210_195642/"
-agent_name = "4950061"
-case = "standstill"  # 'rerun_test_scenarios', 'fast_overtaking', 'standstill'
-safety_threshold = 0.0045  # Only used if ensemble test policy is chosen 0.0045
+filepath = "../logs/train_agent_20230317_170246_ae_6M/"
+agent_name = "5950041"
+case = "rerun_test_scenarios"  # 'rerun_test_scenarios', 'fast_overtaking', 'standstill'
+safety_threshold = 1  # Only used if ensemble test policy is chosen BNN: 0.0045, AE: 0.7
 use_safe_action = True
 
-thresh_range = [0.01, 0.05]
+thresh_range = [0, 3]# BNN: [0, 0.05]
 thresh_steps = 50
 
 # test scenarios
@@ -59,7 +59,7 @@ speed_range = [10, 20]
 
 # Standstill
 stop_position_range = [200, 400]
-stop_speed_range = [0, 5]
+stop_speed_range = [0, 4]
 """ End options """
 
 # These import statements need to come after the choice of which agent that should be used.
@@ -194,7 +194,12 @@ elif p.agent_par["model"] == 'ae':
     )  # Not used, simply needed to create the agent
 
     policy = GreedyQPolicy()
-    test_policy = GreedyQPolicy()
+    if use_safe_action:
+        safety_threshold_ = safety_threshold
+        safe_action = 3
+        test_policy = SimpleSafeGreedyPolicy(safety_threshold_, safe_action)
+    else:
+        test_policy = GreedyQPolicy()
     dqn = DQNAEAgent(
         model,
         ae,
@@ -211,7 +216,7 @@ elif p.agent_par["model"] == 'ae':
         target_model_update=p.agent_par["target_network_update_freq"],
         delta_clip=p.agent_par["delta_clip"],
         device=p.agent_par["device"],
-        update_ae_each=p.agent_par["update_ae_each"]
+        update_ae_each=p.agent_par["update_ae_each"],
     )
 else:
     raise Exception("Model not implemented.")
@@ -231,7 +236,10 @@ if case == 'rerun_test_scenarios':
         nb_safe_actions_per_episode = []
         collissions = 0
         if use_safe_action:
-            dqn.test_policy = SafeGreedyPolicy(policy_type='mean', safety_threshold=thresh, safe_action=safe_action)
+            if p.agent_par["model"] == 'bnn':
+                dqn.test_policy = SafeGreedyPolicy(policy_type='mean', safety_threshold=thresh, safe_action=safe_action)
+            elif p.agent_par["model"] == 'ae':
+                dqn.test_policy = SimpleSafeGreedyPolicy(thresh, safe_action)
         for i in range(0, 100):
             np.random.seed(i)
             obs = env.reset()
@@ -271,7 +279,10 @@ elif case == 'fast_overtaking':
         nb_safe_actions_per_episode = []
         collissions = 0
         if use_safe_action:
-            dqn.test_policy = SafeGreedyPolicy(policy_type='mean', safety_threshold=thresh, safe_action=safe_action)
+            if p.agent_par["model"] == 'bnn':
+                dqn.test_policy = SafeGreedyPolicy(policy_type='mean', safety_threshold=thresh, safe_action=safe_action)
+            elif p.agent_par["model"] == 'ae':
+                dqn.test_policy = SimpleSafeGreedyPolicy(thresh, safe_action)
         for i in range(0, 100):
             # Make sure that the vehicles are not affected by previous state
             np.random.seed(57)
@@ -356,7 +367,10 @@ elif case == 'standstill':
         nb_safe_actions_per_episode = []
         collissions = 0
         if use_safe_action:
-            dqn.test_policy = SafeGreedyPolicy(policy_type='mean', safety_threshold=thresh, safe_action=safe_action)
+            if p.agent_par["model"] == 'bnn':
+                dqn.test_policy = SafeGreedyPolicy(policy_type='mean', safety_threshold=thresh, safe_action=safe_action)
+            elif p.agent_par["model"] == 'ae':
+                dqn.test_policy = SimpleSafeGreedyPolicy(thresh, safe_action)
         for i in range(0, 100):
             # Make sure that the vehicles are not affected by previous state
             np.random.seed(57)

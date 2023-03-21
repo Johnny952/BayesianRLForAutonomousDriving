@@ -109,38 +109,49 @@ class DQNAEAgent(AbstractDQNAgent):
         # Select an action.
         state = self.memory.get_recent_state(observation)
         q_values = self.compute_q_values(state, self.device)
+
+        uncertainties = []
         if self.training:
             if hasattr(self.policy, 'custom'):
                 action = self.policy.select_action(q_values)
             else:
                 action = self.policy.select_action(q_values=q_values)
+
+            # Uncertainty for all actions
+            obs = torch.from_numpy(observation).unsqueeze(dim=0).float().to(self.device)
+            act= torch.Tensor([action]).unsqueeze(dim=0).float().to(self.device)
+            with torch.no_grad():
+                uncertainty = self.autoencoder.log_prob(obs, act)
+            uncertainty = uncertainty.cpu().numpy()
         else:
+            # Uncertainty for all actions
+            obs = torch.from_numpy(observation).unsqueeze(dim=0).float().to(self.device)
+            for i in range(self.nb_actions):
+                act = torch.Tensor([i]).unsqueeze(dim=0).float().to(self.device)
+                with torch.no_grad():
+                    uncertainty = self.autoencoder.log_prob(obs, act) - 1
+                uncertainties.append(2 - 100 * (uncertainty.cpu().numpy()))
             if hasattr(self.test_policy, 'custom'):
-                action = self.test_policy.select_action(q_values)
+                action = self.test_policy.select_action(q_values, uncertainties)[0]
             else:
                 action = self.test_policy.select_action(q_values=q_values)
-        
-        # Uncertainty for all actions
-        obs = torch.from_numpy(observation).unsqueeze(dim=0).float().to(self.device)
-        act= torch.Tensor([action]).unsqueeze(dim=0).float().to(self.device)
-        with torch.no_grad():
-            uncertainty = self.autoencoder.log_prob(obs, act)
-        uncertainty = uncertainty.cpu().numpy()
+            
+            uncertainty = uncertainties[action]
 
         # Book-keeping.
         self.recent_observation = observation
         self.recent_action = action
 
         if self.forward_nb % 1000 == 0:
-                tock = timer()
-                wandb.log({'Forward time': (tock - tick), 'Uncertainty': uncertainty})
+            tock = timer()
+            wandb.log({'Forward time': (tock - tick), 'Uncertainty': uncertainty})
 
 
         self.forward_nb += 1
         return action, {
             "mean": q_values,
             "q_values": q_values,
-            "coefficient_of_variation": uncertainty,
+            "coefficient_of_variation": np.array(uncertainties),
         }
 
     def backward(self, reward, terminal):

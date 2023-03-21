@@ -39,21 +39,21 @@ from base.driving_env import Highway
 import traci
 import matplotlib.pyplot as plt
 from matplotlib import rcParams
-from safe_greedy_policy import SafeGreedyPolicy
+from safe_greedy_policy import SafeGreedyPolicy, SimpleSafeGreedyPolicy
 
 rcParams["pdf.fonttype"] = 42  # To avoid Type 3 fonts in figures
 rcParams["ps.fonttype"] = 42
 
 """ Options: """
-filepath = "../logs/bnn_train_agent_20230210_195642/"
-agent_name = "4950061"
-case = "standstill"  # 'rerun_test_scenarios', 'fast_overtaking', 'standstill'
-safety_threshold = 0.0045  # Only used if ensemble test policy is chosen 0.0045
+filepath = "../logs/train_agent_20230317_170246_ae_6M/"
+agent_name = "5950041"
+case = "fast_overtaking"  # 'rerun_test_scenarios', 'fast_overtaking', 'standstill'
+safety_threshold = 0.7  # Only used if ensemble test policy is chosen BNN: 0.0045, AE: 0.7
 save_video = True
 use_safe_action = True
 """ End options """
 
-# These import statements need to come after the choice of which agent that should be used.
+# These import statements need to come after the choice of Falsewhich agent that should be used.
 sys.path.insert(0, filepath + "src/")
 import parameters_stored as p
 import parameters_simulation_stored as ps
@@ -185,7 +185,12 @@ elif p.agent_par["model"] == 'ae':
     )  # Not used, simply needed to create the agent
 
     policy = GreedyQPolicy()
-    test_policy = GreedyQPolicy()
+    if use_safe_action:
+        safety_threshold_ = safety_threshold
+        safe_action = 3
+        test_policy = SimpleSafeGreedyPolicy(safety_threshold_, safe_action)
+    else:
+        test_policy = GreedyQPolicy()
     dqn = DQNAEAgent(
         model,
         ae,
@@ -350,8 +355,8 @@ elif case == "fast_overtaking":
                 if action_info['safe_action']:
                     nb_safe_actions += 1
             action_log.append(action)
-            q_log.append(action_info['mean'] if p.agent_par['ensemble'] else action_info['q_values'])
-            cv_log.append(action_info['coefficient_of_variation'] if p.agent_par['ensemble'] else action_info['q_values']*0)
+            q_log.append(action_info['mean'] if p.agent_par['model'] in ["bnn", "ae"] else action_info['q_values'])
+            cv_log.append(action_info['coefficient_of_variation'] if p.agent_par['model'] in ["bnn", "ae"] else action_info['q_values']*0)
             v_log.append(env.speeds[0, 0])
 
         f1 = plt.figure(1)
@@ -365,13 +370,19 @@ elif case == "fast_overtaking":
         ax1.plot(cv_log[:, 2], label='$\dot{v}_{x,0} = -1$')
         ax1.plot(cv_log[:, 3], label='$\dot{v}_{x,0} = -4$')
         ax1.legend(loc='upper left')
-        ax1.axis([0, 7, 0, 0.02])
+        if p.agent_par["model"] == 'bnn':
+            ax1.axis([0, 7, 0, 0.02])
+        else:
+            ax1.axis([0, 7, 0, 3])
         ax1.set_xlabel("Time (s)")
         ax1.set_ylabel("Uncertainty, $c_\mathrm{v}$")
         ax1.axhline(y=safety_threshold, color='k', linestyle='--')
         y_height = safety_threshold
         ax1.text(-0.7, y_height, "$c_\mathrm{v}^\mathrm{safe}$", rotation=0)
-        ax1.set_yticks([0, 0.01, 0.02])
+        if p.agent_par["model"] == 'bnn':
+            ax1.set_yticks([0, 0.01, 0.02])
+        else:
+            ax1.set_yticks([0, 1.5, 3])
         ax1.spines['right'].set_visible(False)
         ax1.spines['top'].set_visible(False)
 
@@ -488,7 +499,7 @@ elif case == "standstill":
             )
             cv_log.append(
                 action_info["coefficient_of_variation"]
-                if p.agent_par["model"] == "bnn"
+                if p.agent_par["model"] in ["bnn", 'ae']
                 else action_info["q_values"] * 0
             )
             v_log.append(env.speeds[0, 0])
@@ -514,13 +525,19 @@ elif case == "standstill":
         ax1.plot(cv_log[:, 2], label="$\dot{v}_{x,0} = -1$")
         ax1.plot(cv_log[:, 3], label="$\dot{v}_{x,0} = -4$")
         ax1.legend(loc="upper left")
-        ax1.axis([0, 10, 0, 0.02])
+        if p.agent_par["model"] == 'bnn':
+            ax1.axis([0, 10, 0, 0.02])
+        else:
+            ax1.axis([0, 10, 0, 2])
         ax1.set_xlabel("Time (s)")
         ax1.set_ylabel("Uncertainty, $c_\mathrm{v}$")
         ax1.axhline(y=safety_threshold, color="k", linestyle="--")
         y_height = safety_threshold
         ax1.text(-0.7, y_height, "$c_\mathrm{v}^\mathrm{safe}$", rotation=0)
-        ax1.set_yticks([0, 0.01, 0.02])
+        if p.agent_par["model"] == 'bnn':
+            ax1.set_yticks([0, 0.01, 0.02])
+        else:
+            ax1.set_yticks([0, 1, 2])
         ax1.spines["right"].set_visible(False)
         ax1.spines["top"].set_visible(False)
 

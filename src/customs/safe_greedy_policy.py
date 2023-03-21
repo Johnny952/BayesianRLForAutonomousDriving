@@ -58,3 +58,23 @@ class SafeGreedyPolicy(GreedyQPolicy):
         config = super(SafeGreedyPolicy, self).get_config()
         config['type'] = self.policy_type
         return config
+
+
+class SimpleSafeGreedyPolicy(GreedyQPolicy):
+    def __init__(self, safety_threshold=None, safe_action=None):
+        super(SimpleSafeGreedyPolicy, self).__init__()
+        self.custom = True
+        self.safety_threshold = safety_threshold
+        self.safe_action = safe_action
+        if self.safety_threshold is not None:
+            assert(safe_action is not None)
+
+    def select_action(self, q_values, uncertainties):
+        act = np.argmax(q_values)
+        if self.safety_threshold is None:
+            return act, {}
+        else:
+            if uncertainties[act] > self.safety_threshold:  # No action is considered safe - use fallback action
+                return self.safe_action, {'safe_action': True}
+            else:
+                return act, {'safe_action': False}
