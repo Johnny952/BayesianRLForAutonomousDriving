@@ -63,6 +63,13 @@ def read_file(path, unc_normalized=True):
     uncertainty_up = np.percentile(uncertainty, PERCENTILE_UP, axis=1)
     uncertainty_low = np.percentile(uncertainty, PERCENTILE_DOWN, axis=1)
     uncertainty_std = np.std(uncertainty, axis=1)
+    print(path)
+    print(uncertainty.shape)
+    print(uncertainty_mean.shape)
+    print(uncertainty_up.shape)
+    print(uncertainty_low.shape)
+    print(uncertainty_std.shape)
+    print("")
 
     collision_rate = np.array(collision_rate, dtype=np.float16)
     collision_speed = np.array(collision_speed, dtype=np.float16)
