@@ -23,18 +23,11 @@ def read_test(path):
     return np.array(thresholds), np.array(rewards), np.array(collision_rates)
 
 
-def read_file(path):
+def read_file(path, unc_normalized=True):
     steps = []
-
     uncertainty = []
-    uncertainty_up = []
-    uncertainty_low = []
-    uncertainty_std = []
-
     collision_rate = []
-
     collision_speed = []
-
     rewards = []
     with h5py.File(path, "r") as f:
         for step_key, step in f.items():
@@ -44,11 +37,8 @@ def read_file(path):
 
             total_steps = np.sum(nb_steps)
             unc = np.abs(unc) / total_steps
-            
-            uncertainty.append(np.mean(unc))
-            uncertainty_up.append(np.percentile(unc, PERCENTILE_UP))
-            uncertainty_low.append(np.percentile(unc, PERCENTILE_DOWN))
-            uncertainty_std.append(np.std(unc))
+
+            uncertainty.append(unc)
             
             # rew / np.sum(nb_steps)
             norm_r = rew / nb_steps
@@ -62,12 +52,18 @@ def read_file(path):
                 collision_speed.append(0)
             else:
                 collision_speed.append(np.mean(coll_s))
-    
+
     steps = np.array(steps)
     uncertainty = (np.array(uncertainty, dtype=np.float16) + EPSILON)
-    uncertainty_up = np.array(uncertainty_up, dtype=np.float16)
-    uncertainty_low = np.array(uncertainty_low, dtype=np.float16)
-    uncertainty_std = np.array(uncertainty_std, dtype=np.float16)
+
+    if unc_normalized and np.max(uncertainty) != np.min(uncertainty):
+        uncertainty = (uncertainty - np.min(uncertainty)) / (np.max(uncertainty) - np.min(uncertainty) + EPSILON)
+
+    uncertainty_mean = np.mean(uncertainty, axis=1)
+    uncertainty_up = np.percentile(uncertainty, PERCENTILE_UP, axis=1)
+    uncertainty_low = np.percentile(uncertainty, PERCENTILE_DOWN, axis=1)
+    uncertainty_std = np.std(uncertainty, axis=1)
+
     collision_rate = np.array(collision_rate, dtype=np.float16)
     collision_speed = np.array(collision_speed, dtype=np.float16)
     rewards = np.array(rewards, dtype=np.float16)
@@ -82,7 +78,7 @@ def read_file(path):
     collision_speed = collision_speed[arr1inds]
     rewards = rewards[arr1inds]
 
-    return steps, (uncertainty, uncertainty_up, uncertainty_low, uncertainty_std), (collision_rate, collision_speed), rewards
+    return steps, (uncertainty_mean, uncertainty_up, uncertainty_low, uncertainty_std), (collision_rate, collision_speed), rewards
 
 if __name__ == "__main__":
     models = [
@@ -224,7 +220,6 @@ if __name__ == "__main__":
     # plt.ylim((0,0.1))
     plt.yscale('log')
     plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0), useMathText=True)
-    
 
     # Collision rate
     ax3 = plt.subplot(223, sharex = ax2)

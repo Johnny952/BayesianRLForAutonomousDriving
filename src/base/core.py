@@ -363,7 +363,7 @@ class Agent(object):
 
                 action, action_info = self.forward(observation)
                 if "coefficient_of_variation" in action_info:
-                    uncertainty += action_info["coefficient_of_variation"]
+                    uncertainty += action_info["coefficient_of_variation"][action]
                 if self.processor is not None:
                     action = self.processor.process_action(action)
                 reward = 0.
