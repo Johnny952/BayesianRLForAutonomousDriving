@@ -58,6 +58,7 @@ class DQNAEAgent(AbstractDQNAgent):
 
         # Counter
         self.backward_nb = 0
+        self.backward_ae_nb = 0
         self.forward_nb = 0
 
     def get_config(self):
@@ -240,9 +241,11 @@ class DQNAEAgent(AbstractDQNAgent):
                 auto_loss['loss'].backward()
                 self.autoencoder_optimizer.step()
 
-            if self.backward_nb % 1000 == 0:
-                tock = timer()
-                wandb.log({'Q Loss': loss, 'Auto Loss': auto_loss['loss'], 'Obs Loss': auto_loss['Obs Loss'], 'Act Loss': auto_loss['Act Loss'], 'Prob Loss': auto_loss['Prob Loss'], 'Back time': (tock - tick)})
+                if self.backward_ae_nb % 1000 == 0:
+                    tock = timer()
+                    wandb.log({'Q Loss': loss, 'Auto Loss': auto_loss['loss'], 'Obs Loss': auto_loss['Obs Loss'], 'Act Loss': auto_loss['Act Loss'], 'Prob Loss': auto_loss['Prob Loss'], 'Back time': (tock - tick)})
+
+                self.backward_ae_nb += 1
 
         if self.target_model_update >= 1 and self.step % self.target_model_update == 0:
             self.target_model = hard_target_model_updates(self.target_model, self.model)
