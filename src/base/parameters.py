@@ -24,7 +24,7 @@ agent_par["cnn"] = True   # CNN or MLP
 agent_par["nb_conv_layers"] = 2
 agent_par["nb_conv_filters"] = 32
 agent_par["nb_hidden_fc_layers"] = 2
-agent_par["nb_hidden_neurons"] = 128
+agent_par["nb_hidden_neurons"] = 64
 
 agent_par["gamma"] = 0.99   # Discount factor
 agent_par["learning_rate"] = 0.0005
@@ -44,22 +44,22 @@ agent_par["tensorboard_log"] = "../logs/"
 
 
 agent_par["device"] = 'cuda'
-agent_par["model"] = 'bnn' # bnn or ae
+agent_par["model"] = 'ae' # bnn or ae
 agent_par["prior_mu"] = 0
 agent_par["prior_sigma"] = 1
 agent_par["complexity_kld_weight"] = 10
 agent_par["sample_forward"] = 10
 agent_par["sample_backward"] = 1
 
-agent_par["obs_encoder_arc"] = [128, 64]
-agent_par["act_encoder_arc"] = [16, 32]
-agent_par["shared_encoder_arc"] = [256]
-agent_par["obs_decoder_arc"] = [64, 128]
-agent_par["act_decoder_arc"] = [32, 16]
-agent_par["shared_decoder_arc"] = [256]
-agent_par["covar_decoder_arc"] = [256, 512]
+agent_par["obs_encoder_arc"] = [64, 32]
+agent_par["act_encoder_arc"] = [8, 16]
+agent_par["shared_encoder_arc"] = [16]
+agent_par["obs_decoder_arc"] = [32, 64]
+agent_par["act_decoder_arc"] = [16, 8]
+agent_par["shared_decoder_arc"] = [16]
+agent_par["covar_decoder_arc"] = [32, 64]
 agent_par["latent_dim"] = 8
 agent_par["act_loss_weight"] = 1/ 2.3
 agent_par["obs_loss_weight"] = 1 / 0.16
 agent_par["prob_loss_weight"] = 1
-agent_par["update_ae_each"] = 3
+agent_par["update_ae_each"] = 5
