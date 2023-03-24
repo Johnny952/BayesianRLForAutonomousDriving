@@ -920,7 +920,7 @@ class NetworkAE(nn.Module):
             nn.Linear(covar_decoder_arc[-1], self.covar_dim),
             nn.Softplus(),
         )
-        self.eps_covar = torch.diag_embed(torch.ones(self.covar_dim)).to(self.device) * 1e-10
+        # self.eps_covar = torch.diag_embed(torch.ones(self.covar_dim)).to(self.device) * 1e-10
 
         self.act_mu = nn.Linear(act_decoder_arc[-1], nb_actions)
 
