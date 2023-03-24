@@ -920,6 +920,7 @@ class NetworkAE(nn.Module):
             nn.Linear(covar_decoder_arc[-1], self.covar_dim),
             nn.Softplus(),
         )
+        self.eps_covar = torch.diag_embed(torch.ones(self.covar_dim)).to(self.device) * 1e-10
 
         self.act_mu = nn.Linear(act_decoder_arc[-1], nb_actions)
 
@@ -954,9 +955,9 @@ class NetworkAE(nn.Module):
         one_hot_act = nn.functional.one_hot(act.squeeze(dim=1).long(), num_classes=self.nb_actions)
         target_ = torch.cat((torch.flatten(obs, start_dim=1), one_hot_act), dim=-1)
         mu = torch.cat((obs_mu, act_mu), dim=-1)
-        distribution = torch.distributions.multivariate_normal.MultivariateNormal(mu, covar)
-        log_prob = distribution.log_prob(target_).sum()
-        return -torch.exp(log_prob / 10000)
+        distribution = torch.distributions.multivariate_normal.MultivariateNormal(mu, covar) # + self.eps_covar
+        log_prob = distribution.log_prob(target_ / 10000)
+        return -torch.exp(log_prob).sum()
 
     def loss_function(self, *args, **kwargs) -> dict:
         obs_mu = args[0]
