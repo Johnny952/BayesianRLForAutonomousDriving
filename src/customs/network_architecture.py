@@ -949,15 +949,15 @@ class NetworkAE(nn.Module):
 
     def log_prob(self, obs, act):
         obs_mu, act_mu, covar = self(obs, act)[:3]
-        return -self.log_prob_loss(obs_mu, obs, act_mu, act, covar)
+        return torch.exp(-self.log_prob_loss(obs_mu, obs, act_mu, act, covar))
 
     def log_prob_loss(self, obs_mu, obs, act_mu, act, covar):
         one_hot_act = nn.functional.one_hot(act.squeeze(dim=1).long(), num_classes=self.nb_actions)
         target_ = torch.cat((torch.flatten(obs, start_dim=1), one_hot_act), dim=-1)
         mu = torch.cat((obs_mu, act_mu), dim=-1)
         distribution = torch.distributions.multivariate_normal.MultivariateNormal(mu, covar) # + self.eps_covar
-        log_prob = distribution.log_prob(target_ / 10000)
-        return -torch.exp(log_prob).sum()
+        log_prob = distribution.log_prob(target_ / 10000).sum()
+        return -log_prob
 
     def loss_function(self, *args, **kwargs) -> dict:
         obs_mu = args[0]
