@@ -43,13 +43,16 @@ rcParams['pdf.fonttype'] = 42   # To avoid Type 3 fonts in figures
 rcParams['ps.fonttype'] = 42
 
 """ Options: """
-filepath = '../logs/rpf_train_agent_20230127_221001_this/'
-agent_name = '4950088'
-case = 'standstill'   # 'rerun_test_scenarios', 'fast_overtaking', 'standstill'
-use_ensemble_test_policy = True
-safety_threshold = 0.02   # Only used if ensemble test policy is chosen0.02
+filepath = '../logs/train_agent_20230323_235219_rpf_6M_v3/'
+name = 'dqn'
+agent_name = '5950033'
+case = 'fast_overtaking'   # 'rerun_test_scenarios', 'fast_overtaking', 'standstill'
+use_ensemble_test_policy = False
+safety_threshold = 0.03   # Only used if ensemble test policy is chosen 0.02
 save_video = True
 """ End options """
+
+label = 'U' if use_ensemble_test_policy else 'NU'
 
 # These import statements need to come after the choice of which agent that should be used.
 sys.path.insert(0, filepath + 'src/')
@@ -209,7 +212,7 @@ elif case == 'fast_overtaking':
         traci.vehicle.setSpeed('veh3', 15)
         traci.vehicle.setSpeed('veh4', 15)
         if save_video:
-            video_folder = "../videos/fast_overtaking___" + filepath[8:-1]
+            video_folder = f"../videos/fast_overtaking___{name}__{label}__{filepath[8:-1]}"
             if not os.path.isdir(video_folder):
                 os.mkdir(video_folder)
                 os.mkdir(video_folder + "/images")
@@ -271,7 +274,7 @@ elif case == 'fast_overtaking':
         ax1_.legend(loc='upper right')
 
         plt.tight_layout()
-        f1.savefig('../videos/g1.png')
+        f1.savefig(f'../videos/{name}-{label}-g1.png')
         # f1.show()
         plt.close('all')
 
@@ -339,7 +342,7 @@ elif case == 'standstill':
         traci.vehicle.setSpeed('veh5', 15)
         traci.vehicle.setSpeed('veh6', 15)
         if save_video:
-            video_folder = "../videos/standstill___" + filepath[8:-1]
+            video_folder = f"../videos/standstill___{name}__{label}__{filepath[8:-1]}"
             if not os.path.isdir(video_folder):
                 os.mkdir(video_folder)
                 os.mkdir(video_folder + "/images")
@@ -379,7 +382,7 @@ elif case == 'standstill':
         for action in range(0, np.shape(q_log)[1]):
             ax0.plot(q_log[:, action], label=str(action))
         ax0.legend()
-        f0.savefig('../videos/f0.png')
+        f0.savefig(f'../videos/{name}-{label}-f0.png')
         # f0.show()
 
         f1 = plt.figure(1)
@@ -411,13 +414,13 @@ elif case == 'standstill':
         ax1_.legend(loc='upper right')
 
         plt.tight_layout()
-        f1.savefig('../videos/f1.png')
+        f1.savefig(f'../videos/{name}-{label}-f1.png')
         # f1.show()
 
         f2 = plt.figure(2)
         ax2 = plt.gca()
         ax2.plot(v_log)
-        f2.savefig('../videos/f2.png')
+        f2.savefig(f'../videos/{name}-{label}-f2.png')
         # f2.show()
         plt.close('all')
 

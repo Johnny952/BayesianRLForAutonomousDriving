@@ -29,16 +29,48 @@ def read_file(path, unc_normalized=True):
     collision_rate = []
     collision_speed = []
     rewards = []
+
+    max_unc = -1e10
+    min_unc = 1e10
+    mean_max = -1e10
+    mean_min = 1e10
+    with h5py.File(path, "r") as f:
+        for step_key, step in f.items():
+            unc, nb_steps = step["uncertainties"][()], step["steps"][()]
+            total_steps = np.sum(nb_steps)
+            unc = unc / total_steps
+            max_ = np.max(unc)
+            min_ = np.min(unc)
+            mean_ = np.mean(unc)
+            if max_ > max_unc:
+                max_unc = max_
+            if min_ < min_unc:
+                min_unc = min_
+            if mean_ > mean_max:
+                mean_max = mean_
+            if mean_ < mean_min:
+                mean_min = mean_
+
+    uncertainty_mean = []
+    uncertainty_up = []
+    uncertainty_low = []
+    uncertainty_std = []
     with h5py.File(path, "r") as f:
         for step_key, step in f.items():
             steps.append(int(step_key))
 
             unc, rew, col, col_speed, nb_steps = step["uncertainties"][()], step["reward"][()], step["collision"][()], step["collision_speed"][()], step["steps"][()]
-
             total_steps = np.sum(nb_steps)
-            unc = np.abs(unc) / total_steps
+            unc = unc / total_steps
+
+            if unc_normalized and mean_max != mean_max:
+                unc = (unc - mean_max) / (mean_max - mean_max + EPSILON)
 
             uncertainty.append(unc)
+            uncertainty_mean.append(np.mean(unc))
+            uncertainty_up.append(np.percentile(unc, PERCENTILE_UP))
+            uncertainty_low.append(np.percentile(unc, PERCENTILE_DOWN))
+            uncertainty_std.append(np.std(unc))
             
             # rew / np.sum(nb_steps)
             norm_r = rew / nb_steps
@@ -54,22 +86,10 @@ def read_file(path, unc_normalized=True):
                 collision_speed.append(np.mean(coll_s))
 
     steps = np.array(steps)
-    uncertainty = (np.array(uncertainty, dtype=np.float16) + EPSILON)
-
-    if unc_normalized and np.max(uncertainty) != np.min(uncertainty):
-        uncertainty = (uncertainty - np.min(uncertainty)) / (np.max(uncertainty) - np.min(uncertainty) + EPSILON)
-
-    uncertainty_mean = np.mean(uncertainty, axis=1)
-    uncertainty_up = np.percentile(uncertainty, PERCENTILE_UP, axis=1)
-    uncertainty_low = np.percentile(uncertainty, PERCENTILE_DOWN, axis=1)
-    uncertainty_std = np.std(uncertainty, axis=1)
-    print(path)
-    print(uncertainty.shape)
-    print(uncertainty_mean.shape)
-    print(uncertainty_up.shape)
-    print(uncertainty_low.shape)
-    print(uncertainty_std.shape)
-    print("")
+    uncertainty_mean = np.array(uncertainty_mean, dtype=np.float16)
+    uncertainty_up = np.array(uncertainty_up, dtype=np.float16)
+    uncertainty_low = np.array(uncertainty_low, dtype=np.float16)
+    uncertainty_std = np.array(uncertainty_std, dtype=np.float16)
 
     collision_rate = np.array(collision_rate, dtype=np.float16)
     collision_speed = np.array(collision_speed, dtype=np.float16)
@@ -77,7 +97,7 @@ def read_file(path, unc_normalized=True):
 
     arr1inds = steps.argsort()
     steps = steps[arr1inds]
-    uncertainty = uncertainty[arr1inds]
+    uncertainty_mean = uncertainty_mean[arr1inds]
     uncertainty_up = uncertainty_up[arr1inds]
     uncertainty_low = uncertainty_low[arr1inds]
     uncertainty_std = uncertainty_std[arr1inds]
@@ -91,6 +111,28 @@ if __name__ == "__main__":
     models = [
         {
             "paths": [
+                # './logs/rpf_train_agent_20230127_221001_this/data.hdf5',
+                # './logs/rpf_train_agent_20230130_210919/data.hdf5',
+                # './logs/rpf_train_agent_20230202_154753/data.hdf5',
+                # './logs/rpf_train_agent_20230204_214216/data.hdf5',
+                # './logs/rpf_train_agent_20230210_195119/data.hdf5',
+                # './logs/rpf_train_agent_20230210_195214/data.hdf5',
+                # './logs/rpf_train_agent_20230213_211943/data.hdf5',
+                # './logs/rpf_train_agent_20230213_211945/data.hdf5',
+                # './logs/rpf_train_agent_20230217_173810/data.hdf5',
+                './logs/train_agent_20230323_235219_rpf_6M_v3/data.hdf5',
+            ],
+            'multiple_test': {
+                'rerun_test_scenarios': './logs/train_agent_20230323_235219_rpf_6M_v3/rerun_test_scenarios.csv',
+                'standstill': None,
+                'fast_overtaking': None,
+            },
+            "name": "Ensemble RPF DQN",
+            "show_uncertainty": True,
+            "color": "red",
+        },
+        {
+            "paths": [
                 # './logs/dqn_train_agent_20230127_221037/data.hdf5',
                 # './logs/dqn_train_agent_20230130_210827/data.hdf5',
                 # './logs/dqn_train_agent_20230131_212058/data.hdf5',
@@ -99,7 +141,7 @@ if __name__ == "__main__":
                 # './logs/dqn_train_agent_20230204_214252/data.hdf5',
                 # './logs/dqn_train_agent_20230205_230839/data.hdf5',
                 # './logs/dqn_train_agent_20230207_031945_this/data.hdf5',
-                './logs/train_agent_20230313_212418_dqn_6M/data.hdf5',
+                './logs/train_agent_20230323_235314_dqn_6M_v3/data.hdf5',
             ],
             'multiple_test': {
                 'rerun_test_scenarios': None,
@@ -112,36 +154,14 @@ if __name__ == "__main__":
         },
         {
             "paths": [
-                # './logs/rpf_train_agent_20230127_221001_this/data.hdf5',
-                # './logs/rpf_train_agent_20230130_210919/data.hdf5',
-                # './logs/rpf_train_agent_20230202_154753/data.hdf5',
-                # './logs/rpf_train_agent_20230204_214216/data.hdf5',
-                # './logs/rpf_train_agent_20230210_195119/data.hdf5',
-                # './logs/rpf_train_agent_20230210_195214/data.hdf5',
-                # './logs/rpf_train_agent_20230213_211943/data.hdf5',
-                # './logs/rpf_train_agent_20230213_211945/data.hdf5',
-                # './logs/rpf_train_agent_20230217_173810/data.hdf5',
-                './logs/train_agent_20230310_171328_rpf_6M/data.hdf5',
-            ],
-            'multiple_test': {
-                'rerun_test_scenarios': './logs/train_agent_20230310_171328_rpf_6M/rerun_test_scenarios.csv',
-                'standstill': None,
-                'fast_overtaking': None,
-            },
-            "name": "Ensemble RPF DQN",
-            "show_uncertainty": True,
-            "color": "red",
-        },
-        {
-            "paths": [
                 # './logs/bnn_train_agent_20230210_195642/data.hdf5',
                 # './logs/train_agent_20230220_205020/data.hdf5',
                 # './logs/train_agent_20230220_205123/data.hdf5',
                 # './logs/train_agent_20230222_234907/data.hdf5',
-                './logs/train_agent_20230310_171432_bnn_6M/data.hdf5',
+                './logs/train_agent_20230325_141011_bnn_6M_v3/data.hdf5',
             ],
             'multiple_test': {
-                'rerun_test_scenarios': './logs/train_agent_20230310_171432_bnn_6M/rerun_test_scenarios.csv',
+                'rerun_test_scenarios': './logs/train_agent_20230325_141011_bnn_6M_v3/rerun_test_scenarios.csv',
                 'standstill': None,
                 'fast_overtaking': None,
             },
@@ -149,23 +169,23 @@ if __name__ == "__main__":
             "show_uncertainty": True,
             "color": "green",
         },
-        {
-            "paths": [
-                # './logs/bnn_train_agent_20230210_195642/data.hdf5',
-                # './logs/train_agent_20230220_205020/data.hdf5',
-                # './logs/train_agent_20230220_205123/data.hdf5',
-                # './logs/train_agent_20230222_234907/data.hdf5',
-                './logs/train_agent_20230317_170246_ae_6M/data.hdf5',
-            ],
-            'multiple_test': {
-                'rerun_test_scenarios': './logs/train_agent_20230317_170246_ae_6M/rerun_test_scenarios.csv',
-                'standstill': None,
-                'fast_overtaking': None,
-            },
-            "name": "AE DQN",
-            "show_uncertainty": True,
-            "color": "blue",
-        },
+        # {
+        #     "paths": [
+        #         # './logs/bnn_train_agent_20230210_195642/data.hdf5',
+        #         # './logs/train_agent_20230220_205020/data.hdf5',
+        #         # './logs/train_agent_20230220_205123/data.hdf5',
+        #         # './logs/train_agent_20230222_234907/data.hdf5',
+        #         './logs/train_agent_20230317_170246_ae_6M/data.hdf5',
+        #     ],
+        #     'multiple_test': {
+        #         'rerun_test_scenarios': './logs/train_agent_20230317_170246_ae_6M/rerun_test_scenarios.csv',
+        #         'standstill': None,
+        #         'fast_overtaking': None,
+        #     },
+        #     "name": "AE DQN",
+        #     "show_uncertainty": True,
+        #     "color": "blue",
+        # },
     ]
     MODEL_NB = 0
 
@@ -261,29 +281,29 @@ if __name__ == "__main__":
     plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0), useMathText=True)
 
     # plt.show()
-    plt.savefig('./logs/fig.png')
+    plt.savefig('./videos/fig.png')
     plt.close()
     
     # Rewards vs collision rate
-    fig, ax = plt.subplots()
-    fig.set_figheight(8)
-    fig.set_figwidth(13)
-    index = -1
-    scenario = 'rerun_test_scenarios'
-    for model in models:
-        if model['multiple_test'][scenario] is not None:
-            thresholds, rewards, collision_rates = read_test(model['multiple_test'][scenario])
-            idc = np.argsort(collision_rates)
-            sorted_rates, sorted_rewards = collision_rates[idc], rewards[idc]
-            # filtered_rewards = gaussian_filter1d(sorted_rewards.astype(np.float32), sigma=0.9)
-            # plt.plot(sorted_rates, filtered_rewards, color=model["color"], label="{}".format(model["name"]), alpha=1)
-            ax.plot(sorted_rates, sorted_rewards, color=model["color"], label=model["name"], alpha=1)
-    # ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
-    plt.gca().xaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0))
-    plt.xlim(left=0)
-    plt.ylim(bottom=0)
-    plt.xlabel('Collision Rate', fontsize=14)
-    plt.ylabel('Reward', fontsize=14)
-    plt.legend()
-    plt.grid()
-    plt.show()
+    # fig, ax = plt.subplots()
+    # fig.set_figheight(8)
+    # fig.set_figwidth(13)
+    # index = -1
+    # scenario = 'rerun_test_scenarios'
+    # for model in models:
+    #     if model['multiple_test'][scenario] is not None:
+    #         thresholds, rewards, collision_rates = read_test(model['multiple_test'][scenario])
+    #         idc = np.argsort(collision_rates)
+    #         sorted_rates, sorted_rewards = collision_rates[idc], rewards[idc]
+    #         # filtered_rewards = gaussian_filter1d(sorted_rewards.astype(np.float32), sigma=0.9)
+    #         # plt.plot(sorted_rates, filtered_rewards, color=model["color"], label="{}".format(model["name"]), alpha=1)
+    #         ax.plot(sorted_rates, sorted_rewards, color=model["color"], label=model["name"], alpha=1)
+    # # ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+    # plt.gca().xaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0))
+    # plt.xlim(left=0)
+    # plt.ylim(bottom=0)
+    # plt.xlabel('Collision Rate', fontsize=14)
+    # plt.ylabel('Reward', fontsize=14)
+    # plt.legend()
+    # plt.grid()
+    # plt.show()
