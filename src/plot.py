@@ -285,25 +285,25 @@ if __name__ == "__main__":
     plt.close()
     
     # Rewards vs collision rate
-    # fig, ax = plt.subplots()
-    # fig.set_figheight(8)
-    # fig.set_figwidth(13)
-    # index = -1
-    # scenario = 'rerun_test_scenarios'
-    # for model in models:
-    #     if model['multiple_test'][scenario] is not None:
-    #         thresholds, rewards, collision_rates = read_test(model['multiple_test'][scenario])
-    #         idc = np.argsort(collision_rates)
-    #         sorted_rates, sorted_rewards = collision_rates[idc], rewards[idc]
-    #         # filtered_rewards = gaussian_filter1d(sorted_rewards.astype(np.float32), sigma=0.9)
-    #         # plt.plot(sorted_rates, filtered_rewards, color=model["color"], label="{}".format(model["name"]), alpha=1)
-    #         ax.plot(sorted_rates, sorted_rewards, color=model["color"], label=model["name"], alpha=1)
-    # # ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
-    # plt.gca().xaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0))
-    # plt.xlim(left=0)
-    # plt.ylim(bottom=0)
-    # plt.xlabel('Collision Rate', fontsize=14)
-    # plt.ylabel('Reward', fontsize=14)
-    # plt.legend()
-    # plt.grid()
-    # plt.show()
+    fig, ax = plt.subplots()
+    fig.set_figheight(8)
+    fig.set_figwidth(13)
+    index = -1
+    scenario = 'rerun_test_scenarios'
+    for model in models:
+        if model['multiple_test'][scenario] is not None:
+            thresholds, rewards, collision_rates = read_test(model['multiple_test'][scenario])
+            idc = np.argsort(collision_rates)
+            sorted_rates, sorted_rewards = collision_rates[idc], rewards[idc]
+            # filtered_rewards = gaussian_filter1d(sorted_rewards.astype(np.float32), sigma=0.9)
+            # plt.plot(sorted_rates, filtered_rewards, color=model["color"], label="{}".format(model["name"]), alpha=1)
+            ax.plot(sorted_rates, sorted_rewards, color=model["color"], label=model["name"], alpha=1)
+    # ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+    plt.gca().xaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0))
+    plt.xlim(left=0)
+    plt.ylim(bottom=0)
+    plt.xlabel('Collision Rate', fontsize=14)
+    plt.ylabel('Reward', fontsize=14)
+    plt.legend()
+    plt.grid()
+    plt.show()

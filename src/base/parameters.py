@@ -44,7 +44,7 @@ agent_par["tensorboard_log"] = "../logs/"
 
 
 agent_par["device"] = 'cuda'
-agent_par["model"] = 'ae' # bnn or ae
+agent_par["model"] = 'bnn' # bnn or ae
 agent_par["prior_mu"] = 0
 agent_par["prior_sigma"] = 0.1
 agent_par["complexity_kld_weight"] = 10

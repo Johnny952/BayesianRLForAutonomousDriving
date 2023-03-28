@@ -48,8 +48,8 @@ case = 'rerun_test_scenarios'   # 'rerun_test_scenarios', 'fast_overtaking', 'st
 use_ensemble_test_policy = True
 safety_threshold = 0.03   # Only used if ensemble test policy is chosen0.02
 
-thresh_range = [0.01, 0.05]
-thresh_steps = 50
+thresh_range = [0.01, 0.1]
+thresh_steps = 100
 
 # test scenarios
 nb_vehicles = 30
