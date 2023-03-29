@@ -47,7 +47,7 @@ agent_par["device"] = 'cuda'
 agent_par["model"] = 'bnn' # bnn or ae
 agent_par["prior_mu"] = 0
 agent_par["prior_sigma"] = 0.1
-agent_par["complexity_kld_weight"] = 10
+agent_par["complexity_kld_weight"] = 100
 agent_par["sample_forward"] = 10
 agent_par["sample_backward"] = 1
 
