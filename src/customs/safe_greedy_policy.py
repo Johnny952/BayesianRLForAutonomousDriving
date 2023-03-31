@@ -74,7 +74,7 @@ class SimpleSafeGreedyPolicy(GreedyQPolicy):
         if self.safety_threshold is None:
             return act, {}
         else:
-            if uncertainties[act] > self.safety_threshold:  # No action is considered safe - use fallback action
+            if np.abs(uncertainties[act]) > np.abs(self.safety_threshold):  # No action is considered safe - use fallback action
                 return self.safe_action, {'safe_action': True}
             else:
                 return act, {'safe_action': False}

@@ -46,12 +46,15 @@ rcParams["ps.fonttype"] = 42
 
 """ Options: """
 filepath = "../logs/train_agent_20230317_170246_ae_6M/"
+name = 'ae'
 agent_name = "5950041"
-case = "fast_overtaking"  # 'rerun_test_scenarios', 'fast_overtaking', 'standstill'
-safety_threshold = 0.7  # Only used if ensemble test policy is chosen BNN: 0.0045, AE: 0.7
+case = "standstill"  # 'rerun_test_scenarios', 'fast_overtaking', 'standstill'
+safety_threshold = 150  # Only used if ensemble test policy is chosen BNN: 0.0045, AE: 0.7
 save_video = True
-use_safe_action = True
+use_safe_action = False
 """ End options """
+
+label = 'U' if use_safe_action else 'NU'
 
 # These import statements need to come after the choice of Falsewhich agent that should be used.
 sys.path.insert(0, filepath + "src/")
@@ -324,7 +327,7 @@ elif case == "fast_overtaking":
         traci.vehicle.setSpeed("veh3", 15)
         traci.vehicle.setSpeed("veh4", 15)
         if save_video:
-            video_folder = "../videos/fast_overtaking___" + filepath[8:-1]
+            video_folder = f"../videos/fast_overtaking___{name}__{label}__{filepath[8:-1]}"
             if not os.path.isdir(video_folder):
                 os.mkdir(video_folder)
                 os.mkdir(video_folder + "/images")
@@ -341,6 +344,7 @@ elif case == "fast_overtaking":
         q_log = []
         cv_log = []
         v_log = []
+        unc = []
         nb_safe_actions = 0
         for i in range(8):
             if save_video:
@@ -357,6 +361,11 @@ elif case == "fast_overtaking":
             action_log.append(action)
             q_log.append(action_info['mean'] if p.agent_par['model'] in ["bnn", "ae"] else action_info['q_values'])
             cv_log.append(action_info['coefficient_of_variation'] if p.agent_par['model'] in ["bnn", "ae"] else action_info['q_values']*0)
+            unc.append(
+                action_info["coefficient_of_variation"][action]
+                if p.agent_par["model"] in ["bnn", 'ae']
+                else 0
+            )
             v_log.append(env.speeds[0, 0])
 
         f1 = plt.figure(1)
@@ -364,25 +373,26 @@ elif case == "fast_overtaking":
         plt.rc('font', size=14)
         ax1 = plt.gca()
         ax1_ = ax1.twinx()
-        cv_log = np.array(cv_log)
+        cv_log = np.abs(np.array(cv_log))
         ax1.plot(cv_log[:, 0], label='$\dot{v}_{x,0} = 0$')
         ax1.plot(cv_log[:, 1], label='$\dot{v}_{x,0} = 1$')
         ax1.plot(cv_log[:, 2], label='$\dot{v}_{x,0} = -1$')
         ax1.plot(cv_log[:, 3], label='$\dot{v}_{x,0} = -4$')
+        ax1.plot(unc, label='action')
         ax1.legend(loc='upper left')
         if p.agent_par["model"] == 'bnn':
             ax1.axis([0, 7, 0, 0.02])
-        else:
-            ax1.axis([0, 7, 0, 3])
+        # else:
+        #     ax1.axis([0, 7, 0, 3])
         ax1.set_xlabel("Time (s)")
         ax1.set_ylabel("Uncertainty, $c_\mathrm{v}$")
-        ax1.axhline(y=safety_threshold, color='k', linestyle='--')
-        y_height = safety_threshold
+        ax1.axhline(y=np.abs(safety_threshold), color='k', linestyle='--')
+        y_height = np.abs(safety_threshold)
         ax1.text(-0.7, y_height, "$c_\mathrm{v}^\mathrm{safe}$", rotation=0)
         if p.agent_par["model"] == 'bnn':
             ax1.set_yticks([0, 0.01, 0.02])
-        else:
-            ax1.set_yticks([0, 1.5, 3])
+        # else:
+        #     ax1.set_yticks([0, 1.5, 3])
         ax1.spines['right'].set_visible(False)
         ax1.spines['top'].set_visible(False)
 
@@ -395,7 +405,7 @@ elif case == "fast_overtaking":
         ax1_.legend(loc='upper right')
 
         plt.tight_layout()
-        f1.savefig('../videos/g1.png')
+        f1.savefig(f'../videos/{name}-{label}-g1.png')
         # f1.show()
         plt.close("all")
 
@@ -461,7 +471,7 @@ elif case == "standstill":
         traci.vehicle.setSpeed("veh5", 15)
         traci.vehicle.setSpeed("veh6", 15)
         if save_video:
-            video_folder = "../videos/standstill___" + filepath[8:-1]
+            video_folder = f"../videos/standstill___{name}__{label}__{filepath[8:-1]}"
             if not os.path.isdir(video_folder):
                 os.mkdir(video_folder)
                 os.mkdir(video_folder + "/images")
@@ -477,6 +487,7 @@ elif case == "standstill":
         action_log = []
         q_log = []
         cv_log = []
+        unc = []
         v_log = []
         nb_safe_actions = 0
         for i in range(15):
@@ -494,13 +505,18 @@ elif case == "standstill":
             action_log.append(action)
             q_log.append(
                 action_info["mean"]
-                if p.agent_par["ensemble"]
+                if p.agent_par["model"] in ["bnn", 'ae']
                 else action_info["q_values"]
             )
             cv_log.append(
                 action_info["coefficient_of_variation"]
                 if p.agent_par["model"] in ["bnn", 'ae']
                 else action_info["q_values"] * 0
+            )
+            unc.append(
+                action_info["coefficient_of_variation"][action]
+                if p.agent_par["model"] in ["bnn", 'ae']
+                else 0
             )
             v_log.append(env.speeds[0, 0])
 
@@ -511,7 +527,7 @@ elif case == "standstill":
         for action in range(0, np.shape(q_log)[1]):
             ax0.plot(q_log[:, action], label=str(action))
         ax0.legend()
-        f0.savefig("../videos/f0.png")
+        f0.savefig(f'../videos/{name}-{label}-f0.png')
         # f0.show()
 
         f1 = plt.figure(1)
@@ -519,25 +535,27 @@ elif case == "standstill":
         plt.rc("font", size=14)
         ax1 = plt.gca()
         ax1_ = ax1.twinx()
-        cv_log = np.array(cv_log)
+        cv_log = np.abs(np.array(cv_log))
+        unc = np.abs(np.array(unc))
         ax1.plot(cv_log[:, 0], label="$\dot{v}_{x,0} = 0$")
         ax1.plot(cv_log[:, 1], label="$\dot{v}_{x,0} = 1$")
         ax1.plot(cv_log[:, 2], label="$\dot{v}_{x,0} = -1$")
         ax1.plot(cv_log[:, 3], label="$\dot{v}_{x,0} = -4$")
+        ax1.plot(unc, label="action")
         ax1.legend(loc="upper left")
         if p.agent_par["model"] == 'bnn':
             ax1.axis([0, 10, 0, 0.02])
-        else:
-            ax1.axis([0, 10, 0, 2])
+        # else:
+        #     ax1.axis([0, 10, 0, 2])
         ax1.set_xlabel("Time (s)")
         ax1.set_ylabel("Uncertainty, $c_\mathrm{v}$")
-        ax1.axhline(y=safety_threshold, color="k", linestyle="--")
-        y_height = safety_threshold
+        ax1.axhline(y=np.abs(safety_threshold), color="k", linestyle="--")
+        y_height = np.abs(safety_threshold)
         ax1.text(-0.7, y_height, "$c_\mathrm{v}^\mathrm{safe}$", rotation=0)
         if p.agent_par["model"] == 'bnn':
             ax1.set_yticks([0, 0.01, 0.02])
-        else:
-            ax1.set_yticks([0, 1, 2])
+        # else:
+        #     ax1.set_yticks([0, 1, 2])
         ax1.spines["right"].set_visible(False)
         ax1.spines["top"].set_visible(False)
 
@@ -550,13 +568,13 @@ elif case == "standstill":
         ax1_.legend(loc="upper right")
 
         plt.tight_layout()
-        f1.savefig("../videos/f1.png")
+        f1.savefig(f'../videos/{name}-{label}-f1.png')
         # f1.show()
 
         f2 = plt.figure(2)
         ax2 = plt.gca()
         ax2.plot(v_log)
-        f2.savefig("../videos/f2.png")
+        f2.savefig(f'../videos/{name}-{label}-f2.png')
         # f2.show()
         plt.close("all")
 

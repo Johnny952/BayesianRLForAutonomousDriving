@@ -44,13 +44,13 @@ rcParams['pdf.fonttype'] = 42   # To avoid Type 3 fonts in figures
 rcParams['ps.fonttype'] = 42
 
 """ Options: """
-filepath = "../logs/train_agent_20230317_170246_ae_6M/"
-agent_name = "5950041"
+filepath = "../logs/train_agent_20230327_142839_ae_6M_v3/"
+agent_name = "5950074"
 case = "rerun_test_scenarios"  # 'rerun_test_scenarios', 'fast_overtaking', 'standstill'
 safety_threshold = 1  # Only used if ensemble test policy is chosen BNN: 0.0045, AE: 0.7
 use_safe_action = True
 
-thresh_range = [0, 3]# BNN: [0, 0.05]
+thresh_range = [-10121, -115]# BNN: [0, 0.05], AE: [-10121, -115], [-9683, -410]
 thresh_steps = 50
 
 # test scenarios

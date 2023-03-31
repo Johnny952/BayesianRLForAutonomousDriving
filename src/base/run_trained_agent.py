@@ -229,6 +229,7 @@ elif case == 'fast_overtaking':
         q_log = []
         cv_log = []
         v_log = []
+        unc = []
         nb_safe_actions = 0
         for i in range(8):
             if save_video:
@@ -244,6 +245,11 @@ elif case == 'fast_overtaking':
             q_log.append(action_info['mean'] if p.agent_par['ensemble'] else action_info['q_values'])
             cv_log.append(action_info['coefficient_of_variation'] if p.agent_par['ensemble'] else action_info['q_values']*0)
             v_log.append(env.speeds[0, 0])
+            unc.append(
+                action_info["coefficient_of_variation"][action]
+                if p.agent_par['ensemble']
+                else 0
+            )
 
         f1 = plt.figure(1)
         f1.set_size_inches(7.5, 4.5)
@@ -255,6 +261,7 @@ elif case == 'fast_overtaking':
         ax1.plot(cv_log[:, 1], label='$\dot{v}_{x,0} = 1$')
         ax1.plot(cv_log[:, 2], label='$\dot{v}_{x,0} = -1$')
         ax1.plot(cv_log[:, 3], label='$\dot{v}_{x,0} = -4$')
+        ax1.plot(unc, label='action')
         ax1.legend(loc='upper left')
         ax1.axis([0, 7, 0, 0.1])
         ax1.set_xlabel("Time (s)")
@@ -359,6 +366,7 @@ elif case == 'standstill':
         q_log = []
         cv_log = []
         v_log = []
+        unc = []
         nb_safe_actions = 0
         for i in range(15):
             if save_video:
@@ -374,6 +382,11 @@ elif case == 'standstill':
             q_log.append(action_info['mean'] if p.agent_par['ensemble'] else action_info['q_values'])
             cv_log.append(action_info['coefficient_of_variation'] if p.agent_par['ensemble'] else action_info['q_values']*0)
             v_log.append(env.speeds[0, 0])
+            unc.append(
+                action_info["coefficient_of_variation"][action]
+                if p.agent_par['ensemble']
+                else 0
+            )
 
         # Plot results
         f0 = plt.figure(0)
@@ -395,6 +408,7 @@ elif case == 'standstill':
         ax1.plot(cv_log[:, 1], label='$\dot{v}_{x,0} = 1$')
         ax1.plot(cv_log[:, 2], label='$\dot{v}_{x,0} = -1$')
         ax1.plot(cv_log[:, 3], label='$\dot{v}_{x,0} = -4$')
+        ax1.plot(unc, label='action')
         ax1.legend(loc='upper left')
         ax1.axis([0, 10, 0, 0.1])
         ax1.set_xlabel("Time (s)")

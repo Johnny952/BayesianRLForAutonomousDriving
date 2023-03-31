@@ -130,7 +130,7 @@ class DQNAEAgent(AbstractDQNAgent):
             for i in range(self.nb_actions):
                 act = torch.Tensor([i]).unsqueeze(dim=0).float().to(self.device)
                 with torch.no_grad():
-                    uncertainty = self.autoencoder.log_prob(obs, act) - 1
+                    uncertainty = self.autoencoder.log_prob(obs, act)
                 uncertainties.append(uncertainty.cpu().numpy())
             if hasattr(self.test_policy, 'custom'):
                 action = self.test_policy.select_action(q_values, uncertainties)[0]

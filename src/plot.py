@@ -23,7 +23,7 @@ def read_test(path):
     return np.array(thresholds), np.array(rewards), np.array(collision_rates)
 
 
-def read_file(path, unc_normalized=True):
+def read_file(path, unc_normalized=True, negative_unc=False):
     steps = []
     uncertainty = []
     collision_rate = []
@@ -39,6 +39,8 @@ def read_file(path, unc_normalized=True):
             unc, nb_steps = step["uncertainties"][()], step["steps"][()]
             total_steps = np.sum(nb_steps)
             unc = unc / total_steps
+            if negative_unc:
+                unc = -unc
             max_ = np.max(unc)
             min_ = np.min(unc)
             mean_ = np.mean(unc)
@@ -55,6 +57,9 @@ def read_file(path, unc_normalized=True):
     uncertainty_up = []
     uncertainty_low = []
     uncertainty_std = []
+    print(min_unc, max_unc)
+    print(mean_min, mean_max)
+    print("")
     with h5py.File(path, "r") as f:
         for step_key, step in f.items():
             steps.append(int(step_key))
@@ -62,9 +67,11 @@ def read_file(path, unc_normalized=True):
             unc, rew, col, col_speed, nb_steps = step["uncertainties"][()], step["reward"][()], step["collision"][()], step["collision_speed"][()], step["steps"][()]
             total_steps = np.sum(nb_steps)
             unc = unc / total_steps
+            if negative_unc:
+                unc = -unc
 
-            if unc_normalized and mean_max != mean_max:
-                unc = (unc - mean_max) / (mean_max - mean_max + EPSILON)
+            if unc_normalized and max_unc != min_unc:
+                unc = (unc - min_unc) / (max_unc - min_unc + EPSILON)
 
             uncertainty.append(unc)
             uncertainty_mean.append(np.mean(unc))
@@ -109,83 +116,87 @@ def read_file(path, unc_normalized=True):
 
 if __name__ == "__main__":
     models = [
-        {
-            "paths": [
-                # './logs/rpf_train_agent_20230127_221001_this/data.hdf5',
-                # './logs/rpf_train_agent_20230130_210919/data.hdf5',
-                # './logs/rpf_train_agent_20230202_154753/data.hdf5',
-                # './logs/rpf_train_agent_20230204_214216/data.hdf5',
-                # './logs/rpf_train_agent_20230210_195119/data.hdf5',
-                # './logs/rpf_train_agent_20230210_195214/data.hdf5',
-                # './logs/rpf_train_agent_20230213_211943/data.hdf5',
-                # './logs/rpf_train_agent_20230213_211945/data.hdf5',
-                # './logs/rpf_train_agent_20230217_173810/data.hdf5',
-                './logs/train_agent_20230323_235219_rpf_6M_v3/data.hdf5',
-            ],
-            'multiple_test': {
-                'rerun_test_scenarios': './logs/train_agent_20230323_235219_rpf_6M_v3/rerun_test_scenarios.csv',
-                'standstill': None,
-                'fast_overtaking': None,
-            },
-            "name": "Ensemble RPF DQN",
-            "show_uncertainty": True,
-            "color": "red",
-        },
-        {
-            "paths": [
-                # './logs/dqn_train_agent_20230127_221037/data.hdf5',
-                # './logs/dqn_train_agent_20230130_210827/data.hdf5',
-                # './logs/dqn_train_agent_20230131_212058/data.hdf5',
-                # './logs/dqn_train_agent_20230201_210132/data.hdf5',
-                # './logs/dqn_train_agent_20230202_154709/data.hdf5',
-                # './logs/dqn_train_agent_20230204_214252/data.hdf5',
-                # './logs/dqn_train_agent_20230205_230839/data.hdf5',
-                # './logs/dqn_train_agent_20230207_031945_this/data.hdf5',
-                './logs/train_agent_20230323_235314_dqn_6M_v3/data.hdf5',
-            ],
-            'multiple_test': {
-                'rerun_test_scenarios': None,
-                'standstill': None,
-                'fast_overtaking': None,
-            },
-            "name": "Standard DQN",
-            "show_uncertainty": False,
-            "color": "blue",
-        },
-        {
-            "paths": [
-                # './logs/bnn_train_agent_20230210_195642/data.hdf5',
-                # './logs/train_agent_20230220_205020/data.hdf5',
-                # './logs/train_agent_20230220_205123/data.hdf5',
-                # './logs/train_agent_20230222_234907/data.hdf5',
-                './logs/train_agent_20230325_141011_bnn_6M_v3/data.hdf5',
-            ],
-            'multiple_test': {
-                'rerun_test_scenarios': './logs/train_agent_20230325_141011_bnn_6M_v3/rerun_test_scenarios.csv',
-                'standstill': None,
-                'fast_overtaking': None,
-            },
-            "name": "BNN DQN",
-            "show_uncertainty": True,
-            "color": "green",
-        },
+        # {
+        #     "paths": [
+        #         # './logs/rpf_train_agent_20230127_221001_this/data.hdf5',
+        #         # './logs/rpf_train_agent_20230130_210919/data.hdf5',
+        #         # './logs/rpf_train_agent_20230202_154753/data.hdf5',
+        #         # './logs/rpf_train_agent_20230204_214216/data.hdf5',
+        #         # './logs/rpf_train_agent_20230210_195119/data.hdf5',
+        #         # './logs/rpf_train_agent_20230210_195214/data.hdf5',
+        #         # './logs/rpf_train_agent_20230213_211943/data.hdf5',
+        #         # './logs/rpf_train_agent_20230213_211945/data.hdf5',
+        #         # './logs/rpf_train_agent_20230217_173810/data.hdf5',
+        #         './logs/train_agent_20230323_235219_rpf_6M_v3/data.hdf5',
+        #     ],
+        #     'multiple_test': {
+        #         'rerun_test_scenarios': './logs/train_agent_20230323_235219_rpf_6M_v3/rerun_test_scenarios.csv',
+        #         'standstill': None,
+        #         'fast_overtaking': None,
+        #     },
+        #     "name": "Ensemble RPF DQN",
+        #     "show_uncertainty": True,
+        #     "negative_uncertainty": False,
+        #     "color": "red",
+        # },
+        # {
+        #     "paths": [
+        #         # './logs/dqn_train_agent_20230127_221037/data.hdf5',
+        #         # './logs/dqn_train_agent_20230130_210827/data.hdf5',
+        #         # './logs/dqn_train_agent_20230131_212058/data.hdf5',
+        #         # './logs/dqn_train_agent_20230201_210132/data.hdf5',
+        #         # './logs/dqn_train_agent_20230202_154709/data.hdf5',
+        #         # './logs/dqn_train_agent_20230204_214252/data.hdf5',
+        #         # './logs/dqn_train_agent_20230205_230839/data.hdf5',
+        #         # './logs/dqn_train_agent_20230207_031945_this/data.hdf5',
+        #         './logs/train_agent_20230323_235314_dqn_6M_v3/data.hdf5',
+        #     ],
+        #     'multiple_test': {
+        #         'rerun_test_scenarios': None,
+        #         'standstill': None,
+        #         'fast_overtaking': None,
+        #     },
+        #     "name": "Standard DQN",
+        #     "show_uncertainty": False,
+        #     "negative_uncertainty": False,
+        #     "color": "blue",
+        # },
         # {
         #     "paths": [
         #         # './logs/bnn_train_agent_20230210_195642/data.hdf5',
         #         # './logs/train_agent_20230220_205020/data.hdf5',
         #         # './logs/train_agent_20230220_205123/data.hdf5',
         #         # './logs/train_agent_20230222_234907/data.hdf5',
-        #         './logs/train_agent_20230317_170246_ae_6M/data.hdf5',
+        #         './logs/train_agent_20230325_141011_bnn_6M_v3/data.hdf5',
         #     ],
         #     'multiple_test': {
-        #         'rerun_test_scenarios': './logs/train_agent_20230317_170246_ae_6M/rerun_test_scenarios.csv',
+        #         'rerun_test_scenarios': './logs/train_agent_20230325_141011_bnn_6M_v3/rerun_test_scenarios.csv',
         #         'standstill': None,
         #         'fast_overtaking': None,
         #     },
-        #     "name": "AE DQN",
+        #     "name": "BNN DQN",
         #     "show_uncertainty": True,
-        #     "color": "blue",
+        #     "negative_uncertainty": False,
+        #     "color": "green",
         # },
+        {
+            "paths": [
+                # './logs/bnn_train_agent_20230210_195642/data.hdf5',
+                # './logs/train_agent_20230220_205020/data.hdf5',
+                # './logs/train_agent_20230220_205123/data.hdf5',
+                # './logs/train_agent_20230222_234907/data.hdf5',
+                './logs/train_agent_20230327_142839_ae_6M_v3/data.hdf5',
+            ],
+            'multiple_test': {
+                'rerun_test_scenarios': None,#'./logs/train_agent_20230327_142839_ae_6M_v3/rerun_test_scenarios.csv',
+                'standstill': None,
+                'fast_overtaking': None,
+            },
+            "name": "AE DQN",
+            "show_uncertainty": True,
+            "negative_uncertainty": True,
+            "color": "green",
+        },
     ]
     MODEL_NB = 0
 
@@ -224,7 +235,7 @@ if __name__ == "__main__":
     ax1 = plt.subplot(221, sharex = ax2)
     for model in models:
         if model["show_uncertainty"]:
-            steps, (uncertainty, uncertainty_up, uncertainty_low, uncertainty_std), _, _ = read_file(model["paths"][MODEL_NB])
+            steps, (uncertainty, uncertainty_up, uncertainty_low, uncertainty_std), _, _ = read_file(model["paths"][MODEL_NB], negative_unc=model["negative_uncertainty"])
             plt.plot(steps, uncertainty, color=model["color"], label="Mean {}".format(model["name"]))
             # plt.fill_between(
             #     steps,
@@ -245,7 +256,7 @@ if __name__ == "__main__":
     plt.xlabel('Traning step', fontsize=14)
     plt.ylabel('Normalized Uncertainty', fontsize=14)
     # plt.ylim((0,0.1))
-    plt.yscale('log')
+    # plt.yscale('log')
     plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0), useMathText=True)
 
     # Collision rate
@@ -306,4 +317,4 @@ if __name__ == "__main__":
     plt.ylabel('Reward', fontsize=14)
     plt.legend()
     plt.grid()
-    plt.show()
+    # plt.show()
