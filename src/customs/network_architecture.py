@@ -869,6 +869,7 @@ class NetworkAE(nn.Module):
         act_loss_weight: float = 1,
         obs_loss_weight: float = 1,
         prob_loss_weight: float = 0.1,
+        min_covar = 0.5,
     ):
         super(NetworkAE, self).__init__()
 
@@ -880,6 +881,7 @@ class NetworkAE(nn.Module):
         self.act_encoder_arc = act_encoder_arc
         self.obs_decoder_arc = obs_decoder_arc
         self.act_decoder_arc = act_decoder_arc
+        self.min_covar = min_covar
 
         self.prob_loss_weight = prob_loss_weight
         self.act_loss_weight = act_loss_weight
@@ -938,7 +940,7 @@ class NetworkAE(nn.Module):
         obs_mu = self.obs_mu(obs)
         act_mu = self.act_mu(act)
 
-        covar = torch.diag_embed(self.covar(x) + 0.5)
+        covar = torch.diag_embed(self.covar(x) + self.min_covar)
         return obs_mu, act_mu, covar
 
     def forward(self, obs, act):
@@ -954,13 +956,17 @@ class NetworkAE(nn.Module):
         one_hot_act = nn.functional.one_hot(act.squeeze(dim=1).long(), num_classes=self.nb_actions)
         target_ = torch.cat((torch.flatten(obs, start_dim=1), one_hot_act), dim=-1)
         mu = torch.cat((obs_mu, act_mu), dim=-1)
-        for i in range(obs_mu.shape[0]):
-            mu_i, covar_i, target_i = mu[i],covar[i], target_[i]
-            distribution = torch.distributions.multivariate_normal.MultivariateNormal(mu_i, covar_i)
-            if i == 0:
-                log_prob = distribution.log_prob(target_i)
-            else:
-                log_prob += distribution.log_prob(target_i)
+        if True:
+            for i in range(obs_mu.shape[0]):
+                mu_i, covar_i, target_i = mu[i],covar[i], target_[i]
+                distribution = torch.distributions.multivariate_normal.MultivariateNormal(mu_i, covar_i)
+                if i == 0:
+                    log_prob = distribution.log_prob(target_i)
+                else:
+                    log_prob += distribution.log_prob(target_i)
+        else:
+            distribution = torch.distributions.multivariate_normal.MultivariateNormal(mu, covar)
+            log_prob = distribution.log_prob(target_)
         return -log_prob
 
     def loss_function(self, *args, **kwargs) -> dict:

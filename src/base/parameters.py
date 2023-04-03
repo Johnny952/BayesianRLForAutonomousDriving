@@ -45,11 +45,13 @@ agent_par["tensorboard_log"] = "../logs/"
 
 agent_par["device"] = 'cuda'
 agent_par["model"] = 'ae' # bnn or ae
+
 agent_par["prior_mu"] = 0
 agent_par["prior_sigma"] = 0.1
 agent_par["complexity_kld_weight"] = 100
 agent_par["sample_forward"] = 10
 agent_par["sample_backward"] = 1
+agent_par["min_covar"] = 0.01
 
 agent_par["obs_encoder_arc"] = [128, 64]
 agent_par["act_encoder_arc"] = [16, 32]
