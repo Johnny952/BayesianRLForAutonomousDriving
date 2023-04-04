@@ -45,13 +45,13 @@ rcParams["pdf.fonttype"] = 42  # To avoid Type 3 fonts in figures
 rcParams["ps.fonttype"] = 42
 
 """ Options: """
-filepath = "../logs/train_agent_20230317_170246_ae_6M/"
-name = 'ae'
-agent_name = "5950041"
+filepath = "../logs/train_agent_20230329_191111_bnn_6M_v3/"
+name = 'bnn'
+agent_name = "5950017"
 case = "standstill"  # 'rerun_test_scenarios', 'fast_overtaking', 'standstill'
-safety_threshold = 150  # Only used if ensemble test policy is chosen BNN: 0.0045, AE: 0.7
+safety_threshold = 0.3  # Only used if ensemble test policy is chosen BNN: 0.0045, AE: 0.7
 save_video = True
-use_safe_action = False
+use_safe_action = True
 """ End options """
 
 label = 'U' if use_safe_action else 'NU'
@@ -543,8 +543,8 @@ elif case == "standstill":
         ax1.plot(cv_log[:, 3], label="$\dot{v}_{x,0} = -4$")
         ax1.plot(unc, label="action")
         ax1.legend(loc="upper left")
-        if p.agent_par["model"] == 'bnn':
-            ax1.axis([0, 10, 0, 0.02])
+        # if p.agent_par["model"] == 'bnn':
+        #     ax1.axis([0, 10, 0, 0.02])
         # else:
         #     ax1.axis([0, 10, 0, 2])
         ax1.set_xlabel("Time (s)")
@@ -552,8 +552,8 @@ elif case == "standstill":
         ax1.axhline(y=np.abs(safety_threshold), color="k", linestyle="--")
         y_height = np.abs(safety_threshold)
         ax1.text(-0.7, y_height, "$c_\mathrm{v}^\mathrm{safe}$", rotation=0)
-        if p.agent_par["model"] == 'bnn':
-            ax1.set_yticks([0, 0.01, 0.02])
+        # if p.agent_par["model"] == 'bnn':
+        #     ax1.set_yticks([0, 0.01, 0.02])
         # else:
         #     ax1.set_yticks([0, 1, 2])
         ax1.spines["right"].set_visible(False)

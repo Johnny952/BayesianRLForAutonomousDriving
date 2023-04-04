@@ -57,9 +57,6 @@ def read_file(path, unc_normalized=True, negative_unc=False):
     uncertainty_up = []
     uncertainty_low = []
     uncertainty_std = []
-    print(min_unc, max_unc)
-    print(mean_min, mean_max)
-    print("")
     with h5py.File(path, "r") as f:
         for step_key, step in f.items():
             steps.append(int(step_key))
@@ -72,6 +69,7 @@ def read_file(path, unc_normalized=True, negative_unc=False):
 
             if unc_normalized and max_unc != min_unc:
                 unc = (unc - min_unc) / (max_unc - min_unc + EPSILON)
+                # unc = (unc - mean_min) / (mean_max - mean_min + EPSILON)
 
             uncertainty.append(unc)
             uncertainty_mean.append(np.mean(unc))
@@ -116,69 +114,69 @@ def read_file(path, unc_normalized=True, negative_unc=False):
 
 if __name__ == "__main__":
     models = [
-        # {
-        #     "paths": [
-        #         # './logs/rpf_train_agent_20230127_221001_this/data.hdf5',
-        #         # './logs/rpf_train_agent_20230130_210919/data.hdf5',
-        #         # './logs/rpf_train_agent_20230202_154753/data.hdf5',
-        #         # './logs/rpf_train_agent_20230204_214216/data.hdf5',
-        #         # './logs/rpf_train_agent_20230210_195119/data.hdf5',
-        #         # './logs/rpf_train_agent_20230210_195214/data.hdf5',
-        #         # './logs/rpf_train_agent_20230213_211943/data.hdf5',
-        #         # './logs/rpf_train_agent_20230213_211945/data.hdf5',
-        #         # './logs/rpf_train_agent_20230217_173810/data.hdf5',
-        #         './logs/train_agent_20230323_235219_rpf_6M_v3/data.hdf5',
-        #     ],
-        #     'multiple_test': {
-        #         'rerun_test_scenarios': './logs/train_agent_20230323_235219_rpf_6M_v3/rerun_test_scenarios.csv',
-        #         'standstill': None,
-        #         'fast_overtaking': None,
-        #     },
-        #     "name": "Ensemble RPF DQN",
-        #     "show_uncertainty": True,
-        #     "negative_uncertainty": False,
-        #     "color": "red",
-        # },
-        # {
-        #     "paths": [
-        #         # './logs/dqn_train_agent_20230127_221037/data.hdf5',
-        #         # './logs/dqn_train_agent_20230130_210827/data.hdf5',
-        #         # './logs/dqn_train_agent_20230131_212058/data.hdf5',
-        #         # './logs/dqn_train_agent_20230201_210132/data.hdf5',
-        #         # './logs/dqn_train_agent_20230202_154709/data.hdf5',
-        #         # './logs/dqn_train_agent_20230204_214252/data.hdf5',
-        #         # './logs/dqn_train_agent_20230205_230839/data.hdf5',
-        #         # './logs/dqn_train_agent_20230207_031945_this/data.hdf5',
-        #         './logs/train_agent_20230323_235314_dqn_6M_v3/data.hdf5',
-        #     ],
-        #     'multiple_test': {
-        #         'rerun_test_scenarios': None,
-        #         'standstill': None,
-        #         'fast_overtaking': None,
-        #     },
-        #     "name": "Standard DQN",
-        #     "show_uncertainty": False,
-        #     "negative_uncertainty": False,
-        #     "color": "blue",
-        # },
-        # {
-        #     "paths": [
-        #         # './logs/bnn_train_agent_20230210_195642/data.hdf5',
-        #         # './logs/train_agent_20230220_205020/data.hdf5',
-        #         # './logs/train_agent_20230220_205123/data.hdf5',
-        #         # './logs/train_agent_20230222_234907/data.hdf5',
-        #         './logs/train_agent_20230325_141011_bnn_6M_v3/data.hdf5',
-        #     ],
-        #     'multiple_test': {
-        #         'rerun_test_scenarios': './logs/train_agent_20230325_141011_bnn_6M_v3/rerun_test_scenarios.csv',
-        #         'standstill': None,
-        #         'fast_overtaking': None,
-        #     },
-        #     "name": "BNN DQN",
-        #     "show_uncertainty": True,
-        #     "negative_uncertainty": False,
-        #     "color": "green",
-        # },
+        {
+            "paths": [
+                # './logs/rpf_train_agent_20230127_221001_this/data.hdf5',
+                # './logs/rpf_train_agent_20230130_210919/data.hdf5',
+                # './logs/rpf_train_agent_20230202_154753/data.hdf5',
+                # './logs/rpf_train_agent_20230204_214216/data.hdf5',
+                # './logs/rpf_train_agent_20230210_195119/data.hdf5',
+                # './logs/rpf_train_agent_20230210_195214/data.hdf5',
+                # './logs/rpf_train_agent_20230213_211943/data.hdf5',
+                # './logs/rpf_train_agent_20230213_211945/data.hdf5',
+                # './logs/rpf_train_agent_20230217_173810/data.hdf5',
+                './logs/train_agent_20230323_235219_rpf_6M_v3/data.hdf5',
+            ],
+            'multiple_test': {
+                'rerun_test_scenarios': './logs/train_agent_20230323_235219_rpf_6M_v3/rerun_test_scenarios.csv',
+                'standstill': None,
+                'fast_overtaking': None,
+            },
+            "name": "Ensemble RPF DQN",
+            "show_uncertainty": True,
+            "negative_uncertainty": False,
+            "color": "red",
+        },
+        {
+            "paths": [
+                # './logs/dqn_train_agent_20230127_221037/data.hdf5',
+                # './logs/dqn_train_agent_20230130_210827/data.hdf5',
+                # './logs/dqn_train_agent_20230131_212058/data.hdf5',
+                # './logs/dqn_train_agent_20230201_210132/data.hdf5',
+                # './logs/dqn_train_agent_20230202_154709/data.hdf5',
+                # './logs/dqn_train_agent_20230204_214252/data.hdf5',
+                # './logs/dqn_train_agent_20230205_230839/data.hdf5',
+                # './logs/dqn_train_agent_20230207_031945_this/data.hdf5',
+                './logs/train_agent_20230323_235314_dqn_6M_v3/data.hdf5',
+            ],
+            'multiple_test': {
+                'rerun_test_scenarios': None,
+                'standstill': None,
+                'fast_overtaking': None,
+            },
+            "name": "Standard DQN",
+            "show_uncertainty": False,
+            "negative_uncertainty": False,
+            "color": "blue",
+        },
+        {
+            "paths": [
+                # './logs/bnn_train_agent_20230210_195642/data.hdf5',
+                # './logs/train_agent_20230220_205020/data.hdf5',
+                # './logs/train_agent_20230220_205123/data.hdf5',
+                # './logs/train_agent_20230222_234907/data.hdf5',
+                './logs/train_agent_20230329_191111_bnn_6M_v3/data.hdf5',
+            ],
+            'multiple_test': {
+                'rerun_test_scenarios': None,#'./logs/train_agent_20230329_191111_bnn_6M_v3/rerun_test_scenarios.csv',
+                'standstill': None,
+                'fast_overtaking': None,
+            },
+            "name": "BNN DQN",
+            "show_uncertainty": True,
+            "negative_uncertainty": False,
+            "color": "orange",
+        },
         {
             "paths": [
                 # './logs/bnn_train_agent_20230210_195642/data.hdf5',
