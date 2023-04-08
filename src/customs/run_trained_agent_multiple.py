@@ -142,6 +142,7 @@ if p.agent_par["model"] == 'bnn':
         complexity_kld_weight=p.agent_par["complexity_kld_weight"],
         sample_forward=p.agent_par["sample_forward"],
         sample_backward=p.agent_par["sample_backward"],
+        device=p.agent_par["device"],
     )
 elif p.agent_par["model"] == 'ae':
     ae = NetworkAE(
