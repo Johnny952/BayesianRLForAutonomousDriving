@@ -45,13 +45,13 @@ rcParams["pdf.fonttype"] = 42  # To avoid Type 3 fonts in figures
 rcParams["ps.fonttype"] = 42
 
 """ Options: """
-filepath = "../logs/train_agent_20230329_191111_bnn_6M_v3/"
+filepath = "../logs/train_agent_20230405_010753_bnn_6M_v4/"
 name = 'bnn'
-agent_name = "5950017"
-case = "standstill"  # 'rerun_test_scenarios', 'fast_overtaking', 'standstill'
-safety_threshold = 0.3  # Only used if ensemble test policy is chosen BNN: 0.0045, AE: 0.7
+agent_name = "5950064"
+case = "fast_overtaking"  # 'rerun_test_scenarios', 'fast_overtaking', 'standstill'
+safety_threshold = 0.006  # Only used if ensemble test policy is chosen BNN: 0.0045, AE: 0.7
 save_video = True
-use_safe_action = True
+use_safe_action = False
 """ End options """
 
 label = 'U' if use_safe_action else 'NU'
@@ -374,6 +374,7 @@ elif case == "fast_overtaking":
         ax1 = plt.gca()
         ax1_ = ax1.twinx()
         cv_log = np.abs(np.array(cv_log))
+        unc = np.abs(np.array(unc))
         ax1.plot(cv_log[:, 0], label='$\dot{v}_{x,0} = 0$')
         ax1.plot(cv_log[:, 1], label='$\dot{v}_{x,0} = 1$')
         ax1.plot(cv_log[:, 2], label='$\dot{v}_{x,0} = -1$')
