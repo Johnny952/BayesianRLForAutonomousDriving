@@ -49,8 +49,8 @@ agent_par["model"] = 'bnn' # bnn or ae
 agent_par["prior_mu"] = 0
 agent_par["prior_sigma"] = 0.1
 agent_par["complexity_kld_weight"] = 1
-agent_par["sample_forward"] = 10
-agent_par["sample_backward"] = 2
+agent_par["sample_forward"] = 1
+agent_par["sample_backward"] = 1
 
 agent_par["obs_encoder_arc"] = [128, 64]
 agent_par["act_encoder_arc"] = [16, 32]
