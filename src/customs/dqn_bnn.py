@@ -221,6 +221,7 @@ class DQNBNNAgent(AbstractDQNAgent):
             q_values_list.append(self.compute_q_values(state, self.device))
         q_values_list = np.stack(q_values_list)
         q_values = np.mean(q_values_list, axis=0)
+        policy_info = {}
         if self.training:
             if hasattr(self.policy, 'custom'):
                 action, policy_info = self.policy.select_action(q_values_list)
@@ -244,11 +245,10 @@ class DQNBNNAgent(AbstractDQNAgent):
             wandb.log({'Forward time': (tock - tick)})
 
         self.forward_nb += 1
-        return action, {
-            "mean": q_values,
-            "q_values": q_values,
-            "coefficient_of_variation": coefficient_of_variation,
-        }
+        policy_info["mean"] = q_values
+        policy_info["q_values"] = q_values
+        policy_info["coefficient_of_variation"] = coefficient_of_variation
+        return action, policy_info
 
     def backward(self, reward, terminal):
         # Store most recent experience in memory.

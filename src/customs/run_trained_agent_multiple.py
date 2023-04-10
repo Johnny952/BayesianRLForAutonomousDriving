@@ -50,8 +50,8 @@ case = "rerun_test_scenarios"  # 'rerun_test_scenarios', 'fast_overtaking', 'sta
 safety_threshold = 0  # Only used if ensemble test policy is chosen BNN: 0.0045, AE: 0.7
 use_safe_action = True
 
-thresh_range = [0, 0.03]# BNN: [0, 0.05], AE: [-10121, -115], [-9683, -410]
-thresh_steps = 100
+thresh_range = [0.002, 0.03]# BNN: [0, 0.03], AE: [70, 100]
+thresh_steps = 50
 
 # test scenarios
 nb_vehicles = 30
@@ -235,6 +235,7 @@ if case == 'rerun_test_scenarios':
         episode_rewards = []
         episode_steps = []
         nb_safe_actions_per_episode = []
+        nb_safe_hard_actions_per_episode = []
         collissions = 0
         if use_safe_action:
             if p.agent_par["model"] == 'bnn':
@@ -248,6 +249,7 @@ if case == 'rerun_test_scenarios':
             episode_reward = 0
             step = 0
             nb_safe_actions = 0
+            nb_hard_safe_actions = 0
             max_coef_of_var = 0
             while done is False:
                 action, action_info = dqn.forward(obs)
@@ -257,19 +259,20 @@ if case == 'rerun_test_scenarios':
                 if more_info["ego_collision"] == True:
                     collissions += 1
                 if 'safe_action' in action_info:
-                    if action_info['safe_action']:
-                        nb_safe_actions += 1
+                    nb_safe_actions += action_info['safe_action']
+                    nb_hard_safe_actions += action_info['hard_safe']
                     if action_info['coefficient_of_variation'][action] > max_coef_of_var:
                         max_coef_of_var = action_info['coefficient_of_variation'][action]
 
             episode_rewards.append(episode_reward)
             episode_steps.append(step)
             nb_safe_actions_per_episode.append(nb_safe_actions)
-            print(f"Episode: {str(i)}\tSteps: {str(step)}\tReward: {str(episode_reward)}\tNumber of safety actions: {str(nb_safe_actions)}\tMax coef of var: {str(max_coef_of_var)}")
-        print(f"\nThreshold: {str(thresh)}\tMean Reward: {str(np.mean(episode_rewards))}\tCollision Rate: {str(collissions)}%\n\n")
+            nb_safe_hard_actions_per_episode.append(nb_hard_safe_actions)
+            print(f"Episode: {str(i)}\tSteps: {str(step)}\tReward: {str(episode_reward)}\tNumber of safety actions: {str(nb_safe_actions)}\tNumber of hard safety actions: {str(nb_hard_safe_actions)}\tMax coef of var: {str(max_coef_of_var)}")
+        print(f"\nThreshold: {str(thresh)}\tMean Reward: {str(np.mean(episode_rewards))}\tTotal Steps: {np.sum(episode_steps)}\tCollision Rate: {str(collissions)}%\tSafe action Rate: {np.sum(nb_safe_actions_per_episode)/np.sum(episode_steps)}\tHard action rate: {np.sum(nb_safe_hard_actions_per_episode)/np.sum(episode_steps)}\n\n")
         with open(filepath + case + '.csv', 'a+') as file:
             writer = csv.writer(file)
-            writer.writerow([thresh, np.sum(episode_rewards) / np.sum(episode_steps), collissions / 100])
+            writer.writerow([thresh, np.sum(episode_rewards) / np.sum(episode_steps), collissions / 100, np.sum(nb_safe_actions_per_episode)/np.sum(episode_steps), np.sum(nb_safe_hard_actions_per_episode)/np.sum(episode_steps)])
 
 elif case == 'fast_overtaking':
     env.reset()

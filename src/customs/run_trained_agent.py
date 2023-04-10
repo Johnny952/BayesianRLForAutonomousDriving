@@ -47,11 +47,11 @@ rcParams["ps.fonttype"] = 42
 """ Options: """
 filepath = "../logs/train_agent_20230405_010753_bnn_6M_v4/"
 name = 'bnn'
-agent_name = "5950064"
-case = "fast_overtaking"  # 'rerun_test_scenarios', 'fast_overtaking', 'standstill'
+agent_name = "4500013"
+case = "standstill"  # 'rerun_test_scenarios', 'fast_overtaking', 'standstill'
 safety_threshold = 0.006  # Only used if ensemble test policy is chosen BNN: 0.0045, AE: 0.7
 save_video = True
-use_safe_action = False
+use_safe_action = True
 """ End options """
 
 label = 'U' if use_safe_action else 'NU'

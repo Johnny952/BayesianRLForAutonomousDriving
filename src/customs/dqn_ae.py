@@ -112,9 +112,10 @@ class DQNAEAgent(AbstractDQNAgent):
         q_values = self.compute_q_values(state, self.device)
 
         uncertainties = []
+        action_info = {}
         if self.training:
             if hasattr(self.policy, 'custom'):
-                action = self.policy.select_action(q_values)
+                action, action_info = self.policy.select_action(q_values)
             else:
                 action = self.policy.select_action(q_values=q_values)
 
@@ -133,7 +134,7 @@ class DQNAEAgent(AbstractDQNAgent):
                     uncertainty = self.autoencoder.log_prob(obs, act)
                 uncertainties.append(uncertainty.cpu().numpy())
             if hasattr(self.test_policy, 'custom'):
-                action = self.test_policy.select_action(q_values, uncertainties)[0]
+                action, action_info = self.test_policy.select_action(q_values, uncertainties)
             else:
                 action = self.test_policy.select_action(q_values=q_values)
             
@@ -149,11 +150,10 @@ class DQNAEAgent(AbstractDQNAgent):
 
 
         self.forward_nb += 1
-        return action, {
-            "mean": q_values,
-            "q_values": q_values,
-            "coefficient_of_variation": np.array(uncertainties),
-        }
+        action_info["mean"] = q_values
+        action_info["q_values"] = q_values
+        action_info["coefficient_of_variation"] = np.array(uncertainties)
+        return action, action_info
 
     def backward(self, reward, terminal):
         # Store most recent experience in memory.

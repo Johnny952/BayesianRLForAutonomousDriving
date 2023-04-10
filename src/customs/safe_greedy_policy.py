@@ -39,9 +39,9 @@ class SafeGreedyPolicy(GreedyQPolicy):
                 while i < len(coef_of_var) and coef_of_var[sorted_q_indexes[i]] > self.safety_threshold:
                     i += 1
                 if i == len(coef_of_var):  # No action is considered safe - use fallback action
-                    return self.safe_action, {'safe_action': True}
+                    return self.safe_action, {'safe_action': True, 'hard_safe': True}
                 else:
-                    return sorted_q_indexes[i], {'safe_action': not i == 0}
+                    return sorted_q_indexes[i], {'safe_action': not i == 0, 'hard_safe': False}
         elif self.policy_type == 'voting':
             action_votes = np.argmax(q_values, axis=1)
             actions, counts = np.unique(action_votes, return_counts=True)
@@ -71,14 +71,15 @@ class SimpleSafeGreedyPolicy(GreedyQPolicy):
 
     def select_action(self, q_values, uncertainties):
         act = np.argmax(q_values)
+        
         if self.safety_threshold is None:
             return act, {}
         else:
             sorted_q_indexes = q_values.argsort()[::-1]
             i = 0
-            while i < len(uncertainties) and np.abs(uncertainties[sorted_q_indexes[i]]) > self.safety_threshold:
+            while i < len(uncertainties) and np.abs(uncertainties[sorted_q_indexes[i]]) > np.abs(self.safety_threshold):
                 i += 1
             if i == len(uncertainties):  # No action is considered safe - use fallback action
-                return self.safe_action, {'safe_action': True}
+                return self.safe_action, {'safe_action': True, 'hard_safe': True}
             else:
-                return sorted_q_indexes[i], {'safe_action': not i == 0}
+                return sorted_q_indexes[i], {'safe_action': not i == 0, 'hard_safe': False}
