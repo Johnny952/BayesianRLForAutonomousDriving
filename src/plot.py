@@ -294,13 +294,22 @@ if __name__ == "__main__":
     
     # Rewards vs collision rate
     fig = plt.figure()
+    fig, axs = plt.subplots(ncols=3, nrows=2)
+    gs = axs[0, 0].get_gridspec()
+    for ax in axs[:2, :2].flat:
+        ax.remove()
     # fig, ax = plt.subplots(1, 3)
-    fig.set_figheight(18)
-    fig.set_figwidth(12)
-    ax1 = plt.subplot(3, 1, (1, 2))
-    ax4 = ax1.twinx()
-    ax2 = plt.subplot(3, 2, 5)
-    ax3 = plt.subplot(3, 2, 6)
+    fig.set_figheight(12)
+    fig.set_figwidth(18)
+    
+    # ax2 = plt.subplot(2, 3, 3)
+    # ax3 = plt.subplot(2, 3, 6)
+    # ax1 = plt.subplot(2, 1, (1, 2, 4, 5))
+    ax1 = fig.add_subplot(gs[:2, :2])
+    # ax4 = ax1.twinx()
+    ax2 = axs[0, 2]
+    ax3 = axs[1, 2]
+
     index = -1
     scenario = 'rerun_test_scenarios'
     plot_models = [0, 3]
@@ -319,8 +328,9 @@ if __name__ == "__main__":
 
     ax1.set_xlim(left=0)
     ax1.set_ylim(bottom=0)
-    ax1.tick_params(axis='y', colors=model["color"])
-    ax1.set_ylabel(f'Rewards {model["name"]}', fontsize=14, color=model["color"])
+    # ax1.tick_params(axis='y', colors=model["color"])
+    ax1.set_ylabel("Rewards", fontsize=14)
+    # ax1.set_ylabel(f'Rewards {model["name"]}', fontsize=14, color=model["color"])
 
     model = models[plot_models[1]]
     thresholds, rewards, collision_rates = read_test(model['multiple_test'][scenario])
@@ -330,19 +340,20 @@ if __name__ == "__main__":
     # ax1.plot(sorted_rates, filtered_rewards, color=model["color"], label=model["name"], alpha=1)
     unique_rates, unique_idxs = np.unique(sorted_rates, return_index=True)
     unique_rewards = sorted_rewards[unique_idxs]
-    ax4.plot(unique_rates, unique_rewards, color=model["color"], label=model["name"], alpha=1)
+    # ax4.plot(unique_rates, unique_rewards, color=model["color"], label=model["name"], alpha=1)
+    ax1.plot(unique_rates, unique_rewards, color=model["color"], label=model["name"], alpha=1)
     ax2.plot(rewards, color=model["color"], label=model["name"], alpha=1)
     ax3.plot(collision_rates, color=model["color"], label=model["name"], alpha=1)
 
-    ax4.set_xlim(left=0)
-    ax4.set_ylim(bottom=0)
-    ax4.tick_params(axis='y', colors=model["color"])
-    ax4.set_ylabel(f'Rewards {model["name"]}', fontsize=14, color=model["color"])
+    # ax4.set_xlim(left=0)
+    # ax4.set_ylim(bottom=0)
+    # ax4.tick_params(axis='y', colors=model["color"])
+    # ax4.set_ylabel(f'Rewards {model["name"]}', fontsize=14, color=model["color"])
 
     # ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
     ax1.xaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=0))
     ax1.set_xlabel('Collision Rate', fontsize=14)
-    # ax1.legend()
+    ax1.legend()
     ax1.grid()
 
     ax2.set_ylim(bottom=0)

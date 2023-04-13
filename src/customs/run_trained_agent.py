@@ -45,13 +45,13 @@ rcParams["pdf.fonttype"] = 42  # To avoid Type 3 fonts in figures
 rcParams["ps.fonttype"] = 42
 
 """ Options: """
-filepath = "../logs/train_agent_20230405_010753_bnn_6M_v4/"
+filepath = "../logs/train_agent_20230411_001646_bnn_6M_v5/"
 name = 'bnn'
-agent_name = "4500013"
+agent_name = "5950082"
 case = "standstill"  # 'rerun_test_scenarios', 'fast_overtaking', 'standstill'
 safety_threshold = 0.006  # Only used if ensemble test policy is chosen BNN: 0.0045, AE: 0.7
 save_video = True
-use_safe_action = True
+use_safe_action = False
 """ End options """
 
 label = 'U' if use_safe_action else 'NU'

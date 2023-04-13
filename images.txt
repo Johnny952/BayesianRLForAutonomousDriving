@@ -1,0 +1,13 @@
+standstill: {
+    width: 641,
+    height: 57,
+    positionx: 80,
+    positiony: 160,
+}
+
+fast_overtaking: {
+    width: 641,
+    height: 85,
+    positionx: 80,
+    positiony: 151,
+}
