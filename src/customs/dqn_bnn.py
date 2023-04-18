@@ -9,6 +9,9 @@ from rl.util import get_object_config
 import sys
 import wandb
 from timeit import default_timer as timer
+from utils import transform_model
+
+np.seterr(all="ignore")
 
 sys.path.append("..")
 from base.core import Agent
@@ -34,6 +37,42 @@ def soft_target_model_updates(target_model, model, tau):
 def hard_target_model_updates(target_model, model):
     return soft_target_model_updates(target_model, model, 1)
 
+
+def get_mean_model(model, device='cpu'):
+    model_transformed = transform_model(model, bnn.BayesConv2d, nn.Conv2d,
+        args={"in_channels" : ".in_channels", "out_channels" : ".out_channels",
+                "kernel_size" : ".kernel_size", "stride" : ".stride",
+                "padding" : ".padding", "bias":".bias",
+                }, 
+        attrs={"weight": ".weight_mu"},
+        inplace=False
+    ).to(device)
+    model_transformed = transform_model(model_transformed, bnn.BayesLinear, nn.Linear, 
+        args={"in_features" : ".in_features", "out_features" : ".out_features",
+                "bias":".bias",
+                }, 
+        attrs={"weight" : ".weight_mu"},
+        inplace=False
+    ).to(device)
+    return model_transformed
+
+def get_std_model(model, device='cpu'):
+    model_transformed = transform_model(model, bnn.BayesConv2d, nn.Conv2d,
+        args={"in_channels" : ".in_channels", "out_channels" : ".out_channels",
+                "kernel_size" : ".kernel_size", "stride" : ".stride",
+                "padding" : ".padding", "bias":".bias",
+                }, 
+        attrs={"weight": [".weight_mu", ".weight_log_sigma"]},
+        inplace=False
+    ).to(device)
+    model_transformed = transform_model(model_transformed, bnn.BayesLinear, nn.Linear, 
+        args={"in_features" : ".in_features", "out_features" : ".out_features",
+                "bias":".bias",
+                }, 
+        attrs={"weight" : [".weight_mu", ".weight_log_sigma"]},
+        inplace=False
+    ).to(device)
+    return model_transformed
 
 class AbstractDQNAgent(Agent):
     def __init__(
@@ -146,7 +185,7 @@ class DQNBNNAgent(AbstractDQNAgent):
         self.dueling_type = dueling_type
 
         self.complexity_kld_weight = complexity_kld_weight
-        self.sample_forward = sample_forward
+        # self.sample_forward = sample_forward
         self.sample_backward = sample_backward
 
         # Related objects.
@@ -212,32 +251,48 @@ class DQNBNNAgent(AbstractDQNAgent):
         self.recent_action = None
         self.recent_observation = None
 
+    def compute_batch_q_values2(self, model, state_batch, device):
+        batch = self.process_state_batch(state_batch)
+        with torch.no_grad():
+            q_values = model(torch.from_numpy(batch).float().to(device))
+            q_values = q_values.cpu().numpy()
+        assert q_values.shape == (len(state_batch), self.nb_actions)
+        return q_values
+
+    def compute_q_values2(self, model, state, device):
+        q_values = self.compute_batch_q_values2(model, [state], device).flatten()
+        assert q_values.shape == (self.nb_actions,)
+        return q_values
+    
+    def set_models(self):
+        self.mean_model = get_mean_model(self.model, device=self.device)
+        self.std_model = get_std_model(self.model, device=self.device)
+
     def forward(self, observation):
         tick = timer()
         # Select an action.
         state = self.memory.get_recent_state(observation)
-        q_values_list = []
-        for _ in range(self.sample_forward):
-            q_values_list.append(self.compute_q_values(state, self.device))
-        q_values_list = np.stack(q_values_list)
-        q_values = np.mean(q_values_list, axis=0)
         policy_info = {}
         if self.training:
+            self.set_models()
+            q_values = self.compute_batch_q_values2(self.mean_model, state, self.device).squeeze(axis=0)
             if hasattr(self.policy, 'custom'):
-                action, policy_info = self.policy.select_action(q_values_list)
+                action, policy_info = self.policy.select_action(q_values)
             else:
                 action = self.policy.select_action(q_values=q_values)
         else:
+            q_values = self.compute_batch_q_values2(self.mean_model, state, self.device).squeeze(axis=0)
             if hasattr(self.test_policy, 'custom'):
-                action, policy_info = self.test_policy.select_action(q_values_list)
+                action, policy_info = self.test_policy.select_action(q_values)
             else:
                 action = self.test_policy.select_action(q_values=q_values)
+
+        q_values_std = self.compute_batch_q_values2(self.std_model, state, self.device).squeeze(axis=0)
 
         # Book-keeping.
         self.recent_observation = observation
         self.recent_action = action
-        coefficient_of_variation = np.std(q_values_list[:, :], axis=0) / \
-                                   np.mean(q_values_list[:, :], axis=0)
+        coefficient_of_variation = q_values - q_values_std
         
         # np.sum(np.var(q_values_list, axis=0))
         if self.forward_nb % 1000 == 0:
@@ -364,3 +419,6 @@ class DQNBNNAgent(AbstractDQNAgent):
     def test_policy(self, policy):
         self.__test_policy = policy
         self.__test_policy._set_agent(self)
+
+
+

@@ -118,7 +118,7 @@ if p.agent_par["model"] == 'bnn':
     policy = GreedyQPolicy()
     safety_threshold_ = safety_threshold if use_safe_action else None
     safe_action = 3 if use_safe_action else None
-    test_policy = SafeGreedyPolicy(policy_type='mean', safety_threshold=safety_threshold_, safe_action=safe_action)
+    test_policy = GreedyQPolicy()#SafeGreedyPolicy(policy_type='mean', safety_threshold=safety_threshold_, safe_action=safe_action)
     dqn = DQNBNNAgent(
         model=model,
         policy=policy,
@@ -137,6 +137,7 @@ if p.agent_par["model"] == 'bnn':
         sample_forward=p.agent_par["sample_forward"],
         sample_backward=p.agent_par["sample_backward"],
     )
+    dqn.set_models()
 elif p.agent_par["model"] == 'ae':
     ae = NetworkAE(
         p.agent_par["window_length"],
