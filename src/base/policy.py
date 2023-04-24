@@ -49,9 +49,9 @@ class EnsembleTestPolicy(Policy):
                 while i < len(coef_of_var) and coef_of_var[sorted_q_indexes[i]] > self.safety_threshold:
                     i += 1
                 if i == len(coef_of_var):  # No action is considered safe - use fallback action
-                    return self.safe_action, {'safe_action': True}
+                    return self.safe_action, {'safe_action': True, 'hard_safe': True}
                 else:
-                    return sorted_q_indexes[i], {'safe_action': not i == 0}
+                    return sorted_q_indexes[i], {'safe_action': not i == 0, 'hard_safe': False}
         elif self.policy_type == 'voting':
             action_votes = np.argmax(q_values_all_nets, axis=1)
             actions, counts = np.unique(action_votes, return_counts=True)
