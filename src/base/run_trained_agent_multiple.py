@@ -34,9 +34,8 @@ from dqn_standard import DQNAgent
 from dqn_ensemble import DQNAgentEnsemble
 from policy import EnsembleTestPolicy
 from matplotlib import rcParams
-from run_agent_utils import rerun_test_scenarios, fast_overtaking, standstill
-
 sys.path.append("..")
+from run_agent_utils import rerun_test_scenarios, fast_overtaking, standstill
 
 rcParams["pdf.fonttype"] = 42  # To avoid Type 3 fonts in figures
 rcParams["ps.fonttype"] = 42

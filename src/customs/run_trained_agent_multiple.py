@@ -129,6 +129,7 @@ if p.agent_par["model"] == "bnn":
         sample_backward=p.agent_par["sample_backward"],
         device=p.agent_par["device"],
     )
+    dqn.set_models()
 elif p.agent_par["model"] == "ae":
     ae = NetworkAE(
         p.agent_par["window_length"],
