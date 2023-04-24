@@ -26,14 +26,13 @@ class SafeGreedyPolicy(GreedyQPolicy):
         if self.safety_threshold is not None:
             assert(safe_action is not None)
 
-    def select_action(self, q_values):
+    def select_action(self, q_values, q_values_std):
         if self.policy_type == 'mean':
             mean_q_values = np.mean(q_values, axis=0)
             if self.safety_threshold is None:
                 return np.argmax(mean_q_values), {}
             else:
-                std_q_values = np.std(q_values, axis=0)
-                coef_of_var = std_q_values / np.abs(mean_q_values)
+                coef_of_var = np.abs(q_values_std - q_values)
                 sorted_q_indexes = mean_q_values.argsort()[::-1]
                 i = 0
                 while i < len(coef_of_var) and coef_of_var[sorted_q_indexes[i]] > self.safety_threshold:

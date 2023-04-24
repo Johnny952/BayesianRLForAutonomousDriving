@@ -276,23 +276,23 @@ class DQNBNNAgent(AbstractDQNAgent):
         if self.training:
             self.set_models()
             q_values = self.compute_batch_q_values2(self.mean_model, state, self.device).squeeze(axis=0)
+            q_values_std = self.compute_batch_q_values2(self.std_model, state, self.device).squeeze(axis=0)
             if hasattr(self.policy, 'custom'):
-                action, policy_info = self.policy.select_action(q_values)
+                action, policy_info = self.policy.select_action(q_values, q_values_std)
             else:
                 action = self.policy.select_action(q_values=q_values)
         else:
             q_values = self.compute_batch_q_values2(self.mean_model, state, self.device).squeeze(axis=0)
+            q_values_std = self.compute_batch_q_values2(self.std_model, state, self.device).squeeze(axis=0)
             if hasattr(self.test_policy, 'custom'):
-                action, policy_info = self.test_policy.select_action(q_values)
+                action, policy_info = self.test_policy.select_action(q_values, q_values_std)
             else:
                 action = self.test_policy.select_action(q_values=q_values)
-
-        q_values_std = self.compute_batch_q_values2(self.std_model, state, self.device).squeeze(axis=0)
 
         # Book-keeping.
         self.recent_observation = observation
         self.recent_action = action
-        coefficient_of_variation = q_values - q_values_std
+        coefficient_of_variation = np.abs(q_values - q_values_std)
         
         # np.sum(np.var(q_values_list, axis=0))
         if self.forward_nb % 1000 == 0:
