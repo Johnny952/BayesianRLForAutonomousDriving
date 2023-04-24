@@ -49,6 +49,7 @@ def thresh_log(
 
 
 def save_metrics(
+    case,
     filepath,
     thresh,
     episode_rewards,
@@ -58,7 +59,7 @@ def save_metrics(
     nb_safe_hard_actions_per_episode,
     collision_speeds,
 ):
-    with open(filepath + "rerun_test_scenarios.csv", "a+") as file:
+    with open(filepath + case, "a+") as file:
         writer = csv.writer(file)
         writer.writerow(
             [
@@ -81,6 +82,11 @@ def rerun_test_scenarios(
     thresh_steps=100,
     use_safe_action=False,
 ):
+    sufix = '_U' if use_safe_action else 'NU'
+    case = 'rerun_test_scenarios' + sufix
+    with open(filepath + case + ".csv", "w+"):
+        pass
+
     ps.sim_params["nb_vehicles"] = NB_VEHICLES
     ps.road_params["speed_range"] = np.array(speed_range)
     env = Highway(
@@ -144,6 +150,7 @@ def rerun_test_scenarios(
             nb_safe_hard_actions_per_episode,
         )
         save_metrics(
+            case,
             filepath,
             thresh,
             episode_rewards,
@@ -164,6 +171,8 @@ def fast_overtaking(
     thresh_steps=100,
     use_safe_action=False,
 ):
+    sufix = '_U' if use_safe_action else 'NU'
+    case = 'fast_overtaking' + sufix
     ps.sim_params["nb_vehicles"] = 5
     env = Highway(
         sim_params=ps.sim_params,
@@ -269,6 +278,7 @@ def fast_overtaking(
             nb_safe_hard_actions_per_episode,
         )
         save_metrics(
+            case,
             filepath,
             thresh,
             episode_rewards,
@@ -289,6 +299,8 @@ def standstill(
     thresh_steps=100,
     use_safe_action=False,
 ):
+    sufix = '_U' if use_safe_action else 'NU'
+    case = 'standstill' + sufix
     ps.sim_params["nb_vehicles"] = 7
     env = Highway(
         sim_params=ps.sim_params,
@@ -420,6 +432,7 @@ def standstill(
             nb_safe_hard_actions_per_episode,
         )
         save_metrics(
+            case,
             filepath,
             thresh,
             episode_rewards,

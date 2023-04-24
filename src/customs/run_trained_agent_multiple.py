@@ -209,10 +209,6 @@ dqn.compile(p.agent_par["learning_rate"])
 dqn.load_weights(filepath + agent_name)
 dqn.training = False
 
-with open(filepath + case + ".csv", "w+") as file:
-    pass
-
-
 def change_thresh_fn(thresh):
     if p.agent_par["model"] == "bnn":
         dqn.test_policy = SafeGreedyPolicy(

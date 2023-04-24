@@ -119,9 +119,6 @@ if use_ensemble_test_policy:
     test_policy_safe = EnsembleTestPolicy(safety_threshold=0, safe_action=3)
     dqn.test_policy = test_policy_safe
 
-with open(filepath + case + ".csv", "w+") as file:
-    pass
-
 
 def change_thresh_fn(thresh):
     dqn.test_policy = EnsembleTestPolicy(safety_threshold=thresh, safe_action=3)
