@@ -107,9 +107,12 @@ if p.agent_par["model"] == "bnn":
 
     policy = GreedyQPolicy()
     safety_threshold_ = 0 if use_safe_action else None
-    test_policy = SafeGreedyPolicy(
-        policy_type="mean", safety_threshold=safety_threshold_, safe_action=safe_action
-    )
+    if use_safe_action:
+        test_policy = SafeGreedyPolicy(
+            safety_threshold=safety_threshold_, safe_action=safe_action
+        )
+    else:
+        test_policy = GreedyQPolicy()
     dqn = DQNBNNAgent(
         model=model,
         policy=policy,
@@ -213,7 +216,7 @@ dqn.training = False
 def change_thresh_fn(thresh):
     if p.agent_par["model"] == "bnn":
         dqn.test_policy = SafeGreedyPolicy(
-            policy_type="mean", safety_threshold=thresh, safe_action=safe_action
+            safety_threshold=thresh, safe_action=safe_action
         )
     elif p.agent_par["model"] == "ae":
         dqn.test_policy = SimpleSafeGreedyPolicy(thresh, safe_action)

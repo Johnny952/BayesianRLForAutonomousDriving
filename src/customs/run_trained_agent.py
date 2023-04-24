@@ -118,7 +118,10 @@ if p.agent_par["model"] == 'bnn':
     policy = GreedyQPolicy()
     safety_threshold_ = safety_threshold if use_safe_action else None
     safe_action = 3 if use_safe_action else None
-    test_policy = GreedyQPolicy()#SafeGreedyPolicy(policy_type='mean', safety_threshold=safety_threshold_, safe_action=safe_action)
+    if use_safe_action:
+        test_policy = SafeGreedyPolicy(safety_threshold=safety_threshold_, safe_action=safe_action)
+    else:
+        test_policy = GreedyQPolicy()
     dqn = DQNBNNAgent(
         model=model,
         policy=policy,

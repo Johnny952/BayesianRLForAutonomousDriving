@@ -1,7 +1,7 @@
 import csv
+from base.driving_env import Highway
 import traci
 import numpy as np
-from base.driving_env import Highway
 
 # test scenarios
 NB_VEHICLES = 30
