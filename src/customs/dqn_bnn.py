@@ -16,6 +16,7 @@ np.seterr(all="ignore")
 sys.path.append("..")
 from base.core import Agent
 
+
 def max_q(y_true, y_pred):  # Returns average maximum Q-value of training batch
     return torch.mean(torch.max(y_pred, dim=-1), dim=-1)
 
@@ -38,41 +39,67 @@ def hard_target_model_updates(target_model, model):
     return soft_target_model_updates(target_model, model, 1)
 
 
-def get_mean_model(model, device='cpu'):
-    model_transformed = transform_model(model, bnn.BayesConv2d, nn.Conv2d,
-        args={"in_channels" : ".in_channels", "out_channels" : ".out_channels",
-                "kernel_size" : ".kernel_size", "stride" : ".stride",
-                "padding" : ".padding", "bias":".bias",
-                }, 
+def get_mean_model(model, device="cpu"):
+    model_transformed = transform_model(
+        model,
+        bnn.BayesConv2d,
+        nn.Conv2d,
+        args={
+            "in_channels": ".in_channels",
+            "out_channels": ".out_channels",
+            "kernel_size": ".kernel_size",
+            "stride": ".stride",
+            "padding": ".padding",
+            "bias": ".bias",
+        },
         attrs={"weight": ".weight_mu"},
-        inplace=False
+        inplace=False,
     ).to(device)
-    model_transformed = transform_model(model_transformed, bnn.BayesLinear, nn.Linear, 
-        args={"in_features" : ".in_features", "out_features" : ".out_features",
-                "bias":".bias",
-                }, 
-        attrs={"weight" : ".weight_mu"},
-        inplace=False
+    model_transformed = transform_model(
+        model_transformed,
+        bnn.BayesLinear,
+        nn.Linear,
+        args={
+            "in_features": ".in_features",
+            "out_features": ".out_features",
+            "bias": ".bias",
+        },
+        attrs={"weight": ".weight_mu"},
+        inplace=False,
     ).to(device)
     return model_transformed
 
-def get_std_model(model, device='cpu'):
-    model_transformed = transform_model(model, bnn.BayesConv2d, nn.Conv2d,
-        args={"in_channels" : ".in_channels", "out_channels" : ".out_channels",
-                "kernel_size" : ".kernel_size", "stride" : ".stride",
-                "padding" : ".padding", "bias":".bias",
-                }, 
+
+def get_std_model(model, device="cpu"):
+    model_transformed = transform_model(
+        model,
+        bnn.BayesConv2d,
+        nn.Conv2d,
+        args={
+            "in_channels": ".in_channels",
+            "out_channels": ".out_channels",
+            "kernel_size": ".kernel_size",
+            "stride": ".stride",
+            "padding": ".padding",
+            "bias": ".bias",
+        },
         attrs={"weight": [".weight_mu", ".weight_log_sigma"]},
-        inplace=False
+        inplace=False,
     ).to(device)
-    model_transformed = transform_model(model_transformed, bnn.BayesLinear, nn.Linear, 
-        args={"in_features" : ".in_features", "out_features" : ".out_features",
-                "bias":".bias",
-                }, 
-        attrs={"weight" : [".weight_mu", ".weight_log_sigma"]},
-        inplace=False
+    model_transformed = transform_model(
+        model_transformed,
+        bnn.BayesLinear,
+        nn.Linear,
+        args={
+            "in_features": ".in_features",
+            "out_features": ".out_features",
+            "bias": ".bias",
+        },
+        attrs={"weight": [".weight_mu", ".weight_log_sigma"]},
+        inplace=False,
     ).to(device)
     return model_transformed
+
 
 class AbstractDQNAgent(Agent):
     def __init__(
@@ -263,7 +290,7 @@ class DQNBNNAgent(AbstractDQNAgent):
         q_values = self.compute_batch_q_values2(model, [state], device).flatten()
         assert q_values.shape == (self.nb_actions,)
         return q_values
-    
+
     def set_models(self):
         self.mean_model = get_mean_model(self.model, device=self.device)
         self.std_model = get_std_model(self.model, device=self.device)
@@ -275,17 +302,27 @@ class DQNBNNAgent(AbstractDQNAgent):
         policy_info = {}
         if self.training:
             self.set_models()
-            q_values = self.compute_batch_q_values2(self.mean_model, state, self.device).squeeze(axis=0)
-            q_values_std = self.compute_batch_q_values2(self.std_model, state, self.device).squeeze(axis=0)
-            if hasattr(self.policy, 'custom'):
+            q_values = self.compute_batch_q_values2(
+                self.mean_model, state, self.device
+            ).squeeze(axis=0)
+            q_values_std = self.compute_batch_q_values2(
+                self.std_model, state, self.device
+            ).squeeze(axis=0)
+            if hasattr(self.policy, "custom"):
                 action, policy_info = self.policy.select_action(q_values, q_values_std)
             else:
                 action = self.policy.select_action(q_values=q_values)
         else:
-            q_values = self.compute_batch_q_values2(self.mean_model, state, self.device).squeeze(axis=0)
-            q_values_std = self.compute_batch_q_values2(self.std_model, state, self.device).squeeze(axis=0)
-            if hasattr(self.test_policy, 'custom'):
-                action, policy_info = self.test_policy.select_action(q_values, q_values_std)
+            q_values = self.compute_batch_q_values2(
+                self.mean_model, state, self.device
+            ).squeeze(axis=0)
+            q_values_std = self.compute_batch_q_values2(
+                self.std_model, state, self.device
+            ).squeeze(axis=0)
+            if hasattr(self.test_policy, "custom"):
+                action, policy_info = self.test_policy.select_action(
+                    q_values, q_values_std
+                )
             else:
                 action = self.test_policy.select_action(q_values=q_values)
 
@@ -293,11 +330,11 @@ class DQNBNNAgent(AbstractDQNAgent):
         self.recent_observation = observation
         self.recent_action = action
         coefficient_of_variation = np.abs(q_values - q_values_std)
-        
+
         # np.sum(np.var(q_values_list, axis=0))
         if self.forward_nb % 1000 == 0:
             tock = timer()
-            wandb.log({'Forward time': (tock - tick)})
+            wandb.log({"Forward time": (tock - tick)})
 
         self.forward_nb += 1
         policy_info["mean"] = q_values
@@ -374,19 +411,32 @@ class DQNBNNAgent(AbstractDQNAgent):
                     # target_q_values = self.target_model(torch.from_numpy(state1_batch).float())
                     # q_batch = target_q_values[range(self.batch_size), actions]
                 else:
-                    state_action_values = self.target_model(state0_batch).max(dim=-1).detach()
+                    state_action_values = (
+                        self.target_model(state0_batch).max(dim=-1).detach()
+                    )
                     expected_state_action_values = state_action_values
 
                 if i == 0:
-                    q_loss = self.loss(state_action_values, expected_state_action_values)
+                    q_loss = self.loss(
+                        state_action_values, expected_state_action_values
+                    )
                 else:
-                    q_loss += self.loss(state_action_values, expected_state_action_values)
-            
+                    q_loss += self.loss(
+                        state_action_values, expected_state_action_values
+                    )
+
             kl_loss = self.kl_loss(self.model)
             loss = q_loss + self.complexity_kld_weight * kl_loss
             if self.backward_nb % 1000 == 0:
                 tock = timer()
-                wandb.log({'Q Loss': q_loss, 'KL Loss': kl_loss, 'Loss': loss, 'Back time': (tock - tick)})
+                wandb.log(
+                    {
+                        "Q Loss": q_loss,
+                        "KL Loss": kl_loss,
+                        "Loss": loss,
+                        "Back time": (tock - tick),
+                    }
+                )
 
             self.optimizer.zero_grad()
             loss.backward()
@@ -419,6 +469,3 @@ class DQNBNNAgent(AbstractDQNAgent):
     def test_policy(self, policy):
         self.__test_policy = policy
         self.__test_policy._set_agent(self)
-
-
-

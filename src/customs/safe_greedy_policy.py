@@ -17,17 +17,17 @@ class SafeGreedyPolicy(GreedyQPolicy):
         safe_action (int): Fallback action if all actions are considered unsafe.
     """
 
-    def __init__(self, policy_type='mean', safety_threshold=None, safe_action=None):
+    def __init__(self, policy_type="mean", safety_threshold=None, safe_action=None):
         super(SafeGreedyPolicy, self).__init__()
         self.custom = True
         self.policy_type = policy_type
         self.safety_threshold = safety_threshold
         self.safe_action = safe_action
         if self.safety_threshold is not None:
-            assert(safe_action is not None)
+            assert safe_action is not None
 
     def select_action(self, q_values, q_values_std):
-        if self.policy_type == 'mean':
+        if self.policy_type == "mean":
             mean_q_values = np.mean(q_values, axis=0)
             if self.safety_threshold is None:
                 return np.argmax(mean_q_values), {}
@@ -35,13 +35,21 @@ class SafeGreedyPolicy(GreedyQPolicy):
                 coef_of_var = np.abs(q_values_std - q_values)
                 sorted_q_indexes = mean_q_values.argsort()[::-1]
                 i = 0
-                while i < len(coef_of_var) and coef_of_var[sorted_q_indexes[i]] > self.safety_threshold:
+                while (
+                    i < len(coef_of_var)
+                    and coef_of_var[sorted_q_indexes[i]] > self.safety_threshold
+                ):
                     i += 1
-                if i == len(coef_of_var):  # No action is considered safe - use fallback action
-                    return self.safe_action, {'safe_action': True, 'hard_safe': True}
+                if i == len(
+                    coef_of_var
+                ):  # No action is considered safe - use fallback action
+                    return self.safe_action, {"safe_action": True, "hard_safe": True}
                 else:
-                    return sorted_q_indexes[i], {'safe_action': not i == 0, 'hard_safe': False}
-        elif self.policy_type == 'voting':
+                    return sorted_q_indexes[i], {
+                        "safe_action": not i == 0,
+                        "hard_safe": False,
+                    }
+        elif self.policy_type == "voting":
             action_votes = np.argmax(q_values, axis=1)
             actions, counts = np.unique(action_votes, return_counts=True)
             max_actions = np.flatnonzero(counts == max(counts))
@@ -49,13 +57,15 @@ class SafeGreedyPolicy(GreedyQPolicy):
             if self.safety_threshold is None:
                 return action, {}
             else:
-                raise Exception('Voting policy for safe actions is not yet implemented.')
+                raise Exception(
+                    "Voting policy for safe actions is not yet implemented."
+                )
         else:
-            raise Exception('Unvalid policy type defined.')
+            raise Exception("Unvalid policy type defined.")
 
     def get_config(self):
         config = super(SafeGreedyPolicy, self).get_config()
-        config['type'] = self.policy_type
+        config["type"] = self.policy_type
         return config
 
 
@@ -66,19 +76,26 @@ class SimpleSafeGreedyPolicy(GreedyQPolicy):
         self.safety_threshold = safety_threshold
         self.safe_action = safe_action
         if self.safety_threshold is not None:
-            assert(safe_action is not None)
+            assert safe_action is not None
 
     def select_action(self, q_values, uncertainties):
         act = np.argmax(q_values)
-        
+
         if self.safety_threshold is None:
             return act, {}
         else:
             sorted_q_indexes = q_values.argsort()[::-1]
             i = 0
-            while i < len(uncertainties) and np.abs(uncertainties[sorted_q_indexes[i]]) > np.abs(self.safety_threshold):
+            while i < len(uncertainties) and np.abs(
+                uncertainties[sorted_q_indexes[i]]
+            ) > np.abs(self.safety_threshold):
                 i += 1
-            if i == len(uncertainties):  # No action is considered safe - use fallback action
-                return self.safe_action, {'safe_action': True, 'hard_safe': True}
+            if i == len(
+                uncertainties
+            ):  # No action is considered safe - use fallback action
+                return self.safe_action, {"safe_action": True, "hard_safe": True}
             else:
-                return sorted_q_indexes[i], {'safe_action': not i == 0, 'hard_safe': False}
+                return sorted_q_indexes[i], {
+                    "safe_action": not i == 0,
+                    "hard_safe": False,
+                }
