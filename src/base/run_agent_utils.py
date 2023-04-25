@@ -59,7 +59,7 @@ def save_metrics(
     nb_safe_hard_actions_per_episode,
     collision_speeds,
 ):
-    with open(filepath + case, "a+") as file:
+    with open(filepath + case + '.csv', "a+") as file:
         writer = csv.writer(file)
         writer.writerow(
             [
@@ -160,6 +160,7 @@ def rerun_test_scenarios(
             nb_safe_hard_actions_per_episode,
             collision_speeds,
         )
+    env.close()
 
 
 def fast_overtaking(
@@ -297,6 +298,7 @@ def fast_overtaking(
             nb_safe_hard_actions_per_episode,
             collision_speeds,
         )
+    env.close()
 
 
 def standstill(
@@ -459,3 +461,4 @@ def standstill(
             nb_safe_hard_actions_per_episode,
             collision_speeds,
         )
+    env.close()

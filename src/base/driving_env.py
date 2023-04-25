@@ -527,6 +527,9 @@ class Highway(object):
                                   [self.positions[0] + self.road.road_params['action_info_pos'], self.positions[0] +
                                    self.road.road_params['action_info_pos'] + [1, -11.5*dy]], [0, 0, 0, 0])
 
+    def close(self):
+        return traci.close()
+
     @property
     def nb_actions(self):
         return len(self.action_interp)
