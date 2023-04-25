@@ -183,7 +183,16 @@ def fast_overtaking(
 
     env.reset()
 
-    for thresh in np.linspace(thresh_range[0], thresh_range[1], num=thresh_steps):
+    range_ = (
+        np.linspace(
+            thresh_range[0],
+            thresh_range[1],
+            num=thresh_steps,
+        )
+        if use_safe_action
+        else [0]
+    )
+    for thresh in range_:
         episode_rewards = []
         episode_steps = []
         nb_safe_actions_per_episode = []
@@ -310,8 +319,16 @@ def standstill(
     )
 
     env.reset()
-
-    for thresh in np.linspace(thresh_range[0], thresh_range[1], num=thresh_steps):
+    range_ = (
+        np.linspace(
+            thresh_range[0],
+            thresh_range[1],
+            num=thresh_steps,
+        )
+        if use_safe_action
+        else [0]
+    )
+    for thresh in range_:
         episode_rewards = []
         episode_steps = []
         nb_safe_actions_per_episode = []
