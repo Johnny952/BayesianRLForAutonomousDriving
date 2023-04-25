@@ -50,6 +50,7 @@ def read_file(path, unc_normalized=True, negative_unc=False):
     with h5py.File(path, "r") as file:
         for step_key, step in file.items():
             unc, nb_steps = step["uncertainties"][()], step["steps"][()]
+            
             total_steps = np.sum(nb_steps)
             unc = unc / total_steps
             if negative_unc:
@@ -193,14 +194,14 @@ def plot_train(model_nb=-1):
                 color=model["color"],
                 label=f"Mean {model_name}",
             )
-            # plt.fill_between(
-            #     steps,
-            #     (uncertainty - uncertainty_std),
-            #     (uncertainty + uncertainty_std),
-            #     color=model["color"],
-            #     alpha=0.2,
-            #     label="Std",
-            # )
+            plt.fill_between(
+                steps,
+                (uncertainty - uncertainty_std),
+                (uncertainty + uncertainty_std),
+                color=model["color"],
+                alpha=0.2,
+                label="Std",
+            )
             # plt.fill_between(
             #     steps,
             #     (uncertainty_up),
@@ -211,7 +212,7 @@ def plot_train(model_nb=-1):
     ax1.spines["top"].set_visible(False)
     plt.xlabel("Traning step", fontsize=14)
     plt.ylabel("Normalized Uncertainty", fontsize=14)
-    plt.ylim((0, 0.1))
+    plt.ylim((0, 1))
     # plt.yscale('log')
     plt.ticklabel_format(style="sci", axis="x", scilimits=(0, 0), useMathText=True)
 
@@ -266,105 +267,104 @@ def plot_train(model_nb=-1):
     plt.ticklabel_format(style="sci", axis="x", scilimits=(0, 0), useMathText=True)
 
     # plt.show()
-    plt.savefig("./videos/fig.png")
+    plt.savefig("./videos/train.png")
     plt.close()
 
 
-def plot_test(scenario="rerun_test_scenarios"):
-    # Rewards vs collision rate
-    fig = plt.figure()
-    fig, axs = plt.subplots(ncols=3, nrows=2)
-    grids = axs[0, 0].get_gridspec()
-    for axis in axs[:2, :2].flat:
-        axis.remove()
-    # fig, ax = plt.subplots(1, 3)
-    fig.set_figheight(12)
-    fig.set_figwidth(18)
+def plot_test():
+    for scenario in ["rerun_test_scenarios", "standstill", "fast_overtaking"]:
+        # Rewards vs collision rate
+        # fig, axs = plt.subplots(ncols=4, nrows=3)
+        # grids = axs[0, 0].get_gridspec()
+        # for axis in axs[:2, :2].flat:
+        #     axis.remove()
+        # fig.set_figwidth(16)
+        # fig.set_figheight(12)
 
-    # ax2 = plt.subplot(2, 3, 3)
-    # ax3 = plt.subplot(2, 3, 6)
-    # ax1 = plt.subplot(2, 1, (1, 2, 4, 5))
-    ax1 = fig.add_subplot(grids[:2, :2])
-    # ax4 = ax1.twinx()
-    ax2 = axs[0, 2]
-    ax3 = axs[1, 2]
+        # ax1 = fig.add_subplot(grids[:3, :3])
+        # ax2 = axs[0, 3]
+        # ax3 = axs[1, 3]
+        # ax4 = axs[2, 3]
+        fig, axs = plt.subplots(ncols=2, nrows=2)
+        fig.set_figwidth(16)
+        fig.set_figheight(16)
+        ax1 = axs[0, 0]
+        ax2 = axs[0, 1]
+        ax3 = axs[1, 0]
+        ax4 = axs[1, 1]
 
-    plot_models = [0, 3]
+        for model in models:
+            base_path = model["multiple_test"]["base_path"]
+            model_name = model["name"]
+            if model["multiple_test"][scenario]["u"]:
+                (
+                    _,
+                    rewards,
+                    collision_rates,
+                    nb_safe_actions,
+                    nb_safe_action_hard,
+                    collision_speeds,
+                ) = read_test(f"{base_path}{scenario}_U.csv")
+                idc = np.argsort(collision_rates)
+                sorted_rates, sorted_rewards = collision_rates[idc], rewards[idc]
+                # filtered_rewards = gaussian_filter1d(sorted_rewards.astype(np.float32), sigma=0.9)
+                # ax1.plot(sorted_rates, filtered_rewards, color=model["color"], label=model["name"], alpha=1)
+                unique_rates, unique_idxs = np.unique(sorted_rates, return_index=True)
+                unique_rewards = sorted_rewards[unique_idxs]
+                ax1.plot(
+                    unique_rates, unique_rewards, color=model["color"], label=f"{model_name} U", alpha=1
+                )
 
-    model = models[plot_models[0]]
-    (
-        _,
-        rewards,
-        collision_rates,
-        nb_safe_actions,
-        nb_safe_action_hard,
-        collision_speeds,
-    ) = read_test(model["multiple_test"][scenario])
-    idc = np.argsort(collision_rates)
-    sorted_rates, sorted_rewards = collision_rates[idc], rewards[idc]
-    # filtered_rewards = gaussian_filter1d(sorted_rewards.astype(np.float32), sigma=0.9)
-    # ax1.plot(sorted_rates, filtered_rewards, color=model["color"], label=model["name"], alpha=1)
-    unique_rates, unique_idxs = np.unique(sorted_rates, return_index=True)
-    unique_rewards = sorted_rewards[unique_idxs]
-    ax1.plot(
-        unique_rates, unique_rewards, color=model["color"], label=model["name"], alpha=1
-    )
-    ax2.plot(rewards, color=model["color"], label=model["name"], alpha=1)
-    ax3.plot(collision_rates, color=model["color"], label=model["name"], alpha=1)
+                idc = np.argsort(nb_safe_actions)
+                sorted_rates, sorted_rewards, sorted_speeds = collision_rates[idc], rewards[idc], collision_speeds[idc]
+                ax2.plot(nb_safe_actions[idc], sorted_rewards, color=model["color"], label=f"{model_name} U", alpha=1)
+                ax3.plot(nb_safe_actions[idc], sorted_rates, color=model["color"], label=f"{model_name} U", alpha=1)
+                ax4.plot(nb_safe_actions[idc], sorted_speeds, color=model["color"], label=f"{model_name} U", alpha=1)
 
-    ax1.set_xlim(left=0)
-    ax1.set_ylim(bottom=0)
-    # ax1.tick_params(axis='y', colors=model["color"])
-    ax1.set_ylabel("Rewards", fontsize=14)
-    # ax1.set_ylabel(f'Rewards {model["name"]}', fontsize=14, color=model["color"])
+            if model["multiple_test"][scenario]["nu"]:
+                (
+                    _,
+                    rewards,
+                    collision_rates,
+                    _,
+                    _,
+                    _,
+                ) = read_test(f"{base_path}{scenario}_NU.csv")
+                ax1.plot(
+                    collision_rates, rewards, '.', color=model["color"], label=f"{model_name} NU", alpha=1, markersize=14
+                )
+            
+        
 
-    model = models[plot_models[1]]
-    (
-        _,
-        rewards,
-        collision_rates,
-        nb_safe_actions,
-        nb_safe_action_hard,
-        collision_speeds,
-    ) = read_test(model["multiple_test"][scenario])
-    idc = np.argsort(collision_rates)
-    sorted_rates, sorted_rewards = collision_rates[idc], rewards[idc]
-    # filtered_rewards = gaussian_filter1d(sorted_rewards.astype(np.float32), sigma=0.9)
-    # ax1.plot(sorted_rates, filtered_rewards, color=model["color"], label=model["name"], alpha=1)
-    unique_rates, unique_idxs = np.unique(sorted_rates, return_index=True)
-    unique_rewards = sorted_rewards[unique_idxs]
-    # ax4.plot(unique_rates, unique_rewards, color=model["color"], label=model["name"], alpha=1)
-    ax1.plot(
-        unique_rates, unique_rewards, color=model["color"], label=model["name"], alpha=1
-    )
-    ax2.plot(rewards, color=model["color"], label=model["name"], alpha=1)
-    ax3.plot(collision_rates, color=model["color"], label=model["name"], alpha=1)
+        ax1.set_xlim(left=0)
+        # ax1.set_ylim(bottom=-4)
+        ax1.set_ylabel("Rewards", fontsize=14)
 
-    # ax4.set_xlim(left=0)
-    # ax4.set_ylim(bottom=0)
-    # ax4.tick_params(axis='y', colors=model["color"])
-    # ax4.set_ylabel(f'Rewards {model["name"]}', fontsize=14, color=model["color"])
+        # ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+        ax1.xaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=0))
+        ax1.set_xlabel("Collision Rate", fontsize=14)
+        ax1.legend()
+        ax1.grid()
 
-    # ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
-    ax1.xaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=0))
-    ax1.set_xlabel("Collision Rate", fontsize=14)
-    ax1.legend()
-    ax1.grid()
+        # ax2.set_ylim(bottom=-4)
+        ax2.set_xlim(left=0)
+        ax2.set_ylabel("Reward", fontsize=14)
+        ax2.set_xlabel("Number Safe actions", fontsize=14)
 
-    ax2.set_ylim(bottom=0)
-    ax2.set_xlim(left=0)
-    ax2.set_ylabel("Reward", fontsize=14)
-    ax2.set_xlabel("Threshold", fontsize=14)
+        ax3.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=0))
+        ax3.set_ylim(bottom=0)
+        ax3.set_xlim(left=0)
+        ax3.set_ylabel("Collision Rate", fontsize=14)
+        ax3.set_xlabel("Number Safe actions", fontsize=14)
 
-    ax3.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=0))
-    ax3.set_ylim(bottom=0)
-    ax3.set_xlim(left=0)
-    ax3.set_ylabel("Collision Rate", fontsize=14)
-    ax3.set_xlabel("Threshold", fontsize=14)
+        ax4.set_ylim(bottom=0)
+        ax4.set_xlim(left=0)
+        ax4.set_ylabel("Collision Speeds", fontsize=14)
+        ax4.set_xlabel("Number Safe actions", fontsize=14)
 
-    # plt.show()
-    plt.savefig("./videos/compar.png")
-    plt.close()
+        # plt.show()
+        plt.savefig(f"./videos/{scenario}.png")
+        plt.close()
 
 
 if __name__ == "__main__":
@@ -374,9 +374,19 @@ if __name__ == "__main__":
                 "./logs/train_agent_20230323_235314_dqn_6M_v3/data.hdf5",
             ],
             "multiple_test": {
-                "rerun_test_scenarios": None,
-                "standstill": None,
-                "fast_overtaking": None,
+                "base_path": "./logs/train_agent_20230323_235314_dqn_6M_v3/",
+                "rerun_test_scenarios": {
+                    "u": False,
+                    "nu": True,
+                },
+                "standstill": {
+                    "u": False,
+                    "nu": True,
+                },
+                "fast_overtaking": {
+                    "u": False,
+                    "nu": True,
+                },
             },
             "name": "Standard DQN",
             "show_uncertainty": False,
@@ -388,9 +398,19 @@ if __name__ == "__main__":
                 "./logs/train_agent_20230323_235219_rpf_6M_v3/data.hdf5",
             ],
             "multiple_test": {
-                "rerun_test_scenarios": None,
-                "standstill": None,
-                "fast_overtaking": None,
+                "base_path": "./logs/train_agent_20230323_235219_rpf_6M_v3/",
+                "rerun_test_scenarios": {
+                    "u": True,
+                    "nu": True,
+                },
+                "standstill": {
+                    "u": True,
+                    "nu": True,
+                },
+                "fast_overtaking": {
+                    "u": True,
+                    "nu": True,
+                },
             },
             "name": "Ensemble RPF DQN",
             "show_uncertainty": True,
@@ -399,16 +419,26 @@ if __name__ == "__main__":
         },
         {
             "paths": [
-                "./logs/train_agent_20230405_010753_bnn_6M_v4/data.hdf5",
+                "./logs/train_agent_20230418_225936_bnn_6M_v6/data.hdf5",
             ],
             "multiple_test": {
-                "rerun_test_scenarios": None,
-                "standstill": None,
-                "fast_overtaking": None,
+                "base_path": "./logs/train_agent_20230418_225936_bnn_6M_v6/",
+                "rerun_test_scenarios": {
+                    "u": True,
+                    "nu": True,
+                },
+                "standstill": {
+                    "u": True,
+                    "nu": True,
+                },
+                "fast_overtaking": {
+                    "u": True,
+                    "nu": True,
+                },
             },
             "name": "BNN DQN",
             "show_uncertainty": True,
-            "negative_uncertainty": False,
+            "negative_uncertainty": True,
             "color": "orange",
         },
         {
@@ -416,9 +446,19 @@ if __name__ == "__main__":
                 "./logs/train_agent_20230404_002949_ae_6M_v7/data.hdf5",
             ],
             "multiple_test": {
-                "rerun_test_scenarios": None,#"./logs/train_agent_20230404_002949_ae_6M_v7/rerun_test_scenarios.csv",
-                "standstill": None,
-                "fast_overtaking": None,
+                "base_path": "./logs/train_agent_20230404_002949_ae_6M_v7/",
+                "rerun_test_scenarios": {
+                    "u": False,
+                    "nu": False,
+                },
+                "standstill": {
+                    "u": False,
+                    "nu": False,
+                },
+                "fast_overtaking": {
+                    "u": False,
+                    "nu": False,
+                },
             },
             "name": "AE DQN",
             "show_uncertainty": True,
@@ -427,5 +467,5 @@ if __name__ == "__main__":
         },
     ]
 
-    plot_train()
+    # plot_train()
     plot_test()

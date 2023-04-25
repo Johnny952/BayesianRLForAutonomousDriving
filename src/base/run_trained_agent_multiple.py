@@ -46,8 +46,8 @@ agent_name = "5950033"
 case = "all"  # 'rerun_test_scenarios', 'fast_overtaking', 'standstill'
 use_ensemble_test_policy = True
 
-thresh_range = [0, 0.2]
-thresh_steps = 100
+thresh_range = [0, 0.1]
+thresh_steps = 200
 """ End options """
 
 # These import statements need to come after the choice of which agent that should be used.

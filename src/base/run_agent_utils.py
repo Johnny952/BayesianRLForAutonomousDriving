@@ -4,8 +4,8 @@ import traci
 import numpy as np
 
 # test scenarios
-NB_VEHICLES = 30
-speed_range = [10, 20]
+NB_VEHICLES = 25 # 25
+speed_range = [15, 25] # [15, 35]
 
 # Standstill
 stop_position_range = [280, 500]  # 300 = 280, 500
@@ -39,12 +39,12 @@ def thresh_log(
 ):
     print(
         f"\nThreshold: {str(thresh)}\t"
-        + f"Mean Reward: {str(np.mean(episode_rewards))}\t"
+        + f"Mean Reward: {str(np.sum(episode_rewards) / np.sum(episode_steps))}\t"
         + f"Total Steps: {np.sum(episode_steps)}\t"
-        + f"Collision Rate: {str(collissions)}%\t"
-        + f"Safe action Rate: {np.sum(nb_safe_actions_per_episode)/np.sum(episode_steps)}\t"
+        + f"Collision Rate: {str(collissions / len(episode_steps) * 100)}%\t"
+        + f"Safe action Rate: {np.sum(nb_safe_actions_per_episode)/np.sum(episode_steps)*100}%\t"
         + "Hard action rate: "
-        + f"{np.sum(nb_safe_hard_actions_per_episode)/np.sum(episode_steps)}\n\n"
+        + f"{np.sum(nb_safe_hard_actions_per_episode)/np.sum(episode_steps)*100}%\n\n"
     )
 
 
@@ -61,14 +61,16 @@ def save_metrics(
 ):
     with open(filepath + case + '.csv', "a+") as file:
         writer = csv.writer(file)
+        mean_speeds = 0 if len(collision_speeds) == 0 else np.mean(collision_speeds)
         writer.writerow(
             [
                 thresh,
                 np.sum(episode_rewards) / np.sum(episode_steps),
-                collissions / 100,
+                collissions / len(episode_steps),
                 np.sum(nb_safe_actions_per_episode) / np.sum(episode_steps),
                 np.sum(nb_safe_hard_actions_per_episode) / np.sum(episode_steps),
-                np.mean(collision_speeds),
+                mean_speeds,
+                np.sum(episode_steps),
             ]
         )
 
@@ -264,7 +266,7 @@ def fast_overtaking(
             step = 0
             for _ in range(8):
                 action, action_info = dqn.forward(observation)
-                observation, reward, _, _, more_info = env.step(action, action_info)
+                observation, reward, done, _, more_info = env.step(action, action_info)
                 episode_reward += reward
                 step += 1
                 if more_info["ego_collision"]:
@@ -274,6 +276,8 @@ def fast_overtaking(
                     nb_safe_actions += action_info["safe_action"]
                     nb_hard_safe_actions += action_info["hard_safe"]
                 action_log.append(action)
+                if done:
+                    break
             episode_rewards.append(episode_reward)
             episode_steps.append(step)
             nb_safe_actions_per_episode.append(nb_safe_actions)
@@ -427,7 +431,7 @@ def standstill(
             step = 0
             for _ in range(30):
                 action, action_info = dqn.forward(observation)
-                observation, reward, _, _, more_info = env.step(action)
+                observation, reward, done, _, more_info = env.step(action)
                 episode_reward += reward
                 step += 1
                 if more_info["ego_collision"]:
@@ -437,6 +441,8 @@ def standstill(
                     nb_safe_actions += action_info["safe_action"]
                     nb_hard_safe_actions += action_info["hard_safe"]
                 action_log.append(action)
+                if done:
+                    break
             episode_rewards.append(episode_reward)
             episode_steps.append(step)
             nb_safe_actions_per_episode.append(nb_safe_actions)

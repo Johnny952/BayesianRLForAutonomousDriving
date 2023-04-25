@@ -26,6 +26,7 @@ The different cases are:
 """
 
 import sys
+import numpy as np
 from rl.policy import GreedyQPolicy
 from rl.memory import Memory
 
@@ -43,17 +44,19 @@ from base.run_agent_utils import rerun_test_scenarios, fast_overtaking, standsti
 from matplotlib import rcParams
 from safe_greedy_policy import SafeGreedyPolicy, SimpleSafeGreedyPolicy
 
+np.warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)
+
 rcParams["pdf.fonttype"] = 42  # To avoid Type 3 fonts in figures
 rcParams["ps.fonttype"] = 42
 
 """ Options: """
 filepath = "../logs/train_agent_20230418_225936_bnn_6M_v6/"
 agent_name = "5950075"
-case = "all"  # 'rerun_test_scenarios', 'fast_overtaking', 'standstill'
-use_safe_action = False
+case = "standstill"  # 'rerun_test_scenarios', 'fast_overtaking', 'standstill', 'all'
+use_safe_action = True
 
 thresh_range = [0, 50]
-thresh_steps = 100
+thresh_steps = 200
 """ End options """
 
 safe_action = 3 if use_safe_action else None
