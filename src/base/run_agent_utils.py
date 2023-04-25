@@ -82,7 +82,7 @@ def rerun_test_scenarios(
     thresh_steps=100,
     use_safe_action=False,
 ):
-    sufix = '_U' if use_safe_action else 'NU'
+    sufix = '_U' if use_safe_action else '_NU'
     case = 'rerun_test_scenarios' + sufix
     with open(filepath + case + ".csv", "w+"):
         pass
@@ -172,7 +172,7 @@ def fast_overtaking(
     thresh_steps=100,
     use_safe_action=False,
 ):
-    sufix = '_U' if use_safe_action else 'NU'
+    sufix = '_U' if use_safe_action else '_NU'
     case = 'fast_overtaking' + sufix
     ps.sim_params["nb_vehicles"] = 5
     env = Highway(
@@ -310,7 +310,7 @@ def standstill(
     thresh_steps=100,
     use_safe_action=False,
 ):
-    sufix = '_U' if use_safe_action else 'NU'
+    sufix = '_U' if use_safe_action else '_NU'
     case = 'standstill' + sufix
     ps.sim_params["nb_vehicles"] = 7
     env = Highway(
