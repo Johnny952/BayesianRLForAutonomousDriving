@@ -44,7 +44,7 @@ rcParams["ps.fonttype"] = 42
 filepath = "../logs/train_agent_20230323_235219_rpf_6M_v3/"
 agent_name = "5950033"
 case = "all"  # 'rerun_test_scenarios', 'fast_overtaking', 'standstill'
-use_ensemble_test_policy = True
+use_ensemble_test_policy = False
 
 thresh_range = [0, 0.1]
 thresh_steps = 200
