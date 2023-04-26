@@ -176,6 +176,8 @@ def fast_overtaking(
 ):
     sufix = '_U' if use_safe_action else '_NU'
     case = 'fast_overtaking' + sufix
+    with open(filepath + case + ".csv", "w+"):
+        pass
     ps.sim_params["nb_vehicles"] = 5
     env = Highway(
         sim_params=ps.sim_params,
@@ -316,6 +318,8 @@ def standstill(
 ):
     sufix = '_U' if use_safe_action else '_NU'
     case = 'standstill' + sufix
+    with open(filepath + case + ".csv", "w+"):
+        pass
     ps.sim_params["nb_vehicles"] = 7
     env = Highway(
         sim_params=ps.sim_params,
@@ -423,7 +427,6 @@ def standstill(
                 traci.vehicle.setSpeed(veh, -1)
 
             # Run standstill case
-            action_log = []
             nb_safe_actions = 0
             nb_hard_safe_actions = 0
 
@@ -440,7 +443,6 @@ def standstill(
                 if "safe_action" in action_info:
                     nb_safe_actions += action_info["safe_action"]
                     nb_hard_safe_actions += action_info["hard_safe"]
-                action_log.append(action)
                 if done:
                     break
             episode_rewards.append(episode_reward)

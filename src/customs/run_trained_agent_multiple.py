@@ -50,10 +50,10 @@ rcParams["pdf.fonttype"] = 42  # To avoid Type 3 fonts in figures
 rcParams["ps.fonttype"] = 42
 
 """ Options: """
-filepath = "../logs/train_agent_20230418_225936_bnn_6M_v6/"
-agent_name = "5950075"
+filepath = "../logs/train_agent_20230404_002949_ae_6M_v7/"
+agent_name = "5950003"
 case = "all"  # 'rerun_test_scenarios', 'fast_overtaking', 'standstill', 'all'
-use_safe_action = False
+use_safe_action = True
 
 thresh_range = [0, 50]
 thresh_steps = 200

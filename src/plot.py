@@ -9,6 +9,18 @@ PERCENTILE_DOWN = 1
 PERCENTILE_UP = 99
 EPSILON = 1e-15
 
+def collapse_duplicated(*arrays, collapse_by=0, reduction=np.mean):
+    collapse_array = arrays[collapse_by]
+    unique, unique_idcs = np.unique(collapse_array, return_index=True)
+    new_arrays = []
+    for array in arrays:
+        new_array = np.zeros(unique.shape)
+        for i, unique_value in enumerate(unique):
+            filter_ = collapse_array == unique_value
+            new_array[i] = reduction(array[filter_])
+        new_arrays.append(new_array)
+    return unique_idcs, new_arrays
+
 
 def read_test(path):
     thresholds = []
@@ -305,21 +317,17 @@ def plot_test():
                     nb_safe_action_hard,
                     collision_speeds,
                 ) = read_test(f"{base_path}{scenario}_U.csv")
-                idc = np.argsort(collision_rates)
-                sorted_rates, sorted_rewards = collision_rates[idc], rewards[idc]
+                _, [filtered_rates, filtered_rewards] = collapse_duplicated(collision_rates, rewards)
                 # filtered_rewards = gaussian_filter1d(sorted_rewards.astype(np.float32), sigma=0.9)
                 # ax1.plot(sorted_rates, filtered_rewards, color=model["color"], label=model["name"], alpha=1)
-                unique_rates, unique_idxs = np.unique(sorted_rates, return_index=True)
-                unique_rewards = sorted_rewards[unique_idxs]
                 ax1.plot(
-                    unique_rates, unique_rewards, color=model["color"], label=f"{model_name} U", alpha=1
+                    filtered_rates, filtered_rewards, color=model["color"], label=f"{model_name} U", alpha=1
                 )
 
-                idc = np.argsort(nb_safe_actions)
-                sorted_rates, sorted_rewards, sorted_speeds = collision_rates[idc], rewards[idc], collision_speeds[idc]
-                ax2.plot(nb_safe_actions[idc], sorted_rewards, color=model["color"], label=f"{model_name} U", alpha=1)
-                ax3.plot(nb_safe_actions[idc], sorted_rates, color=model["color"], label=f"{model_name} U", alpha=1)
-                ax4.plot(nb_safe_actions[idc], sorted_speeds, color=model["color"], label=f"{model_name} U", alpha=1)
+                _, [filtered_safe_action, filtered_rates, filtered_rewards, filtered_speeds] = collapse_duplicated(nb_safe_actions, collision_rates, rewards, collision_speeds)
+                ax2.plot(filtered_safe_action, filtered_rewards, color=model["color"], label=f"{model_name} U", alpha=1)
+                ax3.plot(filtered_safe_action, filtered_rates, color=model["color"], label=f"{model_name} U", alpha=1)
+                ax4.plot(filtered_safe_action, filtered_speeds, color=model["color"], label=f"{model_name} U", alpha=1)
 
             if model["multiple_test"][scenario]["nu"]:
                 (
@@ -328,12 +336,14 @@ def plot_test():
                     collision_rates,
                     _,
                     _,
-                    _,
+                    collision_speeds,
                 ) = read_test(f"{base_path}{scenario}_NU.csv")
                 ax1.plot(
                     collision_rates, rewards, '.', color=model["color"], label=f"{model_name} NU", alpha=1, markersize=14
                 )
-            
+                ax2.axhline(y=rewards[0], xmin=0.0, xmax=1.0, color=model["color"], linestyle="--")
+                ax3.axhline(y=collision_rates[0], xmin=0.0, xmax=1.0, color=model["color"], linestyle="--")
+                ax4.axhline(y=collision_speeds[0], xmin=0.0, xmax=1.0, color=model["color"], linestyle="--")
         
 
         ax1.set_xlim(left=0)
@@ -417,30 +427,30 @@ if __name__ == "__main__":
             "negative_uncertainty": False,
             "color": "red",
         },
-        {
-            "paths": [
-                "./logs/train_agent_20230418_225936_bnn_6M_v6/data.hdf5",
-            ],
-            "multiple_test": {
-                "base_path": "./logs/train_agent_20230418_225936_bnn_6M_v6/",
-                "rerun_test_scenarios": {
-                    "u": True,
-                    "nu": True,
-                },
-                "standstill": {
-                    "u": True,
-                    "nu": True,
-                },
-                "fast_overtaking": {
-                    "u": True,
-                    "nu": True,
-                },
-            },
-            "name": "BNN DQN",
-            "show_uncertainty": True,
-            "negative_uncertainty": True,
-            "color": "orange",
-        },
+        # {
+        #     "paths": [
+        #         "./logs/train_agent_20230418_225936_bnn_6M_v6/data.hdf5",
+        #     ],
+        #     "multiple_test": {
+        #         "base_path": "./logs/train_agent_20230418_225936_bnn_6M_v6/",
+        #         "rerun_test_scenarios": {
+        #             "u": True,
+        #             "nu": True,
+        #         },
+        #         "standstill": {
+        #             "u": True,
+        #             "nu": True,
+        #         },
+        #         "fast_overtaking": {
+        #             "u": True,
+        #             "nu": True,
+        #         },
+        #     },
+        #     "name": "BNN DQN",
+        #     "show_uncertainty": True,
+        #     "negative_uncertainty": True,
+        #     "color": "orange",
+        # },
         {
             "paths": [
                 "./logs/train_agent_20230404_002949_ae_6M_v7/data.hdf5",
@@ -467,5 +477,5 @@ if __name__ == "__main__":
         },
     ]
 
-    # plot_train()
+    plot_train()
     plot_test()
