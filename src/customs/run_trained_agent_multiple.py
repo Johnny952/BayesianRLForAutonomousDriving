@@ -55,7 +55,7 @@ agent_name = "5950003"
 case = "all"  # 'rerun_test_scenarios', 'fast_overtaking', 'standstill', 'all'
 use_safe_action = False
 
-thresh_range = [0, 10]
+thresh_range = [0, 100]
 thresh_steps = 100
 """ End options """
 

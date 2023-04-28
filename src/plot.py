@@ -79,6 +79,8 @@ def read_file(path, unc_normalized=True, negative_unc=False):
             if mean_ < mean_min:
                 mean_min = mean_
 
+    # mean_min = 0
+
     uncertainty_mean = []
     uncertainty_up = []
     uncertainty_low = []
@@ -317,6 +319,8 @@ def plot_test():
                     nb_safe_action_hard,
                     collision_speeds,
                 ) = read_test(f"{base_path}{scenario}_U.csv")
+                if base_path == './logs/train_agent_20230404_002949_ae_6M_v7/':
+                    print(nb_safe_actions)
                 _, [filtered_rates, filtered_rewards] = collapse_duplicated(collision_rates, rewards)
                 # filtered_rewards = gaussian_filter1d(sorted_rewards.astype(np.float32), sigma=0.9)
                 # ax1.plot(sorted_rates, filtered_rewards, color=model["color"], label=model["name"], alpha=1)
@@ -458,16 +462,16 @@ if __name__ == "__main__":
             "multiple_test": {
                 "base_path": "./logs/train_agent_20230404_002949_ae_6M_v7/",
                 "rerun_test_scenarios": {
-                    "u": False,
-                    "nu": False,
+                    "u": True,
+                    "nu": True,
                 },
                 "standstill": {
-                    "u": False,
-                    "nu": False,
+                    "u": True,
+                    "nu": True,
                 },
                 "fast_overtaking": {
-                    "u": False,
-                    "nu": False,
+                    "u": True,
+                    "nu": True,
                 },
             },
             "name": "AE DQN",
