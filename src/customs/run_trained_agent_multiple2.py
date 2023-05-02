@@ -55,8 +55,14 @@ agent_name = "5950003"
 case = "all"  # 'rerun_test_scenarios', 'fast_overtaking', 'standstill', 'all'
 use_safe_action = False
 
-thresh_range = [0, 100]
+thresh_range = [0, 1]
 thresh_steps = 100
+save_video = True
+do_save_metrics = False
+do_save_uncert = True
+number_tests = 1
+number_episodes=10
+csv_sufix='_2'
 """ End options """
 
 safe_action = 3 if use_safe_action else None
@@ -234,6 +240,13 @@ if case == "rerun_test_scenarios":
         thresh_range=thresh_range,
         thresh_steps=thresh_steps,
         use_safe_action=use_safe_action,
+        save_video=save_video,
+        do_save_metrics=do_save_metrics,
+        number_tests=number_tests,
+        use_gui=True,
+        number_episodes=number_episodes,
+        csv_sufix=csv_sufix,
+        do_save_uncert=do_save_uncert,
     )
 elif case == "fast_overtaking":
     fast_overtaking(
@@ -244,6 +257,13 @@ elif case == "fast_overtaking":
         thresh_range=thresh_range,
         thresh_steps=thresh_steps,
         use_safe_action=use_safe_action,
+        save_video=save_video,
+        do_save_metrics=do_save_metrics,
+        number_tests=number_tests,
+        use_gui=True,
+        number_episodes=number_episodes,
+        csv_sufix=csv_sufix,
+        do_save_uncert=do_save_uncert,
     )
 
 elif case == "standstill":
@@ -255,6 +275,13 @@ elif case == "standstill":
         thresh_range=thresh_range,
         thresh_steps=thresh_steps,
         use_safe_action=use_safe_action,
+        save_video=save_video,
+        do_save_metrics=do_save_metrics,
+        number_tests=number_tests,
+        use_gui=True,
+        number_episodes=number_episodes,
+        csv_sufix=csv_sufix,
+        do_save_uncert=do_save_uncert,
     )
 elif case == "all":
     rerun_test_scenarios(
@@ -265,6 +292,13 @@ elif case == "all":
         thresh_range=thresh_range,
         thresh_steps=thresh_steps,
         use_safe_action=use_safe_action,
+        save_video=save_video,
+        do_save_metrics=do_save_metrics,
+        number_tests=number_tests,
+        use_gui=True,
+        number_episodes=number_episodes,
+        csv_sufix=csv_sufix,
+        do_save_uncert=do_save_uncert,
     )
     fast_overtaking(
         dqn,
@@ -274,6 +308,13 @@ elif case == "all":
         thresh_range=thresh_range,
         thresh_steps=thresh_steps,
         use_safe_action=use_safe_action,
+        save_video=save_video,
+        do_save_metrics=do_save_metrics,
+        number_tests=number_tests,
+        use_gui=True,
+        number_episodes=number_episodes,
+        csv_sufix=csv_sufix,
+        do_save_uncert=do_save_uncert,
     )
     standstill(
         dqn,
@@ -283,6 +324,13 @@ elif case == "all":
         thresh_range=thresh_range,
         thresh_steps=thresh_steps,
         use_safe_action=use_safe_action,
+        save_video=save_video,
+        do_save_metrics=do_save_metrics,
+        number_tests=number_tests,
+        use_gui=True,
+        number_episodes=number_episodes,
+        csv_sufix=csv_sufix,
+        do_save_uncert=do_save_uncert,
     )
 else:
     raise Exception("Case not defined.")

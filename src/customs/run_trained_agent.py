@@ -502,7 +502,6 @@ elif case == "standstill":
                 )
             action, action_info = dqn.forward(observation)
             observation, reward, done, info = env.step(action)
-            print(reward)
             if env.use_gui:
                 traci.vehicle.setColor("veh1", (255, 255, 255))
             if "safe_action" in action_info:

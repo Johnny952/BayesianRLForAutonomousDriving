@@ -224,8 +224,8 @@ class Highway(object):
         self.state_t1 = [self.positions, self.speeds, False]
         observation = self.sensor_model(self.state_t1)
 
-        if self.use_gui:
-            self.print_info_in_gui(info='Start')
+        # if self.use_gui:
+        #     self.print_info_in_gui(info='Start')
 
         return observation
 
@@ -396,8 +396,8 @@ class Highway(object):
                                    accs=self.accs, ego_collision=ego_collision, ego_near_collision=ego_near_collision,
                                    outside_road=outside_road)
 
-        if self.use_gui:
-            self.print_info_in_gui(reward=reward, action=[long_action, lat_action], info=info, action_info=action_info)
+        # if self.use_gui:
+        #     self.print_info_in_gui(reward=reward, action=[long_action, lat_action], info=info, action_info=action_info)
 
         if self.return_more_info:
             return observation, reward, done, info, more_info
