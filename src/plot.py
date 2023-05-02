@@ -319,8 +319,6 @@ def plot_test():
                     nb_safe_action_hard,
                     collision_speeds,
                 ) = read_test(f"{base_path}{scenario}_U.csv")
-                if base_path == './logs/train_agent_20230404_002949_ae_6M_v7/':
-                    print(nb_safe_actions)
                 _, [filtered_rates, filtered_rewards] = collapse_duplicated(collision_rates, rewards)
                 # filtered_rewards = gaussian_filter1d(sorted_rewards.astype(np.float32), sigma=0.9)
                 # ax1.plot(sorted_rates, filtered_rewards, color=model["color"], label=model["name"], alpha=1)
