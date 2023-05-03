@@ -47,6 +47,18 @@ def read_test(path):
         np.array(collision_speeds),
     )
 
+def read_test2(path):
+    thresholds = []
+    episodes = []
+    uncert = []
+    with open(path, "r") as f:
+        csv_reader = csv.reader(f, delimiter=",")
+        for row in csv_reader:
+            thresholds.append(float(row[0]))
+            episodes.append(int(row[1]))
+            uncert.append([float(d) for d in row[2:]])
+    return thresholds, episodes, uncert
+
 
 def read_file(path, unc_normalized=True, negative_unc=False):
     steps = []
@@ -286,26 +298,19 @@ def plot_train(model_nb=-1):
 
 
 def plot_test():
-    for scenario in ["rerun_test_scenarios", "standstill", "fast_overtaking"]:
-        # Rewards vs collision rate
-        # fig, axs = plt.subplots(ncols=4, nrows=3)
-        # grids = axs[0, 0].get_gridspec()
-        # for axis in axs[:2, :2].flat:
-        #     axis.remove()
-        # fig.set_figwidth(16)
-        # fig.set_figheight(12)
-
-        # ax1 = fig.add_subplot(grids[:3, :3])
-        # ax2 = axs[0, 3]
-        # ax3 = axs[1, 3]
-        # ax4 = axs[2, 3]
-        fig, axs = plt.subplots(ncols=2, nrows=2)
-        fig.set_figwidth(16)
-        fig.set_figheight(16)
-        ax1 = axs[0, 0]
-        ax2 = axs[0, 1]
-        ax3 = axs[1, 0]
-        ax4 = axs[1, 1]
+    for scenario in tests.keys():
+        if tests[scenario]["mode"] == "full":
+            fig, axs = plt.subplots(ncols=2, nrows=2)
+            fig.set_figwidth(16)
+            fig.set_figheight(16)
+            ax1 = axs[0, 0]
+            ax2 = axs[0, 1]
+            ax3 = axs[1, 0]
+            ax4 = axs[1, 1]
+        else:
+            fig, ax = plt.subplots(ncols=1, nrows=1)
+            fig.set_figwidth(16)
+            fig.set_figheight(16)
 
         for model in models:
             base_path = model["multiple_test"]["base_path"]
@@ -320,16 +325,18 @@ def plot_test():
                     collision_speeds,
                 ) = read_test(f"{base_path}{scenario}_U.csv")
                 _, [filtered_rates, filtered_rewards] = collapse_duplicated(collision_rates, rewards)
-                # filtered_rewards = gaussian_filter1d(sorted_rewards.astype(np.float32), sigma=0.9)
-                # ax1.plot(sorted_rates, filtered_rewards, color=model["color"], label=model["name"], alpha=1)
-                ax1.plot(
-                    filtered_rates, filtered_rewards, color=model["color"], label=f"{model_name} U", alpha=1
-                )
+                if tests[scenario]["mode"] == "full":
+                    ax1.plot(
+                        filtered_rates, filtered_rewards, '.-', color=model["color"], label=f"{model_name} U", alpha=1
+                    )
 
-                _, [filtered_safe_action, filtered_rates, filtered_rewards, filtered_speeds] = collapse_duplicated(nb_safe_actions, collision_rates, rewards, collision_speeds)
-                ax2.plot(filtered_safe_action, filtered_rewards, color=model["color"], label=f"{model_name} U", alpha=1)
-                ax3.plot(filtered_safe_action, filtered_rates, color=model["color"], label=f"{model_name} U", alpha=1)
-                ax4.plot(filtered_safe_action, filtered_speeds, color=model["color"], label=f"{model_name} U", alpha=1)
+                    _, [filtered_safe_action, filtered_rates, filtered_rewards, filtered_speeds] = collapse_duplicated(nb_safe_actions, collision_rates, rewards, collision_speeds)
+                    ax2.plot(filtered_safe_action, filtered_rewards, '.-', color=model["color"], label=f"{model_name} U", alpha=1)
+                    ax3.plot(filtered_safe_action, filtered_rates, '.-', color=model["color"], label=f"{model_name} U", alpha=1)
+                    ax4.plot(filtered_safe_action, filtered_speeds, '.-', color=model["color"], label=f"{model_name} U", alpha=1)
+                else:
+                    _, [filtered_safe_action, filtered_rates, filtered_rewards, filtered_speeds] = collapse_duplicated(nb_safe_actions, collision_rates, rewards, collision_speeds)
+                    ax.plot(filtered_safe_action, filtered_rewards, '.-', color=model["color"], label=f"{model_name} U", alpha=1)
 
             if model["multiple_test"][scenario]["nu"]:
                 (
@@ -340,43 +347,81 @@ def plot_test():
                     _,
                     collision_speeds,
                 ) = read_test(f"{base_path}{scenario}_NU.csv")
-                ax1.plot(
-                    collision_rates, rewards, '.', color=model["color"], label=f"{model_name} NU", alpha=1, markersize=14
-                )
-                ax2.axhline(y=rewards[0], xmin=0.0, xmax=1.0, color=model["color"], linestyle="--")
-                ax3.axhline(y=collision_rates[0], xmin=0.0, xmax=1.0, color=model["color"], linestyle="--")
-                ax4.axhline(y=collision_speeds[0], xmin=0.0, xmax=1.0, color=model["color"], linestyle="--")
+                if tests[scenario]["mode"] == "full":
+                    ax1.plot(
+                        collision_rates, rewards, '.', color=model["color"], label=f"{model_name} NU", alpha=1, markersize=14
+                    )
+                    ax2.axhline(y=rewards[0], xmin=0.0, xmax=1.0, color=model["color"], linestyle="--")
+                    ax3.axhline(y=collision_rates[0], xmin=0.0, xmax=1.0, color=model["color"], linestyle="--")
+                    ax4.axhline(y=collision_speeds[0], xmin=0.0, xmax=1.0, color=model["color"], linestyle="--")
+                else:
+                    ax.axhline(y=rewards[0], xmin=0.0, xmax=1.0, color=model["color"], linestyle="--", label=f"{model_name} NU")
         
+        plt.suptitle(f"{scenario}", fontsize=25)
+        if tests[scenario]["mode"] == "full":
+            ax1.set_xlim(left=0)
+            # ax1.set_ylim(bottom=-4)
+            ax1.set_ylabel("Rewards", fontsize=16)
 
-        ax1.set_xlim(left=0)
-        # ax1.set_ylim(bottom=-4)
-        ax1.set_ylabel("Rewards", fontsize=14)
+            # ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+            ax1.xaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=0))
+            ax1.set_xlabel("Collision Rate", fontsize=16)
+            ax1.legend()
+            ax1.grid()
 
-        # ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
-        ax1.xaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=0))
-        ax1.set_xlabel("Collision Rate", fontsize=14)
-        ax1.legend()
-        ax1.grid()
+            # ax2.set_ylim(bottom=-4)
+            ax2.set_xlim(left=0, right=1)
+            ax2.set_ylabel("Reward", fontsize=16)
+            ax2.set_xlabel("Number Safe actions", fontsize=16)
 
-        # ax2.set_ylim(bottom=-4)
-        ax2.set_xlim(left=0)
-        ax2.set_ylabel("Reward", fontsize=14)
-        ax2.set_xlabel("Number Safe actions", fontsize=14)
+            ax3.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=0))
+            ax3.set_ylim(bottom=0)
+            ax3.set_xlim(left=0, right=1)
+            ax3.set_ylabel("Collision Rate", fontsize=16)
+            ax3.set_xlabel("Number Safe actions", fontsize=16)
 
-        ax3.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=0))
-        ax3.set_ylim(bottom=0)
-        ax3.set_xlim(left=0)
-        ax3.set_ylabel("Collision Rate", fontsize=14)
-        ax3.set_xlabel("Number Safe actions", fontsize=14)
-
-        ax4.set_ylim(bottom=0)
-        ax4.set_xlim(left=0)
-        ax4.set_ylabel("Collision Speeds", fontsize=14)
-        ax4.set_xlabel("Number Safe actions", fontsize=14)
+            ax4.set_ylim(bottom=0)
+            ax4.set_xlim(left=0, right=1)
+            ax4.legend()
+            ax4.set_ylabel("Collision Speeds", fontsize=16)
+            ax4.set_xlabel("Number Safe actions", fontsize=16)
+        else:
+            # ax2.set_ylim(bottom=-4)
+            ax.set_xlim(left=0, right=1)
+            ax.set_ylabel("Reward", fontsize=16)
+            ax.legend()
+            ax.set_xlabel("Number Safe actions", fontsize=16)
 
         # plt.show()
         plt.savefig(f"./videos/{scenario}.png")
         plt.close()
+
+def plot_tests2():
+    for model in models:
+        fig, axs = plt.subplots(ncols=2, nrows=1)
+        fig.set_figwidth(10)
+        fig.set_figheight(5)
+        plots = {
+            "standstill": axs[0],
+            "fast_overtaking": axs[1],
+        }
+        max_plots = model["tests_plots"]
+        for scenario in model["tests"].keys():
+            filepath = model["tests"][scenario]
+            if filepath:
+                _, _, uncerts = read_test2(filepath)
+                for i, uncert in enumerate(uncerts[:max_plots]):
+                    plots[scenario].plot(np.abs(uncert), label=f'Run {str(i+1)}')
+        model_name = model["name"]
+        plt.suptitle(f"Model {model_name}")
+
+        for scenario, ax in plots.items():
+            ax.set_ylabel('Uncertainty')
+            ax.set_xlabel(' Timestamp')
+            ax.set_title(scenario)
+        axs[0].legend()
+            
+        plt.show()
 
 
 if __name__ == "__main__":
@@ -404,6 +449,12 @@ if __name__ == "__main__":
             "show_uncertainty": False,
             "negative_uncertainty": False,
             "color": "blue",
+            "tests": {
+                "rerun_test_scenarios": None,
+                "standstill": None,
+                "fast_overtaking": None,
+            },
+            "tests_plots": 5,
         },
         {
             "paths": [
@@ -428,6 +479,12 @@ if __name__ == "__main__":
             "show_uncertainty": True,
             "negative_uncertainty": False,
             "color": "red",
+            "tests": {
+                "rerun_test_scenarios": None,
+                "standstill": "./logs/train_agent_20230323_235219_rpf_6M_v3/standstill_NU_2.csv",
+                "fast_overtaking": "./logs/train_agent_20230323_235219_rpf_6M_v3/fast_overtaking_NU_2.csv",
+            },
+            "tests_plots": 5,
         },
         # {
         #     "paths": [
@@ -476,8 +533,27 @@ if __name__ == "__main__":
             "show_uncertainty": True,
             "negative_uncertainty": True,
             "color": "green",
+            "tests": {
+                "rerun_test_scenarios": None,
+                "standstill": "./logs/train_agent_20230404_002949_ae_6M_v7/standstill_NU_2.csv",
+                "fast_overtaking": "./logs/train_agent_20230404_002949_ae_6M_v7/fast_overtaking_NU_2.csv",
+            },
+            "tests_plots": 5,
         },
     ]
 
-    plot_train()
-    plot_test()
+    tests = {
+        "rerun_test_scenarios": {
+            "mode": "full",
+        },
+        "standstill": {
+            "mode": "full",
+        },
+        "fast_overtaking": {
+            "mode": "simple",
+        }
+    }
+
+    # plot_train()
+    # plot_test()
+    plot_tests2()

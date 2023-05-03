@@ -181,7 +181,7 @@ def rerun_test_scenarios(
         if use_safe_action:
             change_thresh_fn(thresh)
         for i in range(0, number_episodes):
-            np.random.seed(i)
+            # np.random.seed(i)
             obs = env.reset()
             if save_video:
                 traci_before(filepath, case, thresh, i)
@@ -302,7 +302,7 @@ def fast_overtaking(
                 fast_vehicle_start_position_range[1],
             )
             # Make sure that the vehicles are not affected by previous state
-            np.random.seed(57)
+            # np.random.seed(57)
             env.reset()
             s0 = 1000.0
             traci.vehicle.moveTo("veh0", "highway_0", s0 - 300)
@@ -452,7 +452,7 @@ def standstill(
             change_thresh_fn(thresh)
         for i in range(0, number_episodes):
             # Make sure that the vehicles are not affected by previous state
-            np.random.seed(57)
+            # np.random.seed(57)
             env.reset()
             s0 = 1000.0
             stop_speed = np.random.uniform(
