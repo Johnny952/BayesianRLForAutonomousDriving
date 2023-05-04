@@ -398,6 +398,7 @@ def plot_test():
 
 def plot_tests2():
     for model in models:
+        plt.figure()
         fig, axs = plt.subplots(ncols=2, nrows=1)
         fig.set_figwidth(10)
         fig.set_figheight(5)
@@ -421,7 +422,8 @@ def plot_tests2():
             ax.set_title(scenario)
         axs[0].legend()
             
-        plt.show()
+        plt.savefig(f"./videos/{model_name}.png")
+        plt.close()
 
 
 if __name__ == "__main__":
