@@ -181,7 +181,7 @@ def rerun_test_scenarios(
         if use_safe_action:
             change_thresh_fn(thresh)
         for i in range(0, number_episodes):
-            # np.random.seed(i)
+            np.random.seed(i)
             obs = env.reset()
             if save_video:
                 traci_before(filepath, case, thresh, i)
