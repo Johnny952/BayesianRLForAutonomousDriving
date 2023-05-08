@@ -257,15 +257,6 @@ elif case == "standstill":
         use_safe_action=use_safe_action,
     )
 elif case == "all":
-    rerun_test_scenarios(
-        dqn,
-        filepath,
-        ps,
-        change_thresh_fn=change_thresh_fn,
-        thresh_range=thresh_range,
-        thresh_steps=thresh_steps,
-        use_safe_action=use_safe_action,
-    )
     fast_overtaking(
         dqn,
         filepath,
@@ -276,6 +267,15 @@ elif case == "all":
         use_safe_action=use_safe_action,
     )
     standstill(
+        dqn,
+        filepath,
+        ps,
+        change_thresh_fn=change_thresh_fn,
+        thresh_range=thresh_range,
+        thresh_steps=thresh_steps,
+        use_safe_action=use_safe_action,
+    )
+    rerun_test_scenarios(
         dqn,
         filepath,
         ps,

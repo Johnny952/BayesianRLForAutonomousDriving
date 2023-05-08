@@ -11,7 +11,7 @@ from base.driving_env import Highway
 
 # test scenarios
 NB_VEHICLES = 25 # 25
-speed_range = [15, 30] # [15, 35]
+speed_range = [15, 25] # [15, 35]
 
 # Standstill
 stop_position_range = [280, 500]  # 300 = 280, 500
