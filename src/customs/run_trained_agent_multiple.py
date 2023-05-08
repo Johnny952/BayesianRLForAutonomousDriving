@@ -257,7 +257,7 @@ elif case == "standstill":
         use_safe_action=use_safe_action,
     )
 elif case == "all":
-    fast_overtaking(
+    rerun_test_scenarios(
         dqn,
         filepath,
         ps,
@@ -275,7 +275,7 @@ elif case == "all":
         thresh_steps=thresh_steps,
         use_safe_action=use_safe_action,
     )
-    rerun_test_scenarios(
+    fast_overtaking(
         dqn,
         filepath,
         ps,
