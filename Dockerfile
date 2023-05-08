@@ -5,7 +5,7 @@ RUN apt-get update \
 # RUN apt-get install -y python3.7 && alias python='/usr/bin/python3.7' && . ~/.bashrc
 # RUN apt-get install -y python3-pip
 WORKDIR /app
-RUN git clone --depth 1 --branch v1_17_0 https://github.com/eclipse/sumo \
+RUN git clone --depth 1 --branch v1_15_0 https://github.com/eclipse/sumo \
    && mkdir sumo/build/cmake-build \
    && cd sumo/build/cmake-build \
    && cmake ../.. \
