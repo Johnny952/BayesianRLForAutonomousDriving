@@ -52,8 +52,8 @@ rcParams["ps.fonttype"] = 42
 """ Options: """
 filepath = "../logs/train_agent_20230404_002949_ae_6M_v7/"
 agent_name = "5950003"
-case = "fast_overtaking standstill"  # 'rerun_test_scenarios', 'fast_overtaking', 'standstill', 'all'
-use_safe_action = True
+case = "all"  # 'rerun_test_scenarios', 'fast_overtaking', 'standstill', 'all'
+use_safe_action = False
 
 thresh_range = [0, 100]
 thresh_steps = 100
