@@ -43,7 +43,7 @@ rcParams["ps.fonttype"] = 42
 """ Options: """
 filepath = "../logs/train_agent_20230323_235219_rpf_6M_v3/"
 agent_name = "5950033"
-case = "all"  # 'rerun_test_scenarios', 'fast_overtaking', 'standstill', 'all'
+case = "fast_overtaking standstill"  # 'rerun_test_scenarios', 'fast_overtaking', 'standstill', 'all'
 use_ensemble_test_policy = True
 
 thresh_range = [0, 0.1]
@@ -124,8 +124,8 @@ if use_ensemble_test_policy:
 def change_thresh_fn(thresh):
     dqn.test_policy = EnsembleTestPolicy(safety_threshold=thresh, safe_action=3)
 
-
-if case == "rerun_test_scenarios":
+cases = case.split(' ')
+if "rerun_test_scenarios" in cases:
     rerun_test_scenarios(
         dqn,
         filepath,
@@ -135,7 +135,7 @@ if case == "rerun_test_scenarios":
         thresh_steps=thresh_steps,
         use_safe_action=use_ensemble_test_policy,
     )
-elif case == "fast_overtaking":
+if "fast_overtaking" in cases:
     fast_overtaking(
         dqn,
         filepath,
@@ -146,7 +146,7 @@ elif case == "fast_overtaking":
         use_safe_action=use_ensemble_test_policy,
     )
 
-elif case == "standstill":
+if "standstill" in cases:
     standstill(
         dqn,
         filepath,
@@ -156,7 +156,7 @@ elif case == "standstill":
         thresh_steps=thresh_steps,
         use_safe_action=use_ensemble_test_policy,
     )
-elif case == "all":
+if "all" in cases:
     rerun_test_scenarios(
         dqn,
         filepath,
@@ -184,5 +184,3 @@ elif case == "all":
         thresh_steps=thresh_steps,
         use_safe_action=use_ensemble_test_policy,
     )
-else:
-    raise Exception("Case not defined.")

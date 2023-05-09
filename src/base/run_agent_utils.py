@@ -378,7 +378,7 @@ def fast_overtaking(
             episode_reward = 0
             step = 0
             unc = []
-            for _ in range(8):
+            while step < 8:
                 try:
                     action, action_info = dqn.forward(observation)
                     observation, reward, done, _, more_info = env.step(action, action_info)
@@ -501,81 +501,89 @@ def standstill(
         for i in range(0, number_episodes):
             # Make sure that the vehicles are not affected by previous state
             # np.random.seed(57)
-            env.reset()
-            s0 = 1000.0
-            stop_speed = np.random.uniform(
-                stop_speed_range[0],
-                stop_speed_range[1],
-            )
-            vehicle_distance = np.random.uniform(
-                vehicle_distance_range[0], vehicle_distance_range[1]
-            )
-            vehicle_start_pos = np.random.uniform(
-                vehicle_start_pos_range[0], vehicle_start_pos_range[1]
-            )
-            vehicles_speed = np.random.uniform(
-                vehicles_speed_range[0], vehicles_speed_range[1]
-            )
-            traci.vehicle.moveTo("veh0", "highway_0", s0 - 300)
-            traci.vehicle.moveTo("veh1", "highway_1", s0 - 300)
-            traci.vehicle.moveTo("veh2", "highway_2", s0 - 300)
-            traci.vehicle.moveTo("veh3", "highway_2", s0 - 400)
-            traci.vehicle.moveTo("veh4", "highway_2", s0 - 500)
-            traci.vehicle.moveTo("veh5", "highway_2", s0 - 600)
-            traci.vehicle.moveTo("veh6", "highway_2", s0 - 700)
-            traci.simulationStep()
-            env.speeds[0, 0] = 25
-            for veh in env.vehicles:
-                traci.vehicle.setSpeedMode(veh, 0)
-                traci.vehicle.setLaneChangeMode(veh, 0)  # Turn off all lane changes
-            traci.vehicle.setSpeed("veh0", 25)
-            traci.vehicle.setSpeed("veh1", stop_speed)
-            traci.vehicle.setSpeed("veh2", vehicles_speed)
-            traci.vehicle.setSpeed("veh3", vehicles_speed)
-            traci.vehicle.setSpeed("veh4", vehicles_speed)
-            traci.vehicle.setSpeed("veh5", vehicles_speed)
-            traci.vehicle.setSpeed("veh6", vehicles_speed)
-            traci.simulationStep()
-            traci.vehicle.setMaxSpeed("veh0", 25)
-            traci.vehicle.setMaxSpeed("veh1", stop_speed)
-            traci.vehicle.setMaxSpeed("veh2", vehicles_speed)
-            traci.vehicle.setMaxSpeed("veh3", vehicles_speed)
-            traci.vehicle.setMaxSpeed("veh4", vehicles_speed)
-            traci.vehicle.setMaxSpeed("veh5", vehicles_speed)
-            traci.vehicle.setMaxSpeed("veh6", vehicles_speed)
-            traci.simulationStep()
-            env.step(0)
+            def set_standstill():
+                env.reset()
+                s0 = 1000.0
+                stop_speed = np.random.uniform(
+                    stop_speed_range[0],
+                    stop_speed_range[1],
+                )
+                vehicle_distance = np.random.uniform(
+                    vehicle_distance_range[0], vehicle_distance_range[1]
+                )
+                vehicle_start_pos = np.random.uniform(
+                    vehicle_start_pos_range[0], vehicle_start_pos_range[1]
+                )
+                vehicles_speed = np.random.uniform(
+                    vehicles_speed_range[0], vehicles_speed_range[1]
+                )
+                traci.vehicle.moveTo("veh0", "highway_0", s0 - 300)
+                traci.vehicle.moveTo("veh1", "highway_1", s0 - 300)
+                traci.vehicle.moveTo("veh2", "highway_2", s0 - 300)
+                traci.vehicle.moveTo("veh3", "highway_2", s0 - 400)
+                traci.vehicle.moveTo("veh4", "highway_2", s0 - 500)
+                traci.vehicle.moveTo("veh5", "highway_2", s0 - 600)
+                traci.vehicle.moveTo("veh6", "highway_2", s0 - 700)
+                traci.simulationStep()
+                env.speeds[0, 0] = 25
+                for veh in env.vehicles:
+                    traci.vehicle.setSpeedMode(veh, 0)
+                    traci.vehicle.setLaneChangeMode(veh, 0)  # Turn off all lane changes
+                traci.vehicle.setSpeed("veh0", 25)
+                traci.vehicle.setSpeed("veh1", stop_speed)
+                traci.vehicle.setSpeed("veh2", vehicles_speed)
+                traci.vehicle.setSpeed("veh3", vehicles_speed)
+                traci.vehicle.setSpeed("veh4", vehicles_speed)
+                traci.vehicle.setSpeed("veh5", vehicles_speed)
+                traci.vehicle.setSpeed("veh6", vehicles_speed)
+                traci.simulationStep()
+                traci.vehicle.setMaxSpeed("veh0", 25)
+                traci.vehicle.setMaxSpeed("veh1", stop_speed)
+                traci.vehicle.setMaxSpeed("veh2", vehicles_speed)
+                traci.vehicle.setMaxSpeed("veh3", vehicles_speed)
+                traci.vehicle.setMaxSpeed("veh4", vehicles_speed)
+                traci.vehicle.setMaxSpeed("veh5", vehicles_speed)
+                traci.vehicle.setMaxSpeed("veh6", vehicles_speed)
+                traci.simulationStep()
+                env.step(0)
 
-            # Standstill case
-            traci.vehicle.moveTo("veh0", "highway_0", s0)
-            traci.vehicle.moveTo(
-                "veh1",
-                "highway_0",
-                s0 + np.random.uniform(stop_position_range[0], stop_position_range[1]),
-            )
-            traci.vehicle.moveTo("veh2", "highway_1", s0 + vehicle_start_pos)
-            traci.vehicle.moveTo(
-                "veh3", "highway_1", s0 + vehicle_start_pos + vehicle_distance
-            )
-            traci.vehicle.moveTo(
-                "veh4", "highway_1", s0 + vehicle_start_pos + 2 * vehicle_distance
-            )
-            traci.vehicle.moveTo(
-                "veh5", "highway_1", s0 + vehicle_start_pos + 3 * vehicle_distance
-            )
-            traci.vehicle.moveTo(
-                "veh6", "highway_1", s0 + vehicle_start_pos + 4 * vehicle_distance
-            )
-            traci.vehicle.setSpeed("veh0", 25)
-            traci.vehicle.setSpeed("veh1", stop_speed)
-            traci.vehicle.setSpeed("veh2", vehicles_speed)
-            traci.vehicle.setSpeed("veh3", vehicles_speed)
-            traci.vehicle.setSpeed("veh4", vehicles_speed)
-            traci.vehicle.setSpeed("veh5", vehicles_speed)
-            traci.vehicle.setSpeed("veh6", vehicles_speed)
-            observation, reward, _, _, more_info = env.step(0)
-            for veh in env.vehicles[1:]:
-                traci.vehicle.setSpeed(veh, -1)
+                # Standstill case
+                traci.vehicle.moveTo("veh0", "highway_0", s0)
+                traci.vehicle.moveTo(
+                    "veh1",
+                    "highway_0",
+                    s0 + np.random.uniform(stop_position_range[0], stop_position_range[1]),
+                )
+                traci.vehicle.moveTo("veh2", "highway_1", s0 + vehicle_start_pos)
+                traci.vehicle.moveTo(
+                    "veh3", "highway_1", s0 + vehicle_start_pos + vehicle_distance
+                )
+                traci.vehicle.moveTo(
+                    "veh4", "highway_1", s0 + vehicle_start_pos + 2 * vehicle_distance
+                )
+                traci.vehicle.moveTo(
+                    "veh5", "highway_1", s0 + vehicle_start_pos + 3 * vehicle_distance
+                )
+                traci.vehicle.moveTo(
+                    "veh6", "highway_1", s0 + vehicle_start_pos + 4 * vehicle_distance
+                )
+                traci.vehicle.setSpeed("veh0", 25)
+                traci.vehicle.setSpeed("veh1", stop_speed)
+                traci.vehicle.setSpeed("veh2", vehicles_speed)
+                traci.vehicle.setSpeed("veh3", vehicles_speed)
+                traci.vehicle.setSpeed("veh4", vehicles_speed)
+                traci.vehicle.setSpeed("veh5", vehicles_speed)
+                traci.vehicle.setSpeed("veh6", vehicles_speed)
+                observation, reward, _, _, more_info = env.step(0)
+                for veh in env.vehicles[1:]:
+                    traci.vehicle.setSpeed(veh, -1)
+                return observation, reward, more_info
+            
+            try:
+                observation, reward, more_info = set_standstill()
+            except Exception as e:
+                print(e)
+                observation, reward, more_info = set_standstill()
 
             # Run standstill case
             if save_video:
@@ -586,23 +594,43 @@ def standstill(
             episode_reward = 0
             unc = []
             step = 0
-            for _ in range(30):
-                action, action_info = dqn.forward(observation)
-                observation, reward, done, _, more_info = env.step(action)
-                episode_reward += reward
-                step += 1
-                if more_info["ego_collision"]:
-                    collissions += 1
-                    collision_speeds.append(more_info["ego_speed"])
-                if "safe_action" in action_info:
-                    nb_safe_actions += action_info["safe_action"]
-                    nb_hard_safe_actions += action_info["hard_safe"]
-                if save_video:
-                    traci_each(filepath, case, thresh, i, step)
-                if "coefficient_of_variation" in action_info:
-                    unc.append(action_info["coefficient_of_variation"][action])
-                if done:
-                    break
+            while step < 8:
+                try:
+                    action, action_info = dqn.forward(observation)
+                    observation, reward, done, _, more_info = env.step(action)
+                    episode_reward += reward
+                    step += 1
+                    if more_info["ego_collision"]:
+                        collissions += 1
+                        collision_speeds.append(more_info["ego_speed"])
+                    if "safe_action" in action_info:
+                        nb_safe_actions += action_info["safe_action"]
+                        nb_hard_safe_actions += action_info["hard_safe"]
+                    if save_video:
+                        traci_each(filepath, case, thresh, i, step)
+                    if "coefficient_of_variation" in action_info:
+                        unc.append(action_info["coefficient_of_variation"][action])
+                    if done:
+                        break
+                except Exception as e:
+                    print(e)
+                    env = Highway(
+                        sim_params=ps.sim_params,
+                        road_params=ps.road_params,
+                        use_gui=use_gui,
+                        return_more_info=True,
+                    )
+
+                    env.reset()
+                    observation, reward, more_info = set_standstill()
+                    if save_video:
+                        traci_before(filepath, case, thresh, i)
+                    nb_safe_actions = 0
+                    nb_hard_safe_actions = 0
+
+                    episode_reward = 0
+                    unc = []
+                    step = 0
             
             if do_save_uncert:
                 save_uncert(case, filepath, thresh, i, unc)
