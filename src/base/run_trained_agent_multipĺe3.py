@@ -53,7 +53,7 @@ do_save_metrics = True
 do_save_uncert = True
 number_tests = 1
 number_episodes=10
-csv_sufix='_2'
+csv_sufix='_v3'
 position_steps=100
 use_gui=False
 """ End options """
