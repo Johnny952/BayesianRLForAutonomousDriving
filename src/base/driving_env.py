@@ -395,6 +395,10 @@ class Highway(object):
         reward = self.reward_model(s0=self.state_t0, s1=self.state_t1, a=[long_action, lat_action], term=done,
                                    accs=self.accs, ego_collision=ego_collision, ego_near_collision=ego_near_collision,
                                    outside_road=outside_road)
+        
+        more_info["reward_no_col"] = reward
+        if ego_collision or outside_road:
+            more_info["reward_no_col"] += self.collision_penalty
 
         # if self.use_gui:
         #     self.print_info_in_gui(reward=reward, action=[long_action, lat_action], info=info, action_info=action_info)

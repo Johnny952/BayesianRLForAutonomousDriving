@@ -4,14 +4,14 @@ import os
 import shutil
 import sys
 
-sys.path.append(os.path.join(os.environ.get("SUMO_HOME"), 'tools'))
+sys.path.append(os.path.join(os.environ.get("SUMO_HOME"), "tools"))
 import traci
 
 from base.driving_env import Highway
 
 # test scenarios
-NB_VEHICLES = 25 # 25
-speed_range = [15, 25] # [15, 35]
+NB_VEHICLES = 25  # 25
+speed_range = [15, 25]  # [15, 35]
 
 # Standstill
 stop_position_range = [280, 500]  # 300 = 280, 500
@@ -25,8 +25,12 @@ vehicles_speeds_range_fast = [10, 20]  # 15
 fast_vehicle_speed_range = [40, 60]  # 50
 fast_vehicle_start_position_range = [100, 200]  # 150
 
+# test scenarios V2
+STOPPED_VEHICLES = 3
+FAST_VEHICLES = 0
+
 def get_name(filepath):
-    return filepath.split('/')[-2]
+    return filepath.split("/")[-2]
 
 def ep_log(i, step, episode_reward, nb_safe_actions, nb_hard_safe_actions):
     print(
@@ -67,7 +71,7 @@ def save_metrics(
     nb_safe_hard_actions_per_episode,
     collision_speeds,
 ):
-    with open(filepath + case + '.csv', "a+") as file:
+    with open(filepath + case + ".csv", "a+") as file:
         writer = csv.writer(file)
         mean_speeds = 0 if len(collision_speeds) == 0 else np.mean(collision_speeds)
         writer.writerow(
@@ -82,6 +86,7 @@ def save_metrics(
             ]
         )
 
+
 def save_uncert(
     case,
     filepath,
@@ -89,10 +94,11 @@ def save_uncert(
     episode,
     uncert,
 ):
-    with open(filepath + case + '.csv', "a+") as file:
+    with open(filepath + case + ".csv", "a+") as file:
         writer = csv.writer(file)
         row = [thresh, episode] + uncert
         writer.writerow(row)
+
 
 def traci_schema(filepath):
     try:
@@ -107,6 +113,7 @@ def traci_schema(filepath):
         shutil.rmtree(video_folder)
     os.makedirs(video_folder)
 
+
 def traci_before(filepath, case, thresh, episode):
     name = get_name(filepath)
     video_folder = f"../videos/{name}/{case}"
@@ -119,12 +126,11 @@ def traci_before(filepath, case, thresh, episode):
     traci.gui.setZoom("View #0", 10500)
     traci.gui.screenshot("View #0", video_folder + "/init.png")
 
+
 def traci_each(filepath, case, thresh, episode, step):
     name = get_name(filepath)
     video_folder = f"../videos/{name}/{case}/{thresh}_{episode}/"
-    traci.gui.screenshot(
-        "View #0", video_folder + str(step) + ".png"
-    )
+    traci.gui.screenshot("View #0", video_folder + str(step) + ".png")
 
 
 def rerun_test_scenarios(
@@ -140,11 +146,11 @@ def rerun_test_scenarios(
     number_tests=1,
     number_episodes=100,
     use_gui=False,
-    csv_sufix='',
+    csv_sufix="",
     do_save_uncert=False,
 ):
-    sufix = '_U' if use_safe_action else '_NU'
-    case = 'rerun_test_scenarios' + sufix + csv_sufix
+    sufix = "_U" if use_safe_action else "_NU"
+    case = "rerun_test_scenarios" + sufix + csv_sufix
     if do_save_metrics or do_save_uncert:
         with open(filepath + case + ".csv", "w+"):
             pass
@@ -170,7 +176,7 @@ def rerun_test_scenarios(
         if use_safe_action
         else list(range(number_tests))
     )
-        
+
     for thresh in range_:
         episode_rewards = []
         episode_steps = []
@@ -195,7 +201,8 @@ def rerun_test_scenarios(
                 try:
                     action, action_info = dqn.forward(obs)
                     obs, rewards, done, _, more_info = env.step(action, action_info)
-                    episode_reward += rewards
+                    reward_no_col = more_info["reward_no_col"]
+                    episode_reward += reward_no_col
                     step += 1
                     if more_info["ego_collision"]:
                         collissions += 1
@@ -225,7 +232,6 @@ def rerun_test_scenarios(
                     obs = env.reset()
                     if save_video:
                         traci_before(filepath, case, thresh, i)
-
 
             if do_save_uncert:
                 save_uncert(case, filepath, thresh, i, unc)
@@ -270,11 +276,11 @@ def fast_overtaking(
     number_tests=1,
     number_episodes=100,
     use_gui=False,
-    csv_sufix='',
+    csv_sufix="",
     do_save_uncert=False,
 ):
-    sufix = '_U' if use_safe_action else '_NU'
-    case = 'fast_overtaking' + sufix + csv_sufix
+    sufix = "_U" if use_safe_action else "_NU"
+    case = "fast_overtaking" + sufix + csv_sufix
     if do_save_metrics or do_save_uncert:
         with open(filepath + case + ".csv", "w+"):
             pass
@@ -351,7 +357,9 @@ def fast_overtaking(
                 # Overtaking case
                 traci.vehicle.moveTo("veh0", "highway_0", s0)
                 traci.vehicle.moveTo("veh1", "highway_0", s0 + 50)
-                traci.vehicle.moveTo("veh2", "highway_1", s0 - fast_vehicle_start_position)
+                traci.vehicle.moveTo(
+                    "veh2", "highway_1", s0 - fast_vehicle_start_position
+                )
                 traci.vehicle.moveTo("veh3", "highway_2", s0 - 50)
                 traci.vehicle.moveTo("veh4", "highway_2", s0 - 0)
                 traci.vehicle.setSpeed("veh0", vehicles_speeds_fast)
@@ -363,6 +371,7 @@ def fast_overtaking(
                 for veh in env.vehicles[1:]:
                     traci.vehicle.setSpeed(veh, -1)
                 return observation, reward, more_info
+
             try:
                 observation, reward, more_info = set_fast_overtaking()
             except Exception as e:
@@ -381,7 +390,9 @@ def fast_overtaking(
             while step < 8:
                 try:
                     action, action_info = dqn.forward(observation)
-                    observation, reward, done, _, more_info = env.step(action, action_info)
+                    observation, reward, done, _, more_info = env.step(
+                        action, action_info
+                    )
                     episode_reward += reward
                     step += 1
                     if more_info["ego_collision"]:
@@ -417,7 +428,7 @@ def fast_overtaking(
                     episode_reward = 0
                     step = 0
                     unc = []
-            
+
             if do_save_uncert:
                 save_uncert(case, filepath, thresh, i, unc)
             episode_rewards.append(episode_reward)
@@ -461,11 +472,11 @@ def standstill(
     number_tests=1,
     number_episodes=100,
     use_gui=False,
-    csv_sufix='',
+    csv_sufix="",
     do_save_uncert=False,
 ):
-    sufix = '_U' if use_safe_action else '_NU'
-    case = 'standstill' + sufix + csv_sufix
+    sufix = "_U" if use_safe_action else "_NU"
+    case = "standstill" + sufix + csv_sufix
     if do_save_metrics or do_save_uncert:
         with open(filepath + case + ".csv", "w+"):
             pass
@@ -552,7 +563,8 @@ def standstill(
                 traci.vehicle.moveTo(
                     "veh1",
                     "highway_0",
-                    s0 + np.random.uniform(stop_position_range[0], stop_position_range[1]),
+                    s0
+                    + np.random.uniform(stop_position_range[0], stop_position_range[1]),
                 )
                 traci.vehicle.moveTo("veh2", "highway_1", s0 + vehicle_start_pos)
                 traci.vehicle.moveTo(
@@ -578,7 +590,7 @@ def standstill(
                 for veh in env.vehicles[1:]:
                     traci.vehicle.setSpeed(veh, -1)
                 return observation, reward, more_info
-            
+
             try:
                 observation, reward, more_info = set_standstill()
             except Exception as e:
@@ -631,7 +643,439 @@ def standstill(
                     episode_reward = 0
                     unc = []
                     step = 0
+
+            if do_save_uncert:
+                save_uncert(case, filepath, thresh, i, unc)
+            episode_rewards.append(episode_reward)
+            episode_steps.append(step)
+            nb_safe_actions_per_episode.append(nb_safe_actions)
+            nb_safe_hard_actions_per_episode.append(nb_hard_safe_actions)
+            ep_log(i, step, episode_reward, nb_safe_actions, nb_hard_safe_actions)
+        thresh_log(
+            thresh,
+            episode_rewards,
+            episode_steps,
+            collissions,
+            nb_safe_actions_per_episode,
+            nb_safe_hard_actions_per_episode,
+        )
+        if do_save_metrics:
+            save_metrics(
+                case,
+                filepath,
+                thresh,
+                episode_rewards,
+                episode_steps,
+                collissions,
+                nb_safe_actions_per_episode,
+                nb_safe_hard_actions_per_episode,
+                collision_speeds,
+            )
+    env.close()
+
+
+def standstill_v2(
+    dqn,
+    filepath,
+    ps,
+    use_safe_action=False,
+    save_video=False,
+    position_steps=100,
+    use_gui=False,
+    csv_sufix="_v2",
+    do_save_uncert=False,
+):
+    sufix = "_U" if use_safe_action else "_NU"
+    case = "standstill" + sufix + csv_sufix
+    if do_save_uncert:
+        with open(filepath + case + ".csv", "w+"):
+            pass
+    ps.sim_params["nb_vehicles"] = 7
+    env = Highway(
+        sim_params=ps.sim_params,
+        road_params=ps.road_params,
+        use_gui=use_gui,
+        return_more_info=True,
+    )
+
+    env.reset()
+    if save_video:
+        traci_schema(filepath)
+    range_ = np.linspace(
+        stop_position_range[0],
+        stop_position_range[1],
+        num=position_steps,
+    )
+    for position in range_:
+        # Make sure that the vehicles are not affected by previous state
+        # np.random.seed(57)
+        def set_standstill():
+            env.reset()
+            if use_gui:
+                traci.vehicle.setColor("veh1", (255, 255, 255))
+            s0 = 1000.0
+            traci.vehicle.moveTo("veh0", "highway_0", s0 - 300)
+            traci.vehicle.moveTo("veh1", "highway_1", s0 - 300)
+            traci.vehicle.moveTo("veh2", "highway_2", s0 - 300)
+            traci.vehicle.moveTo("veh3", "highway_2", s0 - 400)
+            traci.vehicle.moveTo("veh4", "highway_2", s0 - 500)
+            traci.vehicle.moveTo("veh5", "highway_2", s0 - 600)
+            traci.vehicle.moveTo("veh6", "highway_2", s0 - 700)
+            traci.simulationStep()
+            env.speeds[0, 0] = 25
+            for veh in env.vehicles:
+                traci.vehicle.setSpeedMode(veh, 0)
+                traci.vehicle.setLaneChangeMode(veh, 0)  # Turn off all lane changes
+            traci.vehicle.setSpeed("veh0", 25)
+            traci.vehicle.setSpeed("veh1", 0)
+            traci.vehicle.setSpeed("veh2", 15)
+            traci.vehicle.setSpeed("veh3", 15)
+            traci.vehicle.setSpeed("veh4", 15)
+            traci.vehicle.setSpeed("veh5", 15)
+            traci.vehicle.setSpeed("veh6", 15)
+            traci.simulationStep()
+            traci.vehicle.setMaxSpeed("veh0", 25)
+            traci.vehicle.setMaxSpeed("veh1", 0.001)
+            traci.vehicle.setMaxSpeed("veh2", 15)
+            traci.vehicle.setMaxSpeed("veh3", 15)
+            traci.vehicle.setMaxSpeed("veh4", 15)
+            traci.vehicle.setMaxSpeed("veh5", 15)
+            traci.vehicle.setMaxSpeed("veh6", 15)
+            traci.simulationStep()
+            env.step(0)
+            if use_gui:
+                traci.vehicle.setColor("veh1", (255, 255, 255))
+
+            # Standstill case
+            traci.vehicle.moveTo("veh0", "highway_0", s0)
+            traci.vehicle.moveTo(
+                "veh1",
+                "highway_0",
+                s0 + position,
+            )
+            traci.vehicle.moveTo("veh2", "highway_1", s0 + 36)
+            traci.vehicle.moveTo("veh3", "highway_1", s0 + 54)
+            traci.vehicle.moveTo("veh4", "highway_1", s0 + 72)
+            traci.vehicle.moveTo("veh5", "highway_1", s0 + 90)
+            traci.vehicle.moveTo("veh6", "highway_1", s0 + 108)
+            traci.vehicle.setSpeed("veh0", 25)
+            traci.vehicle.setSpeed("veh1", 0)
+            traci.vehicle.setSpeed("veh2", 15)
+            traci.vehicle.setSpeed("veh3", 15)
+            traci.vehicle.setSpeed("veh4", 15)
+            traci.vehicle.setSpeed("veh5", 15)
+            traci.vehicle.setSpeed("veh6", 15)
+            observation, reward, _, _, more_info = env.step(0)
+            for veh in env.vehicles[1:]:
+                traci.vehicle.setSpeed(veh, -1)
+            return observation, reward, more_info
+
+        try:
+            observation, reward, more_info = set_standstill()
+        except Exception as e:
+            print(e)
+            observation, reward, more_info = set_standstill()
+
+        # Run standstill case
+        if save_video:
+            traci_before(filepath, case, 0, position)
+        nb_safe_actions = 0
+        nb_hard_safe_actions = 0
+
+        episode_reward = 0
+        unc = []
+        step = 0
+        while step < 8:
+            try:
+                action, action_info = dqn.forward(observation)
+                observation, reward, done, _, more_info = env.step(action)
+                episode_reward += reward
+                step += 1
+                if more_info["ego_collision"]:
+                    collissions += 1
+                if "safe_action" in action_info:
+                    nb_safe_actions += action_info["safe_action"]
+                    nb_hard_safe_actions += action_info["hard_safe"]
+                if save_video:
+                    traci_each(filepath, case, 0, position, step)
+                if "coefficient_of_variation" in action_info:
+                    unc.append(action_info["coefficient_of_variation"][action])
+                if done:
+                    break
+            except Exception as e:
+                print(e)
+                env = Highway(
+                    sim_params=ps.sim_params,
+                    road_params=ps.road_params,
+                    use_gui=use_gui,
+                    return_more_info=True,
+                )
+
+                env.reset()
+                observation, reward, more_info = set_standstill()
+                if save_video:
+                    traci_before(filepath, case, 0, position)
+                nb_safe_actions = 0
+                nb_hard_safe_actions = 0
+
+                episode_reward = 0
+                unc = []
+                step = 0
+
+        if do_save_uncert:
+            save_uncert(case, filepath, 0, position, unc)
+        ep_log(0, step, episode_reward, nb_safe_actions, nb_hard_safe_actions)
+    env.close()
+
+
+def fast_overtaking_v2(
+    dqn,
+    filepath,
+    ps,
+    use_safe_action=False,
+    save_video=False,
+    position_steps=1,
+    use_gui=False,
+    csv_sufix="_v2",
+    do_save_uncert=False,
+):
+    sufix = "_U" if use_safe_action else "_NU"
+    case = "fast_overtaking" + sufix + csv_sufix
+    if do_save_uncert:
+        with open(filepath + case + ".csv", "w+"):
+            pass
+    ps.sim_params["nb_vehicles"] = 5
+    env = Highway(
+        sim_params=ps.sim_params,
+        road_params=ps.road_params,
+        use_gui=use_gui,
+        return_more_info=True,
+    )
+
+    env.reset()
+
+    if save_video:
+        traci_schema(filepath)
+    range_ = np.linspace(
+        fast_vehicle_speed_range[0],
+        fast_vehicle_speed_range[1],
+        num=position_steps,
+    )
+    for fast_vehicle_speed in range_:
+        # Make sure that the vehicles are not affected by previous state
+        # np.random.seed(57)
+        def set_fast_overtaking():
+            env.reset()
+            s0 = 1000.0
+            traci.vehicle.moveTo("veh0", "highway_0", s0 - 300)
+            traci.vehicle.moveTo("veh1", "highway_1", s0 - 300)
+            traci.vehicle.moveTo("veh2", "highway_2", s0 - 300)
+            traci.vehicle.moveTo("veh3", "highway_2", s0 - 400)
+            traci.vehicle.moveTo("veh4", "highway_2", s0 - 500)
+            traci.simulationStep()
+            env.speeds[0, 0] = 15
+            for veh in env.vehicles:
+                traci.vehicle.setSpeedMode(veh, 0)
+            traci.vehicle.setSpeed("veh0", 15)
+            traci.vehicle.setSpeed("veh1", 15)
+            traci.vehicle.setSpeed("veh2", 55)
+            traci.vehicle.setSpeed("veh3", 15)
+            traci.vehicle.setSpeed("veh4", 15)
+            traci.vehicle.setMaxSpeed("veh0", 25)
+            traci.vehicle.setMaxSpeed("veh1", 15)
+            traci.vehicle.setMaxSpeed("veh2", 55)
+            traci.vehicle.setMaxSpeed("veh3", 15)
+            traci.vehicle.setMaxSpeed("veh4", 15)
+            traci.simulationStep()
+            env.step(0)
+
+            # Overtaking case
+            traci.vehicle.moveTo("veh0", "highway_0", s0)
+            traci.vehicle.moveTo("veh1", "highway_0", s0 + 50)
+            traci.vehicle.moveTo("veh2", "highway_1", s0 - 150)
+            traci.vehicle.moveTo("veh3", "highway_2", s0 - 50)
+            traci.vehicle.moveTo("veh4", "highway_2", s0 - 0)
+            traci.vehicle.setSpeed("veh0", 15)
+            traci.vehicle.setSpeed("veh1", 15)
+            traci.vehicle.setSpeed("veh2", fast_vehicle_speed)
+            traci.vehicle.setSpeed("veh3", 15)
+            traci.vehicle.setSpeed("veh4", 15)
+            observation, reward, _, _, more_info = env.step(0)
+            for veh in env.vehicles[1:]:
+                traci.vehicle.setSpeed(veh, -1)
+            return observation, reward, more_info
+
+        try:
+            observation, reward, more_info = set_fast_overtaking()
+        except Exception as e:
+            print(e)
+            observation, reward, more_info = set_fast_overtaking()
+
+        # Run fast overtaking case
+        if save_video:
+            traci_before(filepath, case, 0, fast_vehicle_speed)
+        action_log = []
+        nb_safe_actions = 0
+        nb_hard_safe_actions = 0
+        episode_reward = 0
+        step = 0
+        unc = []
+        while step < 8:
+            try:
+                action, action_info = dqn.forward(observation)
+                observation, reward, done, _, more_info = env.step(action, action_info)
+                episode_reward += reward
+                step += 1
+                if more_info["ego_collision"]:
+                    collissions += 1
+                if "safe_action" in action_info:
+                    nb_safe_actions += action_info["safe_action"]
+                    nb_hard_safe_actions += action_info["hard_safe"]
+                action_log.append(action)
+                if save_video:
+                    traci_each(filepath, case, 0, fast_vehicle_speed, step)
+                if "coefficient_of_variation" in action_info:
+                    unc.append(action_info["coefficient_of_variation"][action])
+                if done:
+                    break
+            except Exception as e:
+                print(e)
+                env = Highway(
+                    sim_params=ps.sim_params,
+                    road_params=ps.road_params,
+                    use_gui=use_gui,
+                    return_more_info=True,
+                )
+
+                env.reset()
+                observation, reward, more_info = set_fast_overtaking()
+
+                if save_video:
+                    traci_before(filepath, case, 0, fast_vehicle_speed)
+                action_log = []
+                nb_safe_actions = 0
+                nb_hard_safe_actions = 0
+                episode_reward = 0
+                step = 0
+                unc = []
+
+        if do_save_uncert:
+            save_uncert(case, filepath, 0, fast_vehicle_speed, unc)
+        ep_log(0, step, episode_reward, nb_safe_actions, nb_hard_safe_actions)
+    env.close()
+
+def rerun_test_scenarios_v2(
+    dqn,
+    filepath,
+    ps,
+    change_thresh_fn=lambda x: x,
+    thresh_range=[0, 1],
+    thresh_steps=100,
+    use_safe_action=False,
+    save_video=False,
+    do_save_metrics=True,
+    number_tests=1,
+    number_episodes=100,
+    use_gui=False,
+    csv_sufix="",
+    do_save_uncert=False,
+):
+    sufix = "_U" if use_safe_action else "_NU"
+    case = "rerun_test_scenarios" + sufix + csv_sufix
+    if do_save_metrics or do_save_uncert:
+        with open(filepath + case + ".csv", "w+"):
+            pass
+
+    env = Highway(
+        sim_params=ps.sim_params,
+        road_params=ps.road_params,
+        use_gui=use_gui,
+        return_more_info=True,
+    )
+
+    env.reset()
+    if save_video:
+        traci_schema(filepath)
+    range_ = (
+        np.linspace(
+            thresh_range[0],
+            thresh_range[1],
+            num=thresh_steps,
+        )
+        if use_safe_action
+        else list(range(number_tests))
+    )
+
+    for thresh in range_:
+        episode_rewards = []
+        episode_steps = []
+        nb_safe_actions_per_episode = []
+        nb_safe_hard_actions_per_episode = []
+        collissions = 0
+        collision_speeds = []
+        if use_safe_action:
+            change_thresh_fn(thresh)
+        for i in range(0, number_episodes):
+            # np.random.seed(i)
+            obs = env.reset()
+
+            vehicles = traci.vehicle.getIDList()[1:]
+            chosen_vehicles = np.random.choice(vehicles, size=(STOPPED_VEHICLES + FAST_VEHICLES), replace=False)
+            chosen_stop_vehicles = chosen_vehicles[:STOPPED_VEHICLES]
+            for v in chosen_stop_vehicles:
+                traci.vehicle.setSpeed(v, 0)
+                traci.vehicle.setMaxSpeed(v, 0.001)
             
+            chosen_fast_vehicles = chosen_vehicles[STOPPED_VEHICLES:]
+            for v in chosen_fast_vehicles:
+                traci.vehicle.setSpeed(v, 55)
+                traci.vehicle.setMaxSpeed(v, 55)
+            
+
+            if save_video:
+                traci_before(filepath, case, thresh, i)
+            done = False
+            episode_reward = 0
+            step = 0
+            nb_safe_actions = 0
+            nb_hard_safe_actions = 0
+            unc = []
+            while done is False:
+                try:
+                    action, action_info = dqn.forward(obs)
+                    obs, rewards, done, _, more_info = env.step(action, action_info)
+                    reward_no_col = more_info["reward_no_col"]
+                    episode_reward += reward_no_col
+                    step += 1
+                    if more_info["ego_collision"]:
+                        collissions += 1
+                        collision_speeds.append(more_info["ego_speed"])
+                    if "safe_action" in action_info:
+                        nb_safe_actions += action_info["safe_action"]
+                        nb_hard_safe_actions += action_info["hard_safe"]
+                    if save_video:
+                        traci_each(filepath, case, thresh, i, step)
+                    if "coefficient_of_variation" in action_info:
+                        unc.append(action_info["coefficient_of_variation"][action])
+                except Exception as e:
+                    print(e)
+                    done = False
+                    episode_reward = 0
+                    step = 0
+                    nb_safe_actions = 0
+                    nb_hard_safe_actions = 0
+                    unc = []
+                    env = Highway(
+                        sim_params=ps.sim_params,
+                        road_params=ps.road_params,
+                        use_gui=use_gui,
+                        return_more_info=True,
+                    )
+
+                    obs = env.reset()
+                    if save_video:
+                        traci_before(filepath, case, thresh, i)
+
             if do_save_uncert:
                 save_uncert(case, filepath, thresh, i, unc)
             episode_rewards.append(episode_reward)
