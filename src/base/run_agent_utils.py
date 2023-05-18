@@ -708,7 +708,7 @@ def standstill_v2(
     )
     for position in range_:
         # Make sure that the vehicles are not affected by previous state
-        # np.random.seed(57)
+        np.random.seed(57)
         def set_standstill():
             env.reset()
             if use_gui:
@@ -863,7 +863,7 @@ def fast_overtaking_v2(
     )
     for fast_vehicle_speed in range_:
         # Make sure that the vehicles are not affected by previous state
-        # np.random.seed(57)
+        np.random.seed(57)
         def set_fast_overtaking():
             env.reset()
             s0 = 1000.0
