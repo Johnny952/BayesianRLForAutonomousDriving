@@ -791,8 +791,6 @@ def standstill_v2(
                 observation, reward, done, _, more_info = env.step(action)
                 episode_reward += reward
                 step += 1
-                if more_info["ego_collision"]:
-                    collissions += 1
                 if "safe_action" in action_info:
                     nb_safe_actions += action_info["safe_action"]
                     nb_hard_safe_actions += action_info["hard_safe"]
@@ -926,8 +924,6 @@ def fast_overtaking_v2(
                 observation, reward, done, _, more_info = env.step(action, action_info)
                 episode_reward += reward
                 step += 1
-                if more_info["ego_collision"]:
-                    collissions += 1
                 if "safe_action" in action_info:
                     nb_safe_actions += action_info["safe_action"]
                     nb_hard_safe_actions += action_info["hard_safe"]
