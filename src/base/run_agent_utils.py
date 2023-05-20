@@ -606,7 +606,7 @@ def standstill(
             episode_reward = 0
             unc = []
             step = 0
-            while step < 8:
+            while step < 15:
                 try:
                     action, action_info = dqn.forward(observation)
                     observation, reward, done, _, more_info = env.step(action)
@@ -785,7 +785,7 @@ def standstill_v2(
         episode_reward = 0
         unc = []
         step = 0
-        while step < 8:
+        while step < 15:
             try:
                 action, action_info = dqn.forward(observation)
                 observation, reward, done, _, more_info = env.step(action)
