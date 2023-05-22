@@ -67,7 +67,7 @@ position_steps=100
 use_gui=False
 """ End options """
 
-safe_action = 3 if use_safe_action else None
+safe_action = 3
 
 # These import statements need to come after the choice of which agent that should be used.
 sys.path.insert(0, filepath + "src/")
