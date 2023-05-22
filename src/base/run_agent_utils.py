@@ -14,7 +14,7 @@ NB_VEHICLES = 25  # 25
 speed_range = [15, 25]  # [15, 35]
 
 # Standstill
-stop_position_range = [280, 500]  # 300 = 280, 500
+stop_position_range = [250, 300]  # 300 = 280, 500
 stop_speed_range = [0, 10]  # 0
 vehicle_distance_range = [12, 22]  # 18
 vehicle_start_pos_range = [0, 36]  # 36
@@ -22,7 +22,7 @@ vehicles_speed_range = [10, 20]  # 15
 
 # Fast overtaking
 vehicles_speeds_range_fast = [10, 20]  # 15
-fast_vehicle_speed_range = [40, 60]  # 50
+fast_vehicle_speed_range = [25, 60]  # 50
 fast_vehicle_start_position_range = [100, 200]  # 150
 
 # test scenarios V2
@@ -1026,7 +1026,8 @@ def rerun_test_scenarios_v2(
             for v in chosen_fast_vehicles:
                 traci.vehicle.setSpeed(v, 55)
                 traci.vehicle.setMaxSpeed(v, 55)
-            
+                pos = np.random.uniform(low=0, high=500)
+                traci.vehicle.moveTo(v, "highway_0", -pos)
 
             if save_video:
                 traci_before(filepath, case, thresh, i)

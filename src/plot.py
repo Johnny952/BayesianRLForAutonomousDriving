@@ -56,7 +56,7 @@ def read_test2(path, ep_type=int):
         for row in csv_reader:
             thresholds.append(float(row[0]))
             episodes.append(ep_type(row[1]))
-            uncert.append([float(d) for d in row[2:]])
+            uncert.append([np.abs(float(d)) for d in row[2:]])
     return thresholds, episodes, uncert
 
 
@@ -453,6 +453,7 @@ def plot_rerun_test_v3():
                 nb_safe_action_hard,
                 collision_speeds,
             ) = read_test(f"{base_path}{scenario}_U{sufix}.csv")
+            print(rewards)
             _, [filtered_rates, filtered_rewards] = collapse_duplicated(collision_rates, rewards)
             if tests[scenario]["mode"] == "full":
                 ax1.plot(
@@ -528,18 +529,21 @@ def plot_rerun_test_v3():
 def plot_tests_v3():
     import seaborn as sn
     import pandas as pd
+    from matplotlib.ticker import FormatStrFormatter, MaxNLocator
 
     for model in models:
-        # fig, axs = plt.subplots(ncols=2, nrows=1)
-        # fig.set_figwidth(16)
-        # fig.set_figheight(8)
+        fig, axs = plt.subplots(ncols=2, nrows=1)
+        fig.set_figwidth(16)
+        fig.set_figheight(8)
 
         base_path = model["test_v3"]["base_path"]
         model_name = model["name"]
         sufix = model["test_v3"]["sufix"]
         paths = model["test_v3"]["paths"]
 
-        for idx, scenario in enumerate(["fast_overtaking"]):#standstill, "fast_overtaking"
+        fig.suptitle(model_name)
+
+        for idx, scenario in enumerate(["standstill", "fast_overtaking"]):#standstill, "fast_overtaking"
             if paths[scenario]["nu"]:
                 path = f"{base_path}{scenario}_NU{sufix}.csv"
                 _, pos_vel, unc = read_test2(path, ep_type=float)
@@ -549,12 +553,20 @@ def plot_tests_v3():
                 for i, row in enumerate(unc):
                     padded_unc[i, :len(row)] = row
                 df_cm = pd.DataFrame(padded_unc[:, ::-1], columns = [max_len-i for i in range(max_len)],
-                  index = pos_vel)
-                sn.heatmap(df_cm.T, annot=False)
-                plt.show()
-                
-            
-            # axs[idx].pcolormesh(x, y, Z)
+                    index = [int(p) if scenario == "standstill" else f"{p:.1f}" for p in pos_vel])
+                ax_idx = 0 if scenario == "standstill" else 1
+                sn.heatmap(df_cm.T, annot=False, ax=axs[ax_idx])
+                xlabel = "Stopped vehicle position" if scenario == "standstill" else "Fast vehicle speed"
+                axs[ax_idx].set_xlabel(xlabel, fontsize=16)
+                axs[ax_idx].set_ylabel("Step", fontsize=16)
+                axs[ax_idx].set_title(scenario, fontsize=16)
+                axs[ax_idx].tick_params(labelrotation=45)
+
+                xticks = axs[ax_idx].xaxis.get_major_ticks()
+                for i in range(len(xticks) // 2):
+                    xticks[2*i + 1].set_visible(False)
+        
+        plt.show()
 
 
 if __name__ == "__main__":
@@ -594,7 +606,7 @@ if __name__ == "__main__":
                 "paths": {
                     "rerun_test_scenarios": {
                         "u": False,
-                        "nu": False,
+                        "nu": True,
                     },
                     "standstill": {
                         "u": False,
@@ -641,7 +653,7 @@ if __name__ == "__main__":
                 "base_path": "./logs/train_agent_20230323_235219_rpf_6M_v3/",
                 "paths": {
                     "rerun_test_scenarios": {
-                        "u": False,
+                        "u": True,
                         "nu": True,
                     },
                     "standstill": {
@@ -713,16 +725,16 @@ if __name__ == "__main__":
                 "base_path": "./logs/train_agent_20230404_002949_ae_6M_v7/",
                 "paths": {
                     "rerun_test_scenarios": {
-                        "u": False,
-                        "nu": False,
+                        "u": True,
+                        "nu": True,
                     },
                     "standstill": {
                         "u": False,
-                        "nu": False,
+                        "nu": True,
                     },
                     "fast_overtaking": {
                         "u": False,
-                        "nu": False,
+                        "nu": True,
                     },
                 }
             }
@@ -741,7 +753,7 @@ if __name__ == "__main__":
         }
     }
 
-    # plot_train()
+    plot_train()
     # plot_test()
     # plot_tests2()
     # plot_rerun_test_v3()

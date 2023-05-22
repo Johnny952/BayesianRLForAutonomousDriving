@@ -56,7 +56,7 @@ case = "all"  # 'rerun_test_scenarios', 'fast_overtaking', 'standstill', 'all'
 use_safe_action = False
 
 thresh_range = [0, 1]
-thresh_steps = 1
+thresh_steps = 100
 save_video = False
 do_save_metrics = True
 do_save_uncert = True
