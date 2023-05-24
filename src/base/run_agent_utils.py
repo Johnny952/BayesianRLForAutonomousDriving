@@ -26,7 +26,7 @@ fast_vehicle_speed_range = [25, 60]  # 50
 fast_vehicle_start_position_range = [100, 200]  # 150
 
 # test scenarios V2
-STOPPED_VEHICLES = 3
+STOPPED_VEHICLES = 2
 FAST_VEHICLES = 0
 
 def get_name(filepath):
@@ -1029,6 +1029,133 @@ def rerun_test_scenarios_v2(
                 pos = np.random.uniform(low=0, high=500)
                 traci.vehicle.moveTo(v, "highway_0", -pos)
 
+            if save_video:
+                traci_before(filepath, case, thresh, i)
+            done = False
+            episode_reward = 0
+            step = 0
+            nb_safe_actions = 0
+            nb_hard_safe_actions = 0
+            unc = []
+            while done is False:
+                try:
+                    action, action_info = dqn.forward(obs)
+                    obs, rewards, done, _, more_info = env.step(action, action_info)
+                    reward_no_col = more_info["reward_no_col"]
+                    episode_reward += reward_no_col
+                    step += 1
+                    if more_info["ego_collision"]:
+                        collissions += 1
+                        collision_speeds.append(more_info["ego_speed"])
+                    if "safe_action" in action_info:
+                        nb_safe_actions += action_info["safe_action"]
+                        nb_hard_safe_actions += action_info["hard_safe"]
+                    if save_video:
+                        traci_each(filepath, case, thresh, i, step)
+                    if "coefficient_of_variation" in action_info:
+                        unc.append(action_info["coefficient_of_variation"][action])
+                except Exception as e:
+                    print(e)
+                    done = False
+                    episode_reward = 0
+                    step = 0
+                    nb_safe_actions = 0
+                    nb_hard_safe_actions = 0
+                    unc = []
+                    env = Highway(
+                        sim_params=ps.sim_params,
+                        road_params=ps.road_params,
+                        use_gui=use_gui,
+                        return_more_info=True,
+                    )
+
+                    obs = env.reset()
+                    if save_video:
+                        traci_before(filepath, case, thresh, i)
+
+            if do_save_uncert:
+                save_uncert(case, filepath, thresh, i, unc)
+            episode_rewards.append(episode_reward)
+            episode_steps.append(step)
+            nb_safe_actions_per_episode.append(nb_safe_actions)
+            nb_safe_hard_actions_per_episode.append(nb_hard_safe_actions)
+            ep_log(i, step, episode_reward, nb_safe_actions, nb_hard_safe_actions)
+        thresh_log(
+            thresh,
+            episode_rewards,
+            episode_steps,
+            collissions,
+            nb_safe_actions_per_episode,
+            nb_safe_hard_actions_per_episode,
+        )
+        if do_save_metrics:
+            save_metrics(
+                case,
+                filepath,
+                thresh,
+                episode_rewards,
+                episode_steps,
+                collissions,
+                nb_safe_actions_per_episode,
+                nb_safe_hard_actions_per_episode,
+                collision_speeds,
+            )
+    env.close()
+
+def rerun_test_scenarios_v0(
+    dqn,
+    filepath,
+    ps,
+    change_thresh_fn=lambda x: x,
+    thresh_range=[0, 1],
+    thresh_steps=100,
+    use_safe_action=False,
+    save_video=False,
+    do_save_metrics=True,
+    number_tests=1,
+    number_episodes=100,
+    use_gui=False,
+    csv_sufix="_v0",
+    do_save_uncert=False,
+):
+    sufix = "_U" if use_safe_action else "_NU"
+    case = "rerun_test_scenarios" + sufix + csv_sufix
+    if do_save_metrics or do_save_uncert:
+        with open(filepath + case + ".csv", "w+"):
+            pass
+
+    env = Highway(
+        sim_params=ps.sim_params,
+        road_params=ps.road_params,
+        use_gui=use_gui,
+        return_more_info=True,
+    )
+
+    env.reset()
+    if save_video:
+        traci_schema(filepath)
+    range_ = (
+        np.linspace(
+            thresh_range[0],
+            thresh_range[1],
+            num=thresh_steps,
+        )
+        if use_safe_action
+        else list(range(number_tests))
+    )
+
+    for thresh in range_:
+        episode_rewards = []
+        episode_steps = []
+        nb_safe_actions_per_episode = []
+        nb_safe_hard_actions_per_episode = []
+        collissions = 0
+        collision_speeds = []
+        if use_safe_action:
+            change_thresh_fn(thresh)
+        for i in range(0, number_episodes):
+            # np.random.seed(i)
+            obs = env.reset()
             if save_video:
                 traci_before(filepath, case, thresh, i)
             done = False

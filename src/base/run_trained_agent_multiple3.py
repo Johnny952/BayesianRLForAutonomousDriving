@@ -35,14 +35,14 @@ from dqn_ensemble import DQNAgentEnsemble
 from policy import EnsembleTestPolicy
 from matplotlib import rcParams
 sys.path.append("..")
-from run_agent_utils import rerun_test_scenarios_v2, fast_overtaking_v2, standstill_v2
+from run_agent_utils import rerun_test_scenarios_v2, fast_overtaking_v2, standstill_v2, rerun_test_scenarios_v0
 
 rcParams["pdf.fonttype"] = 42  # To avoid Type 3 fonts in figures
 rcParams["ps.fonttype"] = 42
 
 """ Options: """
-filepath = "../logs/train_agent_20230323_235314_dqn_6M_v3/"#"../logs/train_agent_20230323_235219_rpf_6M_v3/", "../logs/train_agent_20230323_235314_dqn_6M_v3/"
-agent_name = "5950056"#rpf: "5950033", dqn: "5950056"
+filepath = "../logs/train_agent_20230323_235219_rpf_6M_v3/"#"../logs/train_agent_20230323_235219_rpf_6M_v3/", "../logs/train_agent_20230323_235314_dqn_6M_v3/"
+agent_name = "5950033"#rpf: "5950033", dqn: "5950056"
 case = "rerun_test_scenarios"  # 'rerun_test_scenarios', 'fast_overtaking', 'standstill', 'all'
 use_ensemble_test_policy = False
 
@@ -56,6 +56,8 @@ number_episodes=100
 csv_sufix='_v3'
 position_steps=100
 use_gui=False
+
+only_rerun=True
 """ End options """
 
 # These import statements need to come after the choice of which agent that should be used.
@@ -150,6 +152,21 @@ if case == "rerun_test_scenarios":
         csv_sufix=csv_sufix,
         do_save_uncert=False,
     )
+    rerun_test_scenarios_v0(
+        dqn,
+        filepath,
+        ps,
+        change_thresh_fn=change_thresh_fn,
+        thresh_range=thresh_range,
+        thresh_steps=thresh_steps,
+        use_safe_action=use_ensemble_test_policy,
+        save_video=save_video,
+        do_save_metrics=True,
+        number_tests=number_tests,
+        use_gui=use_gui,
+        number_episodes=number_episodes,
+        do_save_uncert=False,
+    )
 elif case == "fast_overtaking":
     fast_overtaking_v2(
         dqn,
@@ -208,27 +225,58 @@ elif case == "all":
         csv_sufix=csv_sufix,
         do_save_uncert=False,
     )
-    fast_overtaking_v2(
+    rerun_test_scenarios_v0(
         dqn,
         filepath,
         ps,
+        change_thresh_fn=change_thresh_fn,
+        thresh_range=thresh_range,
+        thresh_steps=thresh_steps,
         use_safe_action=False,
         save_video=save_video,
-        position_steps=position_steps,
+        do_save_metrics=True,
+        number_tests=number_tests,
         use_gui=use_gui,
-        csv_sufix=csv_sufix,
-        do_save_uncert=True,
+        number_episodes=number_episodes,
+        do_save_uncert=False,
     )
-    standstill_v2(
+    rerun_test_scenarios_v0(
         dqn,
         filepath,
         ps,
-        use_safe_action=False,
+        change_thresh_fn=change_thresh_fn,
+        thresh_range=thresh_range,
+        thresh_steps=thresh_steps,
+        use_safe_action=True,
         save_video=save_video,
-        position_steps=position_steps,
+        do_save_metrics=True,
+        number_tests=number_tests,
         use_gui=use_gui,
-        csv_sufix=csv_sufix,
-        do_save_uncert=True,
+        number_episodes=number_episodes,
+        do_save_uncert=False,
     )
+    if not only_rerun:
+        fast_overtaking_v2(
+            dqn,
+            filepath,
+            ps,
+            use_safe_action=False,
+            save_video=save_video,
+            position_steps=position_steps,
+            use_gui=use_gui,
+            csv_sufix=csv_sufix,
+            do_save_uncert=True,
+        )
+        standstill_v2(
+            dqn,
+            filepath,
+            ps,
+            use_safe_action=False,
+            save_video=save_video,
+            position_steps=position_steps,
+            use_gui=use_gui,
+            csv_sufix=csv_sufix,
+            do_save_uncert=True,
+        )
 else:
     raise Exception("Case not defined.")

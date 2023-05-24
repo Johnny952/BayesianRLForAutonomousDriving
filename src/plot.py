@@ -453,7 +453,6 @@ def plot_rerun_test_v3():
                 nb_safe_action_hard,
                 collision_speeds,
             ) = read_test(f"{base_path}{scenario}_U{sufix}.csv")
-            print(rewards)
             _, [filtered_rates, filtered_rewards] = collapse_duplicated(collision_rates, rewards)
             if tests[scenario]["mode"] == "full":
                 ax1.plot(
@@ -555,7 +554,7 @@ def plot_tests_v3():
                 df_cm = pd.DataFrame(padded_unc[:, ::-1], columns = [max_len-i for i in range(max_len)],
                     index = [int(p) if scenario == "standstill" else f"{p:.1f}" for p in pos_vel])
                 ax_idx = 0 if scenario == "standstill" else 1
-                sn.heatmap(df_cm.T, annot=False, ax=axs[ax_idx])
+                sn.heatmap(df_cm.T, annot=False, ax=axs[ax_idx], cbar_kws={'label': 'uncertainty'})
                 xlabel = "Stopped vehicle position" if scenario == "standstill" else "Fast vehicle speed"
                 axs[ax_idx].set_xlabel(xlabel, fontsize=16)
                 axs[ax_idx].set_ylabel("Step", fontsize=16)
@@ -566,7 +565,9 @@ def plot_tests_v3():
                 for i in range(len(xticks) // 2):
                     xticks[2*i + 1].set_visible(False)
         
-        plt.show()
+        # plt.show()
+        plt.savefig(f"./videos/{model_name}_v3.png")
+        plt.close()
 
 
 if __name__ == "__main__":
@@ -756,5 +757,5 @@ if __name__ == "__main__":
     plot_train()
     # plot_test()
     # plot_tests2()
-    # plot_rerun_test_v3()
+    plot_rerun_test_v3()
     plot_tests_v3()
