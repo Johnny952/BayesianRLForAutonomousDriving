@@ -26,6 +26,7 @@ The different cases are:
 """
 
 import sys
+import numpy as np
 from keras.optimizers import Adam
 from keras.models import model_from_json, clone_model
 from rl.policy import GreedyQPolicy
@@ -46,8 +47,7 @@ agent_name = "5950056"#rpf: "5950033", dqn: "5950056"
 case = "rerun_test_scenarios"  # 'rerun_test_scenarios', 'fast_overtaking', 'standstill', 'all'
 use_ensemble_test_policy = False
 
-thresh_range = [0, 1]
-thresh_steps = 100
+thresh_range = np.linspace(0, 0.1, 100)
 save_video = False
 do_save_metrics = True
 do_save_uncert = True
@@ -142,7 +142,6 @@ if case == "rerun_test_scenarios":
         ps,
         change_thresh_fn=change_thresh_fn,
         thresh_range=thresh_range,
-        thresh_steps=thresh_steps,
         use_safe_action=use_ensemble_test_policy,
         save_video=save_video,
         do_save_metrics=True,
@@ -158,7 +157,6 @@ if case == "rerun_test_scenarios":
         ps,
         change_thresh_fn=change_thresh_fn,
         thresh_range=thresh_range,
-        thresh_steps=thresh_steps,
         use_safe_action=use_ensemble_test_policy,
         save_video=save_video,
         do_save_metrics=True,
@@ -199,7 +197,6 @@ elif case == "all":
         ps,
         change_thresh_fn=change_thresh_fn,
         thresh_range=thresh_range,
-        thresh_steps=thresh_steps,
         use_safe_action=False,
         save_video=save_video,
         do_save_metrics=True,
@@ -215,7 +212,6 @@ elif case == "all":
         ps,
         change_thresh_fn=change_thresh_fn,
         thresh_range=thresh_range,
-        thresh_steps=thresh_steps,
         use_safe_action=True,
         save_video=save_video,
         do_save_metrics=True,
@@ -231,7 +227,6 @@ elif case == "all":
         ps,
         change_thresh_fn=change_thresh_fn,
         thresh_range=thresh_range,
-        thresh_steps=thresh_steps,
         use_safe_action=False,
         save_video=save_video,
         do_save_metrics=True,
@@ -246,7 +241,6 @@ elif case == "all":
         ps,
         change_thresh_fn=change_thresh_fn,
         thresh_range=thresh_range,
-        thresh_steps=thresh_steps,
         use_safe_action=True,
         save_video=save_video,
         do_save_metrics=True,

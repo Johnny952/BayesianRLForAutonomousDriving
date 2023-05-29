@@ -965,8 +965,7 @@ def rerun_test_scenarios_v2(
     filepath,
     ps,
     change_thresh_fn=lambda x: x,
-    thresh_range=[0, 1],
-    thresh_steps=100,
+    thresh_range=np.linspace(0, 1, 10),
     use_safe_action=False,
     save_video=False,
     do_save_metrics=True,
@@ -993,11 +992,7 @@ def rerun_test_scenarios_v2(
     if save_video:
         traci_schema(filepath)
     range_ = (
-        np.linspace(
-            thresh_range[0],
-            thresh_range[1],
-            num=thresh_steps,
-        )
+        thresh_range
         if use_safe_action
         else list(range(number_tests))
     )
@@ -1107,8 +1102,7 @@ def rerun_test_scenarios_v0(
     filepath,
     ps,
     change_thresh_fn=lambda x: x,
-    thresh_range=[0, 1],
-    thresh_steps=100,
+    thresh_range=np.linspace(0, 1, 10),
     use_safe_action=False,
     save_video=False,
     do_save_metrics=True,
@@ -1135,11 +1129,7 @@ def rerun_test_scenarios_v0(
     if save_video:
         traci_schema(filepath)
     range_ = (
-        np.linspace(
-            thresh_range[0],
-            thresh_range[1],
-            num=thresh_steps,
-        )
+        thresh_range
         if use_safe_action
         else list(range(number_tests))
     )

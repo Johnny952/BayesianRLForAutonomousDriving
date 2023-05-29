@@ -9,7 +9,7 @@ PERCENTILE_DOWN = 1
 PERCENTILE_UP = 99
 EPSILON = 1e-15
 
-def collapse_duplicated(*arrays, collapse_by=0, reduction=np.mean):
+def collapse_duplicated(*arrays, collapse_by=0, sort_by=0, reduction=np.mean):
     collapse_array = arrays[collapse_by]
     unique, unique_idcs = np.unique(collapse_array, return_index=True)
     new_arrays = []
@@ -19,7 +19,12 @@ def collapse_duplicated(*arrays, collapse_by=0, reduction=np.mean):
             filter_ = collapse_array == unique_value
             new_array[i] = reduction(array[filter_])
         new_arrays.append(new_array)
-    return unique_idcs, new_arrays
+
+    sorted_array_idcs = new_arrays[sort_by].argsort()
+    sorted_arrays = []
+    for array in new_arrays:
+        sorted_arrays.append(array[sorted_array_idcs])
+    return unique_idcs, sorted_arrays
 
 
 def read_test(path):
@@ -444,6 +449,7 @@ def plot_rerun_test_v3():
         base_path = model["test_v3"]["base_path"]
         model_name = model["name"]
         sufix = model["test_v3"]["sufix"]
+        use_v0 = model["test_v3"]["paths"][scenario]["v0"]
         if model["test_v3"]["paths"][scenario]["u"]:
             (
                 _,
@@ -453,19 +459,45 @@ def plot_rerun_test_v3():
                 nb_safe_action_hard,
                 collision_speeds,
             ) = read_test(f"{base_path}{scenario}_U{sufix}.csv")
-            _, [filtered_rates, filtered_rewards] = collapse_duplicated(collision_rates, rewards)
+            _, [filtered_rates_s, filtered_rewards_s] = collapse_duplicated(collision_rates, rewards)
+            _, [filtered_safe_action, filtered_rates, filtered_rewards, filtered_speeds] = collapse_duplicated(nb_safe_actions, collision_rates, rewards, collision_speeds)
+
+            if use_v0:
+                (
+                    _,
+                    rewards_v0,
+                    collision_rates_v0,
+                    nb_safe_actions_v0,
+                    nb_safe_action_hard_v0,
+                    collision_speeds_v0,
+                ) = read_test(f"{base_path}{scenario}_U_v0.csv")
+                _, [filtered_rates_s_v0, filtered_rewards_s_v0] = collapse_duplicated(collision_rates_v0, rewards_v0)
+                _, [filtered_safe_action_v0, filtered_rates_v0, filtered_rewards_v0, filtered_speeds_v0] = collapse_duplicated(nb_safe_actions_v0, collision_rates_v0, rewards_v0, collision_speeds_v0)
             if tests[scenario]["mode"] == "full":
                 ax1.plot(
-                    filtered_rates, filtered_rewards, '.-', color=model["color"], label=f"{model_name} U", alpha=1
+                    filtered_rates_s, filtered_rewards_s, '-', color=model["color"], label=f"{model_name} U", alpha=1
                 )
 
-                _, [filtered_safe_action, filtered_rates, filtered_rewards, filtered_speeds] = collapse_duplicated(nb_safe_actions, collision_rates, rewards, collision_speeds)
-                ax2.plot(filtered_safe_action, filtered_rewards, '.-', color=model["color"], label=f"{model_name} U", alpha=1)
-                ax3.plot(filtered_safe_action, filtered_rates, '.-', color=model["color"], label=f"{model_name} U", alpha=1)
-                ax4.plot(filtered_safe_action, filtered_speeds, '.-', color=model["color"], label=f"{model_name} U", alpha=1)
+                
+                ax2.plot(filtered_safe_action, filtered_rewards, '-', color=model["color"], label=f"{model_name} U", alpha=1)
+                ax3.plot(filtered_safe_action, filtered_rates, '-', color=model["color"], label=f"{model_name} U", alpha=1)
+                ax4.plot(filtered_safe_action, filtered_speeds, '-', color=model["color"], label=f"{model_name} U", alpha=1)
+
+                if use_v0:
+                    ax1.plot(
+                        filtered_rates_s_v0, filtered_rewards_s_v0, ':', color=model["color"], label=f"{model_name} U Normal", alpha=1
+                    )
+                    ax2.plot(filtered_safe_action_v0, filtered_rewards_v0, ':', color=model["color"], label=f"{model_name} U", alpha=1)
+                    ax3.plot(filtered_safe_action_v0, filtered_rates_v0, ':', color=model["color"], label=f"{model_name} U", alpha=1)
+                    ax4.plot(filtered_safe_action_v0, filtered_speeds_v0, ':', color=model["color"], label=f"{model_name} U", alpha=1)
+
             else:
-                _, [filtered_safe_action, filtered_rates, filtered_rewards, filtered_speeds] = collapse_duplicated(nb_safe_actions, collision_rates, rewards, collision_speeds)
-                ax.plot(filtered_safe_action, filtered_rewards, '.-', color=model["color"], label=f"{model_name} U", alpha=1)
+                ax.plot(filtered_safe_action, filtered_rewards, '-', color=model["color"], label=f"{model_name} U", alpha=1)
+
+                if use_v0:
+                    ax.plot(filtered_safe_action_v0, filtered_rewards_v0, ':', color=model["color"], label=f"{model_name} U", alpha=1)
+
+            
 
         if model["test_v3"]["paths"][scenario]["nu"]:
             (
@@ -476,6 +508,16 @@ def plot_rerun_test_v3():
                 _,
                 collision_speeds,
             ) = read_test(f"{base_path}{scenario}_NU{sufix}.csv")
+
+            if use_v0:
+                (
+                    _,
+                    rewards_v0,
+                    collision_rates_v0,
+                    _,
+                    _,
+                    collision_speeds_v0,
+                ) = read_test(f"{base_path}{scenario}_NU_v0.csv")
             if tests[scenario]["mode"] == "full":
                 ax1.plot(
                     collision_rates, rewards, '.', color=model["color"], label=f"{model_name} NU", alpha=1, markersize=14
@@ -483,8 +525,19 @@ def plot_rerun_test_v3():
                 ax2.axhline(y=rewards[0], xmin=0.0, xmax=1.0, color=model["color"], linestyle="--")
                 ax3.axhline(y=collision_rates[0], xmin=0.0, xmax=1.0, color=model["color"], linestyle="--")
                 ax4.axhline(y=collision_speeds[0], xmin=0.0, xmax=1.0, color=model["color"], linestyle="--")
+
+                if use_v0:
+                    ax1.plot(
+                        collision_rates_v0, rewards_v0, '+', color=model["color"], label=f"{model_name} NU Normal", alpha=1, markersize=14
+                    )
+                    ax2.axhline(y=rewards_v0[0], xmin=0.0, xmax=1.0, color=model["color"], linestyle="-.")
+                    ax3.axhline(y=collision_rates_v0[0], xmin=0.0, xmax=1.0, color=model["color"], linestyle="-.")
+                    ax4.axhline(y=collision_speeds_v0[0], xmin=0.0, xmax=1.0, color=model["color"], linestyle="-.")
             else:
                 ax.axhline(y=rewards[0], xmin=0.0, xmax=1.0, color=model["color"], linestyle="--", label=f"{model_name} NU")
+
+                if use_v0:
+                    ax.axhline(y=rewards_v0[0], xmin=0.0, xmax=1.0, color=model["color"], linestyle="+", label=f"{model_name} NU Normal")
     
     plt.suptitle(f"{scenario}", fontsize=25)
     if tests[scenario]["mode"] == "full":
@@ -608,6 +661,7 @@ if __name__ == "__main__":
                     "rerun_test_scenarios": {
                         "u": False,
                         "nu": True,
+                        "v0": False,
                     },
                     "standstill": {
                         "u": False,
@@ -656,6 +710,7 @@ if __name__ == "__main__":
                     "rerun_test_scenarios": {
                         "u": True,
                         "nu": True,
+                        "v0": False,
                     },
                     "standstill": {
                         "u": False,
@@ -728,6 +783,7 @@ if __name__ == "__main__":
                     "rerun_test_scenarios": {
                         "u": True,
                         "nu": True,
+                        "v0": False,
                     },
                     "standstill": {
                         "u": False,

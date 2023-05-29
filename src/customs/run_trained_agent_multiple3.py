@@ -55,8 +55,7 @@ agent_name = "5950003"
 case = "all"  # 'rerun_test_scenarios', 'fast_overtaking', 'standstill', 'all'
 use_safe_action = False
 
-thresh_range = [0, 1]
-thresh_steps = 100
+thresh_range = np.linspace(50, 100, 100)
 save_video = False
 do_save_metrics = True
 do_save_uncert = True
@@ -242,7 +241,6 @@ if case == "rerun_test_scenarios":
         ps,
         change_thresh_fn=change_thresh_fn,
         thresh_range=thresh_range,
-        thresh_steps=thresh_steps,
         use_safe_action=use_safe_action,
         save_video=save_video,
         do_save_metrics=True,
@@ -258,7 +256,6 @@ if case == "rerun_test_scenarios":
         ps,
         change_thresh_fn=change_thresh_fn,
         thresh_range=thresh_range,
-        thresh_steps=thresh_steps,
         use_safe_action=use_safe_action,
         save_video=save_video,
         do_save_metrics=True,
@@ -299,7 +296,6 @@ elif case == "all":
         ps,
         change_thresh_fn=change_thresh_fn,
         thresh_range=thresh_range,
-        thresh_steps=thresh_steps,
         use_safe_action=False,
         save_video=save_video,
         do_save_metrics=True,
@@ -315,7 +311,6 @@ elif case == "all":
         ps,
         change_thresh_fn=change_thresh_fn,
         thresh_range=thresh_range,
-        thresh_steps=thresh_steps,
         use_safe_action=True,
         save_video=save_video,
         do_save_metrics=True,
@@ -331,7 +326,6 @@ elif case == "all":
         ps,
         change_thresh_fn=change_thresh_fn,
         thresh_range=thresh_range,
-        thresh_steps=thresh_steps,
         use_safe_action=False,
         save_video=save_video,
         do_save_metrics=True,
@@ -346,7 +340,6 @@ elif case == "all":
         ps,
         change_thresh_fn=change_thresh_fn,
         thresh_range=thresh_range,
-        thresh_steps=thresh_steps,
         use_safe_action=True,
         save_video=save_video,
         do_save_metrics=True,
