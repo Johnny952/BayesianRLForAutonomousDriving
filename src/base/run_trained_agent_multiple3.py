@@ -42,10 +42,10 @@ rcParams["pdf.fonttype"] = 42  # To avoid Type 3 fonts in figures
 rcParams["ps.fonttype"] = 42
 
 """ Options: """
-filepath = "../logs/train_agent_20230323_235314_dqn_6M_v3/"#"../logs/train_agent_20230323_235219_rpf_6M_v3/", "../logs/train_agent_20230323_235314_dqn_6M_v3/"
-agent_name = "5950056"#rpf: "5950033", dqn: "5950056"
-case = "rerun_test_scenarios"  # 'rerun_test_scenarios', 'fast_overtaking', 'standstill', 'all'
-use_ensemble_test_policy = False
+filepath = "../logs/train_agent_20230323_235219_rpf_6M_v3/"#"../logs/train_agent_20230323_235219_rpf_6M_v3/", "../logs/train_agent_20230323_235314_dqn_6M_v3/"
+agent_name = "5950033"#rpf: "5950033", dqn: "5950056"
+case = "all"  # 'rerun_test_scenarios', 'fast_overtaking', 'standstill', 'all'
+use_ensemble_test_policy = True
 
 thresh_range = np.linspace(0, 0.1, 100)
 save_video = False
