@@ -55,7 +55,7 @@ agent_name = "5950003"
 case = "all"  # 'rerun_test_scenarios', 'fast_overtaking', 'standstill', 'all'
 use_safe_action = False
 
-thresh_range = np.linspace(50, 100, 100)
+thresh_range = np.linspace(69, 85, 100)
 save_video = False
 do_save_metrics = True
 do_save_uncert = True

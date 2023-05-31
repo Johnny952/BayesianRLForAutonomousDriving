@@ -47,7 +47,7 @@ agent_name = "5950033"#rpf: "5950033", dqn: "5950056"
 case = "all"  # 'rerun_test_scenarios', 'fast_overtaking', 'standstill', 'all'
 use_ensemble_test_policy = True
 
-thresh_range = np.linspace(0, 0.1, 100)
+thresh_range = np.linspace(0.01, 0.1, 100)
 save_video = False
 do_save_metrics = True
 do_save_uncert = True

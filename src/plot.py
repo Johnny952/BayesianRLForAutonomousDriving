@@ -9,7 +9,7 @@ PERCENTILE_DOWN = 1
 PERCENTILE_UP = 99
 EPSILON = 1e-15
 
-def collapse_duplicated(*arrays, collapse_by=0, sort_by=0, reduction=np.mean):
+def collapse_duplicated(*arrays, collapse_by=0, sort_by=0, reduction=np.max):
     collapse_array = arrays[collapse_by]
     unique, unique_idcs = np.unique(collapse_array, return_index=True)
     new_arrays = []
@@ -522,9 +522,9 @@ def plot_rerun_test_v3():
                 ax1.plot(
                     collision_rates, rewards, '.', color=model["color"], label=f"{model_name} NU", alpha=1, markersize=14
                 )
-                ax2.axhline(y=rewards[0], xmin=0.0, xmax=1.0, color=model["color"], linestyle="--")
-                ax3.axhline(y=collision_rates[0], xmin=0.0, xmax=1.0, color=model["color"], linestyle="--")
-                ax4.axhline(y=collision_speeds[0], xmin=0.0, xmax=1.0, color=model["color"], linestyle="--")
+                ax2.axhline(y=rewards[0], xmin=0.0, xmax=1.0, label=f"{model_name} NU", color=model["color"], linestyle="--")
+                ax3.axhline(y=collision_rates[0], xmin=0.0, xmax=1.0, label=f"{model_name} NU", color=model["color"], linestyle="--")
+                ax4.axhline(y=collision_speeds[0], xmin=0.0, xmax=1.0, label=f"{model_name} NU", color=model["color"], linestyle="--")
 
                 if use_v0:
                     ax1.plot(
