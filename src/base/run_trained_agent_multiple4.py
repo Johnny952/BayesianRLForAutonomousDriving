@@ -31,12 +31,12 @@ from keras.optimizers import Adam
 from keras.models import model_from_json, clone_model
 from rl.policy import GreedyQPolicy
 from rl.memory import Memory
-from dqn_mix import MixDQNAgent, MixTestPolicy
-from dqn_standard import DQNAgent
 from dqn_ensemble import DQNAgentEnsemble
 from policy import EnsembleTestPolicy
 from matplotlib import rcParams
 sys.path.append("..")
+from dqn_mix import MixDQNAgent, MixTestPolicy
+from dqn_standard import DQNAgent
 from run_agent_utils import rerun_test_scenarios_v3, rerun_test_scenarios_v0
 
 rcParams["pdf.fonttype"] = 42  # To avoid Type 3 fonts in figures
