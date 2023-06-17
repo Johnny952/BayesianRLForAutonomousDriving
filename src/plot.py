@@ -460,7 +460,7 @@ def plot_rerun_test_v3():
                 collision_speeds,
             ) = read_test(f"{base_path}{scenario}_U{sufix}.csv")
             _, [filtered_rates_s, filtered_rewards_s] = collapse_duplicated(collision_rates, rewards)
-            _, [filtered_safe_action, filtered_rates, filtered_rewards, filtered_speeds] = collapse_duplicated(nb_safe_actions, collision_rates, rewards, collision_speeds)
+            _, [filtered_safe_action, filtered_rates, filtered_rewards, filtered_speeds] = collapse_duplicated(nb_safe_actions, collision_rates, rewards, collision_speeds, reduction=np.mean)
 
             if use_v0:
                 (
@@ -472,7 +472,7 @@ def plot_rerun_test_v3():
                     collision_speeds_v0,
                 ) = read_test(f"{base_path}{scenario}_U_v0.csv")
                 _, [filtered_rates_s_v0, filtered_rewards_s_v0] = collapse_duplicated(collision_rates_v0, rewards_v0)
-                _, [filtered_safe_action_v0, filtered_rates_v0, filtered_rewards_v0, filtered_speeds_v0] = collapse_duplicated(nb_safe_actions_v0, collision_rates_v0, rewards_v0, collision_speeds_v0)
+                _, [filtered_safe_action_v0, filtered_rates_v0, filtered_rewards_v0, filtered_speeds_v0] = collapse_duplicated(nb_safe_actions_v0, collision_rates_v0, rewards_v0, collision_speeds_v0, reduction=np.mean)
             if tests[scenario]["mode"] == "full":
                 ax1.plot(
                     filtered_rates_s, filtered_rewards_s, '-', color=model["color"], label=f"{model_name} U", alpha=1
@@ -709,7 +709,7 @@ if __name__ == "__main__":
                 "paths": {
                     "rerun_test_scenarios": {
                         "u": True,
-                        "nu": True,
+                        "nu": False,
                         "v0": False,
                     },
                     "standstill": {
@@ -782,7 +782,7 @@ if __name__ == "__main__":
                 "paths": {
                     "rerun_test_scenarios": {
                         "u": True,
-                        "nu": True,
+                        "nu": False,
                         "v0": False,
                     },
                     "standstill": {
