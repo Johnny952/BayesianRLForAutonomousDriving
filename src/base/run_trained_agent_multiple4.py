@@ -59,7 +59,7 @@ do_save_uncert = False
 number_tests = 1
 number_episodes=100
 csv_sufix='_v4'
-use_gui=True
+use_gui=False
 """ End options """
 
 # These import statements need to come after the choice of which agent that should be used.
