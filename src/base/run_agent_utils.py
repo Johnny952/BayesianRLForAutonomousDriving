@@ -34,13 +34,15 @@ FAST_VEHICLES = 0
 EVENT_PROBABILITY = 0.05
 STOPPED_VEHICLE_EVENT_PROB = 0.5
 FREEZE_STEPS = 10
-MIN_STOP_VEHICLE_DISTANCE = 50
+MIN_STOP_VEHICLE_DISTANCE = 100
 STOP_VEHICLE_STEPS = 5
 FAST_VEHICLE_SPEED = 55
 FAST_VEHCILE_STEPS = 5
 
+
 def get_name(filepath):
     return filepath.split("/")[-2]
+
 
 def ep_log(i, step, episode_reward, nb_safe_actions, nb_hard_safe_actions):
     print(
@@ -80,21 +82,26 @@ def save_metrics(
     nb_safe_actions_per_episode,
     nb_safe_hard_actions_per_episode,
     collision_speeds,
+    stop_events=[],
+    fast_events=[],
 ):
     with open(filepath + case + ".csv", "a+") as file:
         writer = csv.writer(file)
         mean_speeds = 0 if len(collision_speeds) == 0 else np.mean(collision_speeds)
-        writer.writerow(
-            [
-                thresh,
-                np.sum(episode_rewards) / np.sum(episode_steps),
-                collissions / len(episode_steps),
-                np.sum(nb_safe_actions_per_episode) / np.sum(episode_steps),
-                np.sum(nb_safe_hard_actions_per_episode) / np.sum(episode_steps),
-                mean_speeds,
-                np.sum(episode_steps),
-            ]
-        )
+        to_write = [
+            thresh,
+            np.sum(episode_rewards) / np.sum(episode_steps),
+            collissions / len(episode_steps),
+            np.sum(nb_safe_actions_per_episode) / np.sum(episode_steps),
+            np.sum(nb_safe_hard_actions_per_episode) / np.sum(episode_steps),
+            mean_speeds,
+            np.sum(episode_steps),
+        ]
+        if len(stop_events) > 0:
+            to_write.append(np.mean(stop_events))
+        if len(fast_events) > 0:
+            to_write.append(np.mean(fast_events))
+        writer.writerow(to_write)
 
 
 def save_uncert(
@@ -719,6 +726,7 @@ def standstill_v2(
     for position in range_:
         # Make sure that the vehicles are not affected by previous state
         np.random.seed(57)
+
         def set_standstill():
             env.reset()
             if use_gui:
@@ -872,6 +880,7 @@ def fast_overtaking_v2(
     for fast_vehicle_speed in range_:
         # Make sure that the vehicles are not affected by previous state
         np.random.seed(57)
+
         def set_fast_overtaking():
             env.reset()
             s0 = 1000.0
@@ -970,6 +979,7 @@ def fast_overtaking_v2(
         ep_log(0, step, episode_reward, nb_safe_actions, nb_hard_safe_actions)
     env.close()
 
+
 def rerun_test_scenarios_v2(
     dqn,
     filepath,
@@ -1001,11 +1011,7 @@ def rerun_test_scenarios_v2(
     env.reset()
     if save_video:
         traci_schema(filepath)
-    range_ = (
-        thresh_range
-        if use_safe_action
-        else list(range(number_tests))
-    )
+    range_ = thresh_range if use_safe_action else list(range(number_tests))
 
     for thresh in range_:
         episode_rewards = []
@@ -1021,12 +1027,14 @@ def rerun_test_scenarios_v2(
             obs = env.reset()
 
             vehicles = traci.vehicle.getIDList()[1:]
-            chosen_vehicles = np.random.choice(vehicles, size=(STOPPED_VEHICLES + FAST_VEHICLES), replace=False)
+            chosen_vehicles = np.random.choice(
+                vehicles, size=(STOPPED_VEHICLES + FAST_VEHICLES), replace=False
+            )
             chosen_stop_vehicles = chosen_vehicles[:STOPPED_VEHICLES]
             for v in chosen_stop_vehicles:
                 traci.vehicle.setSpeed(v, 0)
                 traci.vehicle.setMaxSpeed(v, 0.001)
-            
+
             chosen_fast_vehicles = chosen_vehicles[STOPPED_VEHICLES:]
             for v in chosen_fast_vehicles:
                 traci.vehicle.setSpeed(v, 55)
@@ -1107,6 +1115,7 @@ def rerun_test_scenarios_v2(
             )
     env.close()
 
+
 def rerun_test_scenarios_v0(
     dqn,
     filepath,
@@ -1138,11 +1147,7 @@ def rerun_test_scenarios_v0(
     env.reset()
     if save_video:
         traci_schema(filepath)
-    range_ = (
-        thresh_range
-        if use_safe_action
-        else list(range(number_tests))
-    )
+    range_ = thresh_range if use_safe_action else list(range(number_tests))
 
     for thresh in range_:
         episode_rewards = []
@@ -1230,26 +1235,22 @@ def rerun_test_scenarios_v0(
     env.close()
 
 
-
-
-
-
-
-
 stopped_vh = {
     "id": -1,
     "speed": -1,
     "max_speed": -1,
 }
 
-def resume_stop_vehicle(use_gui):
+
+def resume_stop_vehicle():
     vh = stopped_vh["id"]
-    speed = stopped_vh["speed"]
+    # speed = stopped_vh["speed"]
     max_speed = stopped_vh["max_speed"]
-    traci.vehicle.setSpeed(vh, speed)
+    # traci.vehicle.setSpeed(vh, speed)
     traci.vehicle.setMaxSpeed(vh, max_speed)
 
-def stop_vehicle(use_gui):
+
+def stop_vehicle():
     id_list = traci.vehicle.getIDList()
 
     agent_lane = traci.vehicle.getLaneIndex(id_list[0])
@@ -1264,12 +1265,16 @@ def stop_vehicle(use_gui):
         vh_lane = traci.vehicle.getLaneIndex(vh)
         vh_pos = traci.vehicle.getPosition(vh)[0]
         distance = vh_pos - agent_pos
-        if vh_lane == agent_lane and 0 < distance and distance < selected_vh["distance"]:
+        if (
+            vh_lane == agent_lane
+            and 0 < distance
+            and distance < selected_vh["distance"]
+        ):
             selected_vh = {
                 "id": vh,
                 "distance": distance,
             }
-    
+
     if selected_vh["distance"] < MIN_STOP_VEHICLE_DISTANCE or selected_vh["id"] == -1:
         print("Vehicle too close to agent to be stopped or Vehicle not selected")
         return False
@@ -1281,18 +1286,21 @@ def stop_vehicle(use_gui):
         traci.vehicle.setMaxSpeed(selected_vh["id"], 0.001)
     return True
 
+
 fast_vh = {
     "id": -1,
     "speed": -1,
     "max_speed": -1,
 }
 
-def resume_fast_vehicle(use_gui):
+
+def resume_fast_vehicle():
     vh = fast_vh["id"]
-    speed = fast_vh["speed"]
+    # speed = fast_vh["speed"]
     max_speed = fast_vh["max_speed"]
-    traci.vehicle.setSpeed(vh, speed)
+    # traci.vehicle.setSpeed(vh, speed)
     traci.vehicle.setMaxSpeed(vh, max_speed)
+
 
 def fast_vehicle(use_gui):
     id_list = traci.vehicle.getIDList()
@@ -1309,12 +1317,16 @@ def fast_vehicle(use_gui):
         vh_lane = traci.vehicle.getLaneIndex(vh)
         vh_pos = traci.vehicle.getPosition(vh)[0]
         distance = agent_pos - vh_pos
-        if vh_lane != agent_lane and 0 < distance and distance < selected_vh["distance"]:
+        if (
+            vh_lane != agent_lane
+            and 0 < distance
+            and distance < selected_vh["distance"]
+        ):
             selected_vh = {
                 "id": vh,
                 "distance": distance,
             }
-    
+
     if selected_vh["id"] == -1:
         print("Vehicle not selected")
         return False
@@ -1358,11 +1370,7 @@ def rerun_test_scenarios_v3(
     env.reset()
     if save_video:
         traci_schema(filepath)
-    range_ = (
-        thresh_range
-        if use_safe_action
-        else list(range(number_tests))
-    )
+    range_ = thresh_range if use_safe_action else list(range(number_tests))
 
     for thresh in range_:
         episode_rewards = []
@@ -1371,6 +1379,8 @@ def rerun_test_scenarios_v3(
         nb_safe_hard_actions_per_episode = []
         collissions = 0
         collision_speeds = []
+        stop_events = []
+        fast_events = []
         if use_safe_action:
             change_thresh_fn(thresh)
         for i in range(0, number_episodes):
@@ -1387,6 +1397,9 @@ def rerun_test_scenarios_v3(
             frozen_steps = 0
             stop_vehicle_step = 0
             fast_vehcile_step = 0
+
+            ep_stop_events = 0
+            ep_fast_events = 0
 
             while done is False:
                 try:
@@ -1408,23 +1421,25 @@ def rerun_test_scenarios_v3(
 
                     if frozen_steps == 0 and np.random.rand() < EVENT_PROBABILITY:
                         if np.random.rand() < STOPPED_VEHICLE_EVENT_PROB:
-                            if stop_vehicle(use_gui):
+                            if stop_vehicle():
                                 frozen_steps = FREEZE_STEPS + STOP_VEHICLE_STEPS
                                 stop_vehicle_step = STOP_VEHICLE_STEPS + 1
+                                ep_stop_events += 1
                         else:
-                            if fast_vehicle(use_gui):
+                            if fast_vehicle():
                                 frozen_steps = FREEZE_STEPS + FAST_VEHCILE_STEPS
                                 fast_vehcile_step = FAST_VEHCILE_STEPS + 1
-                    elif 0 < frozen_steps:
+                                ep_fast_events += 1
+                    if 0 < frozen_steps:
                         frozen_steps -= 1
-                        if 0 < stop_vehicle_step:
-                            if stop_vehicle_step == 1:
-                                resume_stop_vehicle(use_gui)
-                            stop_vehicle_step -= 1
-                        if 0 < fast_vehcile_step:
-                            if fast_vehcile_step == 1:
-                                fast_vehcile_step -= 1
-                                resume_fast_vehicle(use_gui)
+                    if 0 < stop_vehicle_step:
+                        stop_vehicle_step -= 1
+                        if stop_vehicle_step == 0:
+                            resume_stop_vehicle()
+                    if 0 < fast_vehcile_step:
+                        fast_vehcile_step -= 1
+                        if fast_vehcile_step == 0:
+                            resume_fast_vehicle()
 
                 except Exception as e:
                     print(e)
@@ -1454,6 +1469,8 @@ def rerun_test_scenarios_v3(
             episode_steps.append(step)
             nb_safe_actions_per_episode.append(nb_safe_actions)
             nb_safe_hard_actions_per_episode.append(nb_hard_safe_actions)
+            stop_events.append(ep_stop_events)
+            fast_events.append(ep_fast_events)
             ep_log(i, step, episode_reward, nb_safe_actions, nb_hard_safe_actions)
         thresh_log(
             thresh,
@@ -1474,5 +1491,7 @@ def rerun_test_scenarios_v3(
                 nb_safe_actions_per_episode,
                 nb_safe_hard_actions_per_episode,
                 collision_speeds,
+                stop_events=stop_events,
+                fast_events=fast_events,
             )
     env.close()

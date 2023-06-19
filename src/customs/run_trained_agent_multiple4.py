@@ -32,7 +32,7 @@ q_agent_name = "5950056"
 
 u_filepath = "../logs/train_agent_20230404_002949_ae_6M_v7/"
 u_agent_name = "5950003"
-use_safe_action = False
+use_safe_action = True
 
 case = "uncert"  # 'all', 'uncert'
 
