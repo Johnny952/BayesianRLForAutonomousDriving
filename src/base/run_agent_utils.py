@@ -1302,7 +1302,7 @@ def resume_fast_vehicle():
     traci.vehicle.setMaxSpeed(vh, max_speed)
 
 
-def fast_vehicle(use_gui):
+def fast_vehicle():
     id_list = traci.vehicle.getIDList()
 
     agent_lane = traci.vehicle.getLaneIndex(id_list[0])
