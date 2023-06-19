@@ -1299,7 +1299,10 @@ def resume_fast_vehicle():
     # speed = fast_vh["speed"]
     max_speed = fast_vh["max_speed"]
     # traci.vehicle.setSpeed(vh, speed)
-    traci.vehicle.setMaxSpeed(vh, max_speed)
+    try:
+        traci.vehicle.setMaxSpeed(vh, max_speed)
+    except:
+        print("Vehicle does not exist")
 
 
 def fast_vehicle():
