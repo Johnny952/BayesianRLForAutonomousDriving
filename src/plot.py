@@ -528,7 +528,7 @@ def plot_rerun_test_v3():
 
                 if use_v0:
                     ax1.plot(
-                        collision_rates_v0, rewards_v0, '+', color=model["color"], label=f"{model_name} NU Normal", alpha=1, markersize=14
+                        collision_rates_v0, rewards_v0, '*', color=model["color"], label=f"{model_name} NU Normal", alpha=1, markersize=14
                     )
                     ax2.axhline(y=rewards_v0[0], xmin=0.0, xmax=1.0, color=model["color"], linestyle="-.")
                     ax3.axhline(y=collision_rates_v0[0], xmin=0.0, xmax=1.0, color=model["color"], linestyle="-.")
@@ -655,13 +655,13 @@ if __name__ == "__main__":
             },
             "tests_plots": 5,
             "test_v3": {
-                "sufix": "_v3",
+                "sufix": "_v4",
                 "base_path": "./logs/train_agent_20230323_235314_dqn_6M_v3/",
                 "paths": {
                     "rerun_test_scenarios": {
                         "u": False,
                         "nu": True,
-                        "v0": False,
+                        "v0": True,
                     },
                     "standstill": {
                         "u": False,
@@ -704,13 +704,13 @@ if __name__ == "__main__":
             },
             "tests_plots": 5,
             "test_v3": {
-                "sufix": "_v3",
+                "sufix": "_v4",
                 "base_path": "./logs/train_agent_20230323_235219_rpf_6M_v3/",
                 "paths": {
                     "rerun_test_scenarios": {
                         "u": True,
                         "nu": False,
-                        "v0": False,
+                        "v0": True,
                     },
                     "standstill": {
                         "u": False,
@@ -777,13 +777,13 @@ if __name__ == "__main__":
             },
             "tests_plots": 5,
             "test_v3": {
-                "sufix": "_v3",
+                "sufix": "_v4",
                 "base_path": "./logs/train_agent_20230404_002949_ae_6M_v7/",
                 "paths": {
                     "rerun_test_scenarios": {
                         "u": True,
                         "nu": False,
-                        "v0": False,
+                        "v0": True,
                     },
                     "standstill": {
                         "u": False,
@@ -814,4 +814,4 @@ if __name__ == "__main__":
     # plot_test()
     # plot_tests2()
     plot_rerun_test_v3()
-    plot_tests_v3()
+    # plot_tests_v3()

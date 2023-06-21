@@ -38,7 +38,7 @@ class MixTestPolicy(Policy):
         else:
             sorted_q_indexes = q_values.argsort()[::-1]
             i = 0
-            while i < len(uncertainties) and uncertainties[sorted_q_indexes[i]] > self.safety_threshold:
+            while i < len(uncertainties) and np.abs(uncertainties[sorted_q_indexes[i]]) > self.safety_threshold:
                 i += 1
             if i == len(uncertainties):  # No action is considered safe - use fallback action
                 return self.safe_action, {'safe_action': True, 'hard_safe': True}
