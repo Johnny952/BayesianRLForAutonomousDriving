@@ -42,7 +42,7 @@ do_save_metrics = True
 do_save_uncert = False
 number_tests = 1
 number_episodes=100
-csv_sufix='_v4'
+csv_sufix='_v5'
 use_gui=False
 """ End options """
 

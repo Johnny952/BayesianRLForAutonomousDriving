@@ -34,6 +34,9 @@ def read_test(path):
     nb_safe_actions = []
     nb_safe_action_hard = []
     collision_speeds = []
+    steps = []
+    stop_events = []
+    fast_events = []
     with open(path, "r") as f:
         csv_reader = csv.reader(f, delimiter=",")
         for row in csv_reader:
@@ -43,6 +46,10 @@ def read_test(path):
             nb_safe_actions.append(float(row[3]))
             nb_safe_action_hard.append(float(row[4]))
             collision_speeds.append(float(row[5]))
+            steps.append(float(row[6]))
+            if len(row) == 9:
+                stop_events.append(float(row[7]))
+                fast_events.append(float(row[8]))
     return (
         np.array(thresholds),
         np.array(rewards),
@@ -50,6 +57,9 @@ def read_test(path):
         np.array(nb_safe_actions),
         np.array(nb_safe_action_hard),
         np.array(collision_speeds),
+        np.array(steps),
+        np.array(stop_events),
+        np.array(fast_events)
     )
 
 def read_test2(path, ep_type=int):
@@ -456,8 +466,11 @@ def plot_rerun_test_v3():
                 rewards,
                 collision_rates,
                 nb_safe_actions,
-                nb_safe_action_hard,
+                _,
                 collision_speeds,
+                _,
+                _,
+                _,
             ) = read_test(f"{base_path}{scenario}_U{sufix}.csv")
             _, [filtered_rates_s, filtered_rewards_s] = collapse_duplicated(collision_rates, rewards)
             _, [filtered_safe_action, filtered_rates, filtered_rewards, filtered_speeds] = collapse_duplicated(nb_safe_actions, collision_rates, rewards, collision_speeds, reduction=np.mean)
@@ -468,8 +481,11 @@ def plot_rerun_test_v3():
                     rewards_v0,
                     collision_rates_v0,
                     nb_safe_actions_v0,
-                    nb_safe_action_hard_v0,
+                    _,
                     collision_speeds_v0,
+                    _,
+                    _,
+                    _,
                 ) = read_test(f"{base_path}{scenario}_U_v0.csv")
                 _, [filtered_rates_s_v0, filtered_rewards_s_v0] = collapse_duplicated(collision_rates_v0, rewards_v0)
                 _, [filtered_safe_action_v0, filtered_rates_v0, filtered_rewards_v0, filtered_speeds_v0] = collapse_duplicated(nb_safe_actions_v0, collision_rates_v0, rewards_v0, collision_speeds_v0, reduction=np.mean)
@@ -507,8 +523,10 @@ def plot_rerun_test_v3():
                 _,
                 _,
                 collision_speeds,
+                _,
+                _,
+                _,
             ) = read_test(f"{base_path}{scenario}_NU{sufix}.csv")
-
             if use_v0:
                 (
                     _,
@@ -517,6 +535,9 @@ def plot_rerun_test_v3():
                     _,
                     _,
                     collision_speeds_v0,
+                    _,
+                    _,
+                    _,
                 ) = read_test(f"{base_path}{scenario}_NU_v0.csv")
             if tests[scenario]["mode"] == "full":
                 ax1.plot(
