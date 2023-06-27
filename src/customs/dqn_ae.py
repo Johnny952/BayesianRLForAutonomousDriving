@@ -138,7 +138,7 @@ class DQNAEAgent(AbstractDQNAgent):
             else:
                 action = self.test_policy.select_action(q_values=q_values)
             
-            uncertainty = uncertainties[action]
+            uncertainty = np.abs(uncertainties[action])
 
         # Book-keeping.
         self.recent_observation = observation

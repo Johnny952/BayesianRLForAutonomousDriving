@@ -325,6 +325,7 @@ class Agent(object):
             episode_reward = 0.
             episode_step = 0
             uncertainty = 0.
+            uncertainties = []
 
             # Obtain the initial observation by resetting the environment.
             self.reset_states()
@@ -364,6 +365,7 @@ class Agent(object):
                 action, action_info = self.forward(observation)
                 if "coefficient_of_variation" in action_info:
                     uncertainty += action_info["coefficient_of_variation"][action]
+                    uncertainties.append(action_info["coefficient_of_variation"][action])
                 if self.processor is not None:
                     action = self.processor.process_action(action)
                 reward = 0.
@@ -416,6 +418,7 @@ class Agent(object):
                 'episode_reward': episode_reward,
                 'nb_steps': episode_step,
                 'uncertainty': uncertainty,
+                'uncertainties': uncertainties,
                 'collision': more_info["collision"] and more_info["ego_collision"],
                 'collision_speed': more_info["ego_speed"] if "collision" in more_info and more_info["collision"] and more_info["ego_collision"] else -1,
             }
