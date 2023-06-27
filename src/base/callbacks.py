@@ -67,13 +67,15 @@ class EvaluateAgent(Callback):
                     del f[train_step]
                 train_group = f.create_group(train_step)
 
-                print(test_result.history['uncertainties'])
                 train_group.create_dataset('reward', data=test_result.history['episode_reward'])
                 train_group.create_dataset('steps', data=test_result.history['nb_steps'])
                 train_group.create_dataset('uncertainties', data=test_result.history['uncertainty'])
-                train_group.create_dataset('uncertainties_history', data=test_result.history['uncertainties'])
                 train_group.create_dataset('collision', data=test_result.history['collision'])
                 train_group.create_dataset('collision_speed', data=test_result.history['collision_speed'])
+
+                unc_group = train_group.create_group('uncertainties_history')
+                for idx, unc in enumerate(test_result.history['uncertainties']):
+                    unc_group.create_dataset(str(idx), data=unc)
 
             self.model.training = True   # training is set to False in test function, so needs to be reset here
             self.nb_evaluation_runs += 1
