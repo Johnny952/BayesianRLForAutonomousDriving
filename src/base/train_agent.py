@@ -31,6 +31,7 @@ import os
 import datetime
 import sys
 from shutil import copytree, copyfile
+sys.path.append("..")
 
 from keras.optimizers import Adam
 from keras.callbacks import TensorBoard

@@ -67,6 +67,7 @@ class EvaluateAgent(Callback):
                     del f[train_step]
                 train_group = f.create_group(train_step)
 
+                print(test_result.history['uncertainties'])
                 train_group.create_dataset('reward', data=test_result.history['episode_reward'])
                 train_group.create_dataset('steps', data=test_result.history['nb_steps'])
                 train_group.create_dataset('uncertainties', data=test_result.history['uncertainty'])

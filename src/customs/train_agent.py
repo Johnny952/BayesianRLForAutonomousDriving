@@ -5,13 +5,13 @@ import sys
 from shutil import copyfile
 import numpy as np
 
-sys.path.append("../base")
+sys.path.append("..")
 
-import parameters as p
-import parameters_simulation as ps
+import base.parameters as p
+import base.parameters_simulation as ps
 
-from driving_env import Highway
-from callbacks import SaveWeights, EvaluateAgent
+from base.driving_env import Highway
+from base.callbacks import SaveWeights, EvaluateAgent
 
 from keras.callbacks import TensorBoard
 from rl.policy import EpsGreedyQPolicy, LinearAnnealedPolicy, GreedyQPolicy
