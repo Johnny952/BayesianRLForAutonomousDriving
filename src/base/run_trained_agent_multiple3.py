@@ -26,6 +26,8 @@ The different cases are:
 """
 
 import sys
+from matplotlib import rcParams
+sys.path.append("..")
 import numpy as np
 from keras.optimizers import Adam
 from keras.models import model_from_json, clone_model
@@ -34,8 +36,7 @@ from rl.memory import Memory
 from dqn_standard import DQNAgent
 from dqn_ensemble import DQNAgentEnsemble
 from policy import EnsembleTestPolicy
-from matplotlib import rcParams
-sys.path.append("..")
+
 from run_agent_utils import rerun_test_scenarios_v2, fast_overtaking_v2, standstill_v2, rerun_test_scenarios_v0
 
 rcParams["pdf.fonttype"] = 42  # To avoid Type 3 fonts in figures
