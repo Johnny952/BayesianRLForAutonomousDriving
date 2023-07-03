@@ -842,4 +842,4 @@ if __name__ == "__main__":
     # plot_test()
     # plot_tests2()
     plot_rerun_test_v3()
-    # plot_tests_v3()
+    plot_tests_v3()

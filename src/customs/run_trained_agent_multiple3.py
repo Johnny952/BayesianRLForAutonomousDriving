@@ -50,12 +50,12 @@ rcParams["pdf.fonttype"] = 42  # To avoid Type 3 fonts in figures
 rcParams["ps.fonttype"] = 42
 
 """ Options: """
-filepath = "../logs/train_agent_20230404_002949_ae_6M_v7/"
-agent_name = "5950003"
-case = "all"  # 'rerun_test_scenarios', 'fast_overtaking', 'standstill', 'all'
-use_safe_action = False
+filepath = "../logs/train_agent_20230628_172734_ae_v10/"
+agent_name = "5950009"
+case = "all-no-rerun"  # 'rerun_test_scenarios', 'fast_overtaking', 'standstill', 'all'
+use_safe_action = True
 
-thresh_range = np.linspace(69, 85, 100)
+thresh_range = [110, 120.86179492830266]#np.linspace(69, 85, 100)
 save_video = False
 do_save_metrics = True
 do_save_uncert = True
@@ -64,8 +64,6 @@ number_episodes=100
 csv_sufix='_v3'
 position_steps=100
 use_gui=False
-
-only_rerun = True
 """ End options """
 
 safe_action = 3
@@ -289,6 +287,29 @@ elif case == "standstill":
         csv_sufix=csv_sufix,
         do_save_uncert=True,
     )
+elif case == "all-no-rerun":
+    fast_overtaking_v2(
+        dqn,
+        filepath,
+        ps,
+        use_safe_action=False,
+        save_video=save_video,
+        position_steps=position_steps,
+        use_gui=use_gui,
+        csv_sufix=csv_sufix,
+        do_save_uncert=True,
+    )
+    standstill_v2(
+        dqn,
+        filepath,
+        ps,
+        use_safe_action=False,
+        save_video=save_video,
+        position_steps=position_steps,
+        use_gui=use_gui,
+        csv_sufix=csv_sufix,
+        do_save_uncert=True,
+    )
 elif case == "all":
     rerun_test_scenarios_v2(
         dqn,
@@ -348,28 +369,27 @@ elif case == "all":
         number_episodes=number_episodes,
         do_save_uncert=False,
     )
-    if not only_rerun:
-        fast_overtaking_v2(
-            dqn,
-            filepath,
-            ps,
-            use_safe_action=False,
-            save_video=save_video,
-            position_steps=position_steps,
-            use_gui=use_gui,
-            csv_sufix=csv_sufix,
-            do_save_uncert=True,
-        )
-        standstill_v2(
-            dqn,
-            filepath,
-            ps,
-            use_safe_action=False,
-            save_video=save_video,
-            position_steps=position_steps,
-            use_gui=use_gui,
-            csv_sufix=csv_sufix,
-            do_save_uncert=True,
-        )
+    fast_overtaking_v2(
+        dqn,
+        filepath,
+        ps,
+        use_safe_action=False,
+        save_video=save_video,
+        position_steps=position_steps,
+        use_gui=use_gui,
+        csv_sufix=csv_sufix,
+        do_save_uncert=True,
+    )
+    standstill_v2(
+        dqn,
+        filepath,
+        ps,
+        use_safe_action=False,
+        save_video=save_video,
+        position_steps=position_steps,
+        use_gui=use_gui,
+        csv_sufix=csv_sufix,
+        do_save_uncert=True,
+    )
 else:
     raise Exception("Case not defined.")

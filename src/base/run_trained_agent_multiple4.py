@@ -46,13 +46,16 @@ rcParams["ps.fonttype"] = 42
 q_filepath = "../logs/train_agent_20230323_235314_dqn_6M_v3/"
 q_agent_name = "5950056"
 
-u_filepath = "../logs/train_agent_20230323_235314_dqn_6M_v3/"#"../logs/train_agent_20230323_235219_rpf_6M_v3/", "../logs/train_agent_20230323_235314_dqn_6M_v3/"
-u_agent_name = "5950056"#rpf: "5950033", dqn: "5950056"
-use_ensemble_test_policy = False
+u_filepath = "../logs/train_agent_20230628_172622_rpf_v10/"#"../logs/train_agent_20230323_235219_rpf_6M_v3/", "../logs/train_agent_20230323_235314_dqn_6M_v3/"
+u_agent_name = "5950057"#rpf: "5950033", dqn: "5950056"
+use_ensemble_test_policy = True
 
-case = "uncert"  # 'all', 'uncert'
+case = "all"  # 'all', 'uncert'
 
-thresh_range = np.linspace(0.01, 0.1, 100)
+thresh_range = [
+    0.017332849929573544,
+    0.01993920510406339,
+]
 save_video = False
 do_save_metrics = True
 do_save_uncert = False

@@ -42,12 +42,15 @@ rcParams["pdf.fonttype"] = 42  # To avoid Type 3 fonts in figures
 rcParams["ps.fonttype"] = 42
 
 """ Options: """
-filepath = "../logs/train_agent_20230323_235219_rpf_6M_v3/"#"../logs/train_agent_20230323_235219_rpf_6M_v3/", "../logs/train_agent_20230323_235314_dqn_6M_v3/"
-agent_name = "5950033"#rpf: "5950033", dqn: "5950056"
-case = "all"  # 'rerun_test_scenarios', 'fast_overtaking', 'standstill', 'all'
+filepath = "../logs/train_agent_20230628_172622_rpf_v10/"#"../logs/train_agent_20230323_235219_rpf_6M_v3/", "../logs/train_agent_20230323_235314_dqn_6M_v3/"
+agent_name = "5950057"#rpf: "5950033", dqn: "5950056"
+case = "all-no-rerun"  # 'rerun_test_scenarios', 'fast_overtaking', 'standstill', 'all'
 use_ensemble_test_policy = True
 
-thresh_range = np.linspace(0.01, 0.1, 100)
+thresh_range = [
+    0.017332849929573544,
+    0.01993920510406339,
+]#np.linspace(0.01, 0.1, 100)
 save_video = False
 do_save_metrics = True
 do_save_uncert = True
@@ -56,8 +59,6 @@ number_episodes=100
 csv_sufix='_v3'
 position_steps=100
 use_gui=False
-
-only_rerun=True
 """ End options """
 
 # These import statements need to come after the choice of which agent that should be used.
@@ -190,6 +191,29 @@ elif case == "standstill":
         csv_sufix=csv_sufix,
         do_save_uncert=True,
     )
+elif case == "all-no-rerun":
+    fast_overtaking_v2(
+        dqn,
+        filepath,
+        ps,
+        use_safe_action=False,
+        save_video=save_video,
+        position_steps=position_steps,
+        use_gui=use_gui,
+        csv_sufix=csv_sufix,
+        do_save_uncert=True,
+    )
+    standstill_v2(
+        dqn,
+        filepath,
+        ps,
+        use_safe_action=False,
+        save_video=save_video,
+        position_steps=position_steps,
+        use_gui=use_gui,
+        csv_sufix=csv_sufix,
+        do_save_uncert=True,
+    )
 elif case == "all":
     rerun_test_scenarios_v2(
         dqn,
@@ -249,28 +273,27 @@ elif case == "all":
         number_episodes=number_episodes,
         do_save_uncert=False,
     )
-    if not only_rerun:
-        fast_overtaking_v2(
-            dqn,
-            filepath,
-            ps,
-            use_safe_action=False,
-            save_video=save_video,
-            position_steps=position_steps,
-            use_gui=use_gui,
-            csv_sufix=csv_sufix,
-            do_save_uncert=True,
-        )
-        standstill_v2(
-            dqn,
-            filepath,
-            ps,
-            use_safe_action=False,
-            save_video=save_video,
-            position_steps=position_steps,
-            use_gui=use_gui,
-            csv_sufix=csv_sufix,
-            do_save_uncert=True,
-        )
+    fast_overtaking_v2(
+        dqn,
+        filepath,
+        ps,
+        use_safe_action=False,
+        save_video=save_video,
+        position_steps=position_steps,
+        use_gui=use_gui,
+        csv_sufix=csv_sufix,
+        do_save_uncert=True,
+    )
+    standstill_v2(
+        dqn,
+        filepath,
+        ps,
+        use_safe_action=False,
+        save_video=save_video,
+        position_steps=position_steps,
+        use_gui=use_gui,
+        csv_sufix=csv_sufix,
+        do_save_uncert=True,
+    )
 else:
     raise Exception("Case not defined.")
