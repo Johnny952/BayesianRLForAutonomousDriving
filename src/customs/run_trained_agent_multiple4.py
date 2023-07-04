@@ -36,7 +36,11 @@ use_safe_action = True
 
 case = "all"  # 'all', 'uncert'
 
-thresh_range = [110, 120.86179492830266]
+thresh_range = [
+    83.278580,
+    87,
+    89.41015,
+]
 save_video = False
 do_save_metrics = True
 do_save_uncert = False

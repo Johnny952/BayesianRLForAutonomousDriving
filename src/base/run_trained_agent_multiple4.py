@@ -53,8 +53,8 @@ use_ensemble_test_policy = True
 case = "all"  # 'all', 'uncert'
 
 thresh_range = [
-    0.017332849929573544,
-    0.01993920510406339,
+    0.021121699900812634,
+    0.02692995525657349,
 ]
 save_video = False
 do_save_metrics = True
