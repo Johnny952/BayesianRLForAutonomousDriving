@@ -445,6 +445,7 @@ def plot_rerun_test_v3():
     fig1, ax1 = plt.subplots(ncols=1, nrows=1)
     fig1.set_figwidth(16)
     fig1.set_figheight(16)
+
     if tests[scenario]["mode"] == "full":
         fig2, ax2 = plt.subplots(ncols=1, nrows=1)
         fig2.set_figwidth(16)
@@ -457,7 +458,9 @@ def plot_rerun_test_v3():
     for model in models:
         base_path = model["test_v3"]["base_path"]
         model_name = model["name"]
-        sufix = model["test_v3"]["sufix"]
+        sufix = model["test_v3"]["rerun_sufix"]
+        mark = model["test_v3"]["mark"]
+        second_mark = model["test_v3"]["second_mark"]
         use_v0 = model["test_v3"]["paths"][scenario]["v0"]
         if model["test_v3"]["paths"][scenario]["u"]:
             (
@@ -471,7 +474,8 @@ def plot_rerun_test_v3():
                 _,
                 _,
             ) = read_test(f"{base_path}{scenario}_U{sufix}.csv")
-            _, [filtered_rates_s, filtered_rewards_s] = collapse_duplicated(collision_rates, rewards)
+            # _, [filtered_rates_s, filtered_rewards_s] = collapse_duplicated(collision_rates, rewards)
+            filtered_rates_s, filtered_rewards_s = collision_rates, rewards
             _, [filtered_safe_action, filtered_rates, filtered_rewards, filtered_speeds] = collapse_duplicated(nb_safe_actions, collision_rates, rewards, collision_speeds, reduction=np.mean)
 
             if use_v0:
@@ -486,31 +490,32 @@ def plot_rerun_test_v3():
                     _,
                     _,
                 ) = read_test(f"{base_path}{scenario}_U_v0.csv")
-                _, [filtered_rates_s_v0, filtered_rewards_s_v0] = collapse_duplicated(collision_rates_v0, rewards_v0)
+                # _, [filtered_rates_s_v0, filtered_rewards_s_v0] = collapse_duplicated(collision_rates_v0, rewards_v0)
+                filtered_rates_s_v0, filtered_rewards_s_v0 = collision_rates_v0, rewards_v0
                 _, [filtered_safe_action_v0, filtered_rates_v0, filtered_rewards_v0, filtered_speeds_v0] = collapse_duplicated(nb_safe_actions_v0, collision_rates_v0, rewards_v0, collision_speeds_v0, reduction=np.mean)
             if tests[scenario]["mode"] == "full":
                 ax1.plot(
-                    filtered_rates_s, filtered_rewards_s, '-', color=model["color"], label=f"{model_name} U", alpha=1
+                    filtered_rates_s, filtered_rewards_s, mark, color=model["color"], label=f"{model_name} U test v1", alpha=1, markersize=16, linewidth=2
                 )
 
                 
-                ax2.plot(filtered_safe_action, filtered_rewards, '-', color=model["color"], label=f"{model_name} U", alpha=1)
-                ax3.plot(filtered_safe_action, filtered_rates, '-', color=model["color"], label=f"{model_name} U", alpha=1)
-                # ax4.plot(filtered_safe_action, filtered_speeds, '-', color=model["color"], label=f"{model_name} U", alpha=1)
+                ax2.plot(filtered_safe_action, filtered_rewards, mark, color=model["color"], label=f"{model_name} U test v1", alpha=1)
+                ax3.plot(filtered_safe_action, filtered_rates, mark, color=model["color"], label=f"{model_name} U test v1", alpha=1)
+                # ax4.plot(filtered_safe_action, filtered_speeds, mark, color=model["color"], label=f"{model_name} U", alpha=1)
 
                 if use_v0:
                     ax1.plot(
-                        filtered_rates_s_v0, filtered_rewards_s_v0, ':', color=model["color"], label=f"{model_name} U Normal", alpha=1
+                        filtered_rates_s_v0, filtered_rewards_s_v0, second_mark, color=model["color"], label=f"{model_name} U test v0", alpha=1, markersize=16
                     )
-                    ax2.plot(filtered_safe_action_v0, filtered_rewards_v0, ':', color=model["color"], label=f"{model_name} U", alpha=1)
-                    ax3.plot(filtered_safe_action_v0, filtered_rates_v0, ':', color=model["color"], label=f"{model_name} U", alpha=1)
-                    # ax4.plot(filtered_safe_action_v0, filtered_speeds_v0, ':', color=model["color"], label=f"{model_name} U", alpha=1)
+                    ax2.plot(filtered_safe_action_v0, filtered_rewards_v0, second_mark, color=model["color"], label=f"{model_name} U test v0", alpha=1)
+                    ax3.plot(filtered_safe_action_v0, filtered_rates_v0, second_mark, color=model["color"], label=f"{model_name} U test v0", alpha=1)
+                    # ax4.plot(filtered_safe_action_v0, filtered_speeds_v0, second_mark, color=model["color"], label=f"{model_name} U", alpha=1)
 
             else:
-                ax1.plot(filtered_safe_action, filtered_rewards, '-', color=model["color"], label=f"{model_name} U", alpha=1)
+                ax1.plot(filtered_safe_action, filtered_rewards, mark, color=model["color"], label=f"{model_name} U test v1", alpha=1, markersize=16, linewidth=2)
 
                 if use_v0:
-                    ax1.plot(filtered_safe_action_v0, filtered_rewards_v0, ':', color=model["color"], label=f"{model_name} U", alpha=1)
+                    ax1.plot(filtered_safe_action_v0, filtered_rewards_v0, ':', color=model["color"], label=f"{model_name} U test v0", alpha=1)
 
             
 
@@ -540,24 +545,24 @@ def plot_rerun_test_v3():
                 ) = read_test(f"{base_path}{scenario}_NU_v0.csv")
             if tests[scenario]["mode"] == "full":
                 ax1.plot(
-                    collision_rates, rewards, '.', color=model["color"], label=f"{model_name} NU", alpha=1, markersize=14
+                    collision_rates, rewards, mark, color=model["color"], label=f"{model_name} NU test v1", alpha=1, markersize=16
                 )
-                ax2.axhline(y=rewards[0], xmin=0.0, xmax=1.0, label=f"{model_name} NU", color=model["color"], linestyle="--")
-                ax3.axhline(y=collision_rates[0], xmin=0.0, xmax=1.0, label=f"{model_name} NU", color=model["color"], linestyle="--")
+                ax2.axhline(y=rewards[0], xmin=0.0, xmax=1.0, label=f"{model_name} NU test v1", color=model["color"], linestyle="--")
+                ax3.axhline(y=collision_rates[0], xmin=0.0, xmax=1.0, label=f"{model_name} NU test v1", color=model["color"], linestyle="--")
                 # ax4.axhline(y=collision_speeds[0], xmin=0.0, xmax=1.0, label=f"{model_name} NU", color=model["color"], linestyle="--")
 
                 if use_v0:
                     ax1.plot(
-                        collision_rates_v0, rewards_v0, '*', color=model["color"], label=f"{model_name} NU Normal", alpha=1, markersize=14
+                        collision_rates_v0, rewards_v0, second_mark, color=model["color"], label=f"{model_name} NU test v0", alpha=1, markersize=16
                     )
                     ax2.axhline(y=rewards_v0[0], xmin=0.0, xmax=1.0, color=model["color"], linestyle="-.")
                     ax3.axhline(y=collision_rates_v0[0], xmin=0.0, xmax=1.0, color=model["color"], linestyle="-.")
                     # ax4.axhline(y=collision_speeds_v0[0], xmin=0.0, xmax=1.0, color=model["color"], linestyle="-.")
             else:
-                ax1.axhline(y=rewards[0], xmin=0.0, xmax=1.0, color=model["color"], linestyle="--", label=f"{model_name} NU")
+                ax1.axhline(y=rewards[0], xmin=0.0, xmax=1.0, color=model["color"], linestyle="--", label=f"{model_name} NU test v1")
 
                 if use_v0:
-                    ax1.axhline(y=rewards_v0[0], xmin=0.0, xmax=1.0, color=model["color"], linestyle="+", label=f"{model_name} NU Normal")
+                    ax1.axhline(y=rewards_v0[0], xmin=0.0, xmax=1.0, color=model["color"], linestyle="+", label=f"{model_name} NU test v0")
     
     if tests[scenario]["mode"] == "full":
         ax1.set_title(f"{scenario}", fontsize=25)
@@ -574,12 +579,14 @@ def plot_rerun_test_v3():
         ax2.set_title(f"{scenario}", fontsize=25)
         # ax2.set_ylim(bottom=-4)
         ax2.set_xlim(left=0, right=1)
+        ax2.legend()
         ax2.set_ylabel("Reward", fontsize=16)
         ax2.set_xlabel("Number Safe actions", fontsize=16)
 
         ax3.set_title(f"{scenario}", fontsize=25)
         ax3.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=0))
         ax3.set_ylim(bottom=0)
+        ax3.legend()
         ax3.set_xlim(left=0, right=1)
         ax3.set_ylabel("Collision Rate", fontsize=16)
         ax3.set_xlabel("Number Safe actions", fontsize=16)
@@ -598,13 +605,11 @@ def plot_rerun_test_v3():
 
     # plt.show()
     fig1.savefig(f"./videos/{scenario}_compar_v3.png")
-    fig1.close()
 
     fig2.savefig(f"./videos/{scenario}_rewards_v3.png")
-    fig2.close()
 
     fig3.savefig(f"./videos/{scenario}_collisions_v3.png")
-    fig3.close()
+    plt.close()
 
 def plot_tests_v3():
     import seaborn as sn
@@ -684,12 +689,15 @@ if __name__ == "__main__":
             "tests_plots": 5,
             "test_v3": {
                 "sufix": "_v4",
+                "rerun_sufix": "_v4",
+                "mark": '.',
+                "second_mark": '*',
                 "base_path": "./logs/train_agent_20230323_235314_dqn_6M_v3/",
                 "paths": {
                     "rerun_test_scenarios": {
                         "u": False,
                         "nu": True,
-                        "v0": True,
+                        "v0": False,
                     },
                     "standstill": {
                         "u": False,
@@ -704,10 +712,10 @@ if __name__ == "__main__":
         },
         {
             "paths": [
-                "./logs/train_agent_20230323_235219_rpf_6M_v3/data.hdf5",
+                "./logs/train_agent_20230628_172622_rpf_v10/data.hdf5",
             ],
             "multiple_test": {
-                "base_path": "./logs/train_agent_20230323_235219_rpf_6M_v3/",
+                "base_path": "./logs/train_agent_20230628_172622_rpf_v10/",
                 "rerun_test_scenarios": {
                     "u": True,
                     "nu": True,
@@ -727,18 +735,21 @@ if __name__ == "__main__":
             "color": "red",
             "tests": {
                 "rerun_test_scenarios": None,
-                "standstill": "./logs/train_agent_20230323_235219_rpf_6M_v3/standstill_NU_2.csv",
-                "fast_overtaking": "./logs/train_agent_20230323_235219_rpf_6M_v3/fast_overtaking_NU_2.csv",
+                "standstill": "./logs/train_agent_20230628_172622_rpf_v10/standstill_NU_2.csv",
+                "fast_overtaking": "./logs/train_agent_20230628_172622_rpf_v10/fast_overtaking_NU_2.csv",
             },
             "tests_plots": 5,
             "test_v3": {
-                "sufix": "_v4",
-                "base_path": "./logs/train_agent_20230323_235219_rpf_6M_v3/",
+                "sufix": "_v3",
+                "rerun_sufix": "_v5",
+                "mark": 'X-',
+                "second_mark": 'D-',
+                "base_path": "./logs/train_agent_20230628_172622_rpf_v10/",
                 "paths": {
                     "rerun_test_scenarios": {
                         "u": True,
                         "nu": False,
-                        "v0": True,
+                        "v0": False,
                     },
                     "standstill": {
                         "u": False,
@@ -751,36 +762,12 @@ if __name__ == "__main__":
                 }
             }
         },
-        # {
-        #     "paths": [
-        #         "./logs/train_agent_20230418_225936_bnn_6M_v6/data.hdf5",
-        #     ],
-        #     "multiple_test": {
-        #         "base_path": "./logs/train_agent_20230418_225936_bnn_6M_v6/",
-        #         "rerun_test_scenarios": {
-        #             "u": True,
-        #             "nu": True,
-        #         },
-        #         "standstill": {
-        #             "u": True,
-        #             "nu": True,
-        #         },
-        #         "fast_overtaking": {
-        #             "u": True,
-        #             "nu": True,
-        #         },
-        #     },
-        #     "name": "BNN DQN",
-        #     "show_uncertainty": True,
-        #     "negative_uncertainty": True,
-        #     "color": "orange",
-        # },
         {
             "paths": [
-                "./logs/train_agent_20230404_002949_ae_6M_v7/data.hdf5",
+                "./logs/train_agent_20230628_172734_ae_v10/data.hdf5",
             ],
             "multiple_test": {
-                "base_path": "./logs/train_agent_20230404_002949_ae_6M_v7/",
+                "base_path": "./logs/train_agent_20230628_172734_ae_v10/",
                 "rerun_test_scenarios": {
                     "u": True,
                     "nu": True,
@@ -800,18 +787,21 @@ if __name__ == "__main__":
             "color": "green",
             "tests": {
                 "rerun_test_scenarios": None,
-                "standstill": "./logs/train_agent_20230404_002949_ae_6M_v7/standstill_NU_2.csv",
-                "fast_overtaking": "./logs/train_agent_20230404_002949_ae_6M_v7/fast_overtaking_NU_2.csv",
+                "standstill": "./logs/train_agent_20230628_172734_ae_v10/standstill_NU_2.csv",
+                "fast_overtaking": "./logs/train_agent_20230628_172734_ae_v10/fast_overtaking_NU_2.csv",
             },
             "tests_plots": 5,
             "test_v3": {
-                "sufix": "_v4",
-                "base_path": "./logs/train_agent_20230404_002949_ae_6M_v7/",
+                "sufix": "_v3",
+                "rerun_sufix": "_v5",
+                "mark": 'v-',
+                "second_mark": "^-",
+                "base_path": "./logs/train_agent_20230628_172734_ae_v10/",
                 "paths": {
                     "rerun_test_scenarios": {
                         "u": True,
                         "nu": False,
-                        "v0": True,
+                        "v0": False,
                     },
                     "standstill": {
                         "u": False,
@@ -834,7 +824,7 @@ if __name__ == "__main__":
             "mode": "full",
         },
         "fast_overtaking": {
-            "mode": "simple",
+            "mode": "full",
         }
     }
 

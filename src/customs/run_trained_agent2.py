@@ -32,18 +32,10 @@ q_agent_name = "5950056"
 
 u_filepath = "../logs/train_agent_20230628_172734_ae_v10/"
 u_agent_name = "5950009"
-use_safe_action = True
+use_safe_action = False
 
-case = "all"  # 'all', 'uncert'
-
-thresh_range = [110, 120.86179492830266]
-save_video = False
-do_save_metrics = True
-do_save_uncert = False
-number_tests = 1
-number_episodes=500
-csv_sufix='_v5'
-use_gui=False
+number_episodes=1000
+csv_sufix='_uncerts'
 """ End options """
 
 safe_action = 3
@@ -259,98 +251,17 @@ dqn = MixDQNAgent(
 )
 
 
-def change_thresh_fn(thresh):
-    dqn.policy.safety_threshold = thresh
-
-
-if case == "all":
-    rerun_test_scenarios_v3(
-        dqn,
-        u_filepath,
-        ps,
-        change_thresh_fn=change_thresh_fn,
-        thresh_range=thresh_range,
-        use_safe_action=False,
-        save_video=save_video,
-        do_save_metrics=do_save_metrics,
-        number_tests=number_tests,
-        use_gui=use_gui,
-        number_episodes=number_episodes,
-        csv_sufix=csv_sufix,
-        do_save_uncert=do_save_uncert,
-    )
-    rerun_test_scenarios_v3(
-        dqn,
-        u_filepath,
-        ps,
-        change_thresh_fn=change_thresh_fn,
-        thresh_range=thresh_range,
-        use_safe_action=True,
-        save_video=save_video,
-        do_save_metrics=do_save_metrics,
-        number_tests=number_tests,
-        use_gui=use_gui,
-        number_episodes=number_episodes,
-        csv_sufix=csv_sufix,
-        do_save_uncert=do_save_uncert,
-    )
-    rerun_test_scenarios_v0(
-        dqn,
-        u_filepath,
-        ps,
-        change_thresh_fn=change_thresh_fn,
-        thresh_range=thresh_range,
-        use_safe_action=False,
-        save_video=save_video,
-        do_save_metrics=do_save_metrics,
-        number_tests=number_tests,
-        use_gui=use_gui,
-        number_episodes=number_episodes,
-        do_save_uncert=do_save_uncert,
-    )
-    rerun_test_scenarios_v0(
-        dqn,
-        u_filepath,
-        ps,
-        change_thresh_fn=change_thresh_fn,
-        thresh_range=thresh_range,
-        use_safe_action=True,
-        save_video=save_video,
-        do_save_metrics=do_save_metrics,
-        number_tests=number_tests,
-        use_gui=use_gui,
-        number_episodes=number_episodes,
-        do_save_uncert=do_save_uncert,
-    )
-elif case == "uncert":
-    rerun_test_scenarios_v3(
-        dqn,
-        u_filepath,
-        ps,
-        change_thresh_fn=change_thresh_fn,
-        thresh_range=thresh_range,
-        use_safe_action=use_safe_action,
-        save_video=save_video,
-        do_save_metrics=do_save_metrics,
-        number_tests=number_tests,
-        use_gui=use_gui,
-        number_episodes=number_episodes,
-        csv_sufix=csv_sufix,
-        do_save_uncert=do_save_uncert,
-    )
-    rerun_test_scenarios_v0(
-        dqn,
-        u_filepath,
-        ps,
-        change_thresh_fn=change_thresh_fn,
-        thresh_range=thresh_range,
-        use_safe_action=use_safe_action,
-        save_video=save_video,
-        do_save_metrics=do_save_metrics,
-        number_tests=number_tests,
-        use_gui=use_gui,
-        number_episodes=number_episodes,
-        do_save_uncert=do_save_uncert,
-    )
-else:
-    raise Exception("Case not defined.")
+rerun_test_scenarios_v0(
+    dqn,
+    u_filepath,
+    ps,
+    use_safe_action=False,
+    save_video=False,
+    do_save_metrics=False,
+    number_tests=1,
+    use_gui=False,
+    number_episodes=number_episodes,
+    do_save_uncert=True,
+    csv_sufix=csv_sufix,
+)
+ 
