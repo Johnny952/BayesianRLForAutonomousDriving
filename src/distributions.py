@@ -54,12 +54,21 @@ def plot_distributions(models, mode="hdf5"):
 
         mean_ = np.mean(uncertainties)
         std_ = np.std(uncertainties)
+        perc95 = np.percentile(uncertainties, 95)
+        perc975 = np.percentile(uncertainties, 97.5)
+        perc99 = np.percentile(uncertainties, 99)
         print(model_name)
-        print(mean_ + std_)
-        print(mean_ + 2*std_, '\n')
+        print(r'$\mu+\sigma$: {}'.format(mean_ + std_))
+        print(r'$\mu+2\sigma$: {}'.format(mean_ + 2 * std_))
+        print("95%: {}".format(perc95))
+        print("97.5%: {}".format(perc975))
+        print("99%: {}".format(perc99), '\n')
 
         plt.axvline(x=mean_ + std_, color='red', linestyle='dashed', label=r'$\mu+\sigma$: {:.3f}'.format(mean_ + std_))
         plt.axvline(x=mean_ + 2*std_, color='green', linestyle='dashed', label=r'$\mu+2\sigma$: {:.3f}'.format(mean_ + 2*std_))
+        plt.axvline(x=perc95, color='black', linestyle='dashed', label='95%: {:.3f}'.format(perc95))
+        plt.axvline(x=perc975, color='yellow', linestyle='dashed', label='97.5%: {:.3f}'.format(perc975))
+        plt.axvline(x=perc99, color='magenta', linestyle='dashed', label='99%: {:.3f}'.format(perc99))
 
         for m in marks:
             plt.axvline(x=m, color='black', linestyle='dashed', label="Custom: {}".format(m))
@@ -83,7 +92,7 @@ if __name__ == "__main__":
             "name": "DAE DQN",
             "path": "./logs/train_agent_20230628_172734_ae_v10/data.hdf5",
             "csv": "./logs/train_agent_20230628_172734_ae_v10/rerun_test_scenarios_NU_uncerts.csv",
-            "custom_marks": [87],
+            "custom_marks": [],
             "bins": 40,
             "range": (65, 110),
         }

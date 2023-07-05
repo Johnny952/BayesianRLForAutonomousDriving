@@ -46,8 +46,8 @@ rcParams["ps.fonttype"] = 42
 q_filepath = "../logs/train_agent_20230323_235314_dqn_6M_v3/"
 q_agent_name = "5950056"
 
-u_filepath = "../logs/train_agent_20230323_235314_dqn_6M_v3/"#"../logs/train_agent_20230628_172622_rpf_v10/", "../logs/train_agent_20230323_235314_dqn_6M_v3/"
-u_agent_name = "5950056"#rpf: "5950057", dqn: "5950056"
+u_filepath = "../logs/train_agent_20230628_172622_rpf_v10/"#"../logs/train_agent_20230628_172622_rpf_v10/", "../logs/train_agent_20230323_235314_dqn_6M_v3/"
+u_agent_name = "5950057"#rpf: "5950057", dqn: "5950056"
 use_ensemble_test_policy = True
 
 case = "all"  # 'all', 'uncert'
@@ -55,6 +55,9 @@ case = "all"  # 'all', 'uncert'
 thresh_range = [
     0.021121699900812634,
     0.02692995525657349,
+    0.0192722946,
+    0.0204881162,
+    0.0224333408,
 ]
 save_video = False
 do_save_metrics = True

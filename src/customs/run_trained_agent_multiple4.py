@@ -38,9 +38,10 @@ case = "all"  # 'all', 'uncert'
 
 thresh_range = [
     83.278580,
-    87,
     89.41015,
-    97,
+    94.3296555,
+    97.63642175,
+    100.12082,
 ]
 save_video = False
 do_save_metrics = True
