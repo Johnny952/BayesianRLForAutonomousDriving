@@ -66,7 +66,8 @@ def plot_distributions(models, mode="hdf5"):
         print("97.5%: {}".format(perc975))
         print("99%: {}".format(perc99))
         print("99.5%: {}".format(perc995))
-        print("99.9%: {}".format(perc999), '\n')
+        print("99.9%: {}".format(perc999))
+        print("Max: {}".format(np.max(uncertainties)), '\n')
 
         plt.axvline(x=mean_ + std_, color='red', linestyle='dashed', label=r'$\mu+\sigma$: {:.3f}'.format(mean_ + std_))
         plt.axvline(x=mean_ + 2*std_, color='green', linestyle='dashed', label=r'$\mu+2\sigma$: {:.3f}'.format(mean_ + 2*std_))

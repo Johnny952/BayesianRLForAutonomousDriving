@@ -44,6 +44,7 @@ thresh_range = [
     100.12082,
     101.74157615,
     104.1513034,
+    200,
 ]
 save_video = False
 do_save_metrics = True
