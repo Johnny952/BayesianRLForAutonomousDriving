@@ -75,7 +75,7 @@ def read_test2(path, ep_type=int):
     return thresholds, episodes, uncert
 
 
-def read_file(path, unc_normalized=True, negative_unc=False):
+def read_file(path, unc_normalized=True):
     steps = []
     uncertainty = []
     collision_rate = []
@@ -91,9 +91,7 @@ def read_file(path, unc_normalized=True, negative_unc=False):
             unc, nb_steps = step["uncertainties"][()], step["steps"][()]
             
             total_steps = np.sum(nb_steps)
-            unc = unc / total_steps
-            if negative_unc:
-                unc = -unc
+            unc = np.abs(unc / total_steps)
             max_ = np.max(unc)
             min_ = np.min(unc)
             mean_ = np.mean(unc)
@@ -124,9 +122,7 @@ def read_file(path, unc_normalized=True, negative_unc=False):
                 step["steps"][()],
             )
             total_steps = np.sum(nb_steps)
-            unc = unc / total_steps
-            if negative_unc:
-                unc = -unc
+            unc = np.abs(unc / total_steps)
             if unc_normalized and max_unc != min_unc:
                 # unc = (unc - min_unc) / (max_unc - min_unc + EPSILON)
                 unc = (unc - mean_min) / (mean_max - mean_min + EPSILON)
@@ -227,7 +223,7 @@ def plot_train(model_nb=-1):
                 _,
                 _,
             ) = read_file(
-                model["paths"][model_nb], negative_unc=model["negative_uncertainty"]
+                model["paths"][model_nb]
             )
             plt.plot(
                 steps,
@@ -662,34 +658,33 @@ if __name__ == "__main__":
             "paths": [
                 "./logs/train_agent_20230323_235314_dqn_6M_v3/data.hdf5",
             ],
-            "multiple_test": {
-                "base_path": "./logs/train_agent_20230323_235314_dqn_6M_v3/",
-                "rerun_test_scenarios": {
-                    "u": False,
-                    "nu": True,
-                },
-                "standstill": {
-                    "u": False,
-                    "nu": True,
-                },
-                "fast_overtaking": {
-                    "u": False,
-                    "nu": True,
-                },
-            },
+            # "multiple_test": {
+            #     "base_path": "./logs/train_agent_20230323_235314_dqn_6M_v3/",
+            #     "rerun_test_scenarios": {
+            #         "u": False,
+            #         "nu": True,
+            #     },
+            #     "standstill": {
+            #         "u": False,
+            #         "nu": True,
+            #     },
+            #     "fast_overtaking": {
+            #         "u": False,
+            #         "nu": True,
+            #     },
+            # },
             "name": "Standard DQN",
             "show_uncertainty": False,
-            "negative_uncertainty": False,
             "color": "blue",
-            "tests": {
-                "rerun_test_scenarios": None,
-                "standstill": None,
-                "fast_overtaking": None,
-            },
-            "tests_plots": 5,
+            # "tests": {
+            #     "rerun_test_scenarios": None,
+            #     "standstill": None,
+            #     "fast_overtaking": None,
+            # },
+            # "tests_plots": 5,
             "test_v3": {
-                "sufix": "_v4",
-                "rerun_sufix": "_v4",
+                "sufix": "_v5",
+                "rerun_sufix": "_v5",
                 "mark": '.',
                 "second_mark": '*',
                 "base_path": "./logs/train_agent_20230323_235314_dqn_6M_v3/",
@@ -714,31 +709,30 @@ if __name__ == "__main__":
             "paths": [
                 "./logs/train_agent_20230628_172622_rpf_v10/data.hdf5",
             ],
-            "multiple_test": {
-                "base_path": "./logs/train_agent_20230628_172622_rpf_v10/",
-                "rerun_test_scenarios": {
-                    "u": True,
-                    "nu": True,
-                },
-                "standstill": {
-                    "u": True,
-                    "nu": True,
-                },
-                "fast_overtaking": {
-                    "u": True,
-                    "nu": True,
-                },
-            },
+            # "multiple_test": {
+            #     "base_path": "./logs/train_agent_20230628_172622_rpf_v10/",
+            #     "rerun_test_scenarios": {
+            #         "u": True,
+            #         "nu": True,
+            #     },
+            #     "standstill": {
+            #         "u": True,
+            #         "nu": True,
+            #     },
+            #     "fast_overtaking": {
+            #         "u": True,
+            #         "nu": True,
+            #     },
+            # },
             "name": "Ensemble RPF DQN",
             "show_uncertainty": True,
-            "negative_uncertainty": False,
             "color": "red",
-            "tests": {
-                "rerun_test_scenarios": None,
-                "standstill": "./logs/train_agent_20230628_172622_rpf_v10/standstill_NU_2.csv",
-                "fast_overtaking": "./logs/train_agent_20230628_172622_rpf_v10/fast_overtaking_NU_2.csv",
-            },
-            "tests_plots": 5,
+            # "tests": {
+            #     "rerun_test_scenarios": None,
+            #     "standstill": "./logs/train_agent_20230628_172622_rpf_v10/standstill_NU_2.csv",
+            #     "fast_overtaking": "./logs/train_agent_20230628_172622_rpf_v10/fast_overtaking_NU_2.csv",
+            # },
+            # "tests_plots": 5,
             "test_v3": {
                 "sufix": "_v3",
                 "rerun_sufix": "_v5",
@@ -766,31 +760,30 @@ if __name__ == "__main__":
             "paths": [
                 "./logs/train_agent_20230628_172734_ae_v10/data.hdf5",
             ],
-            "multiple_test": {
-                "base_path": "./logs/train_agent_20230628_172734_ae_v10/",
-                "rerun_test_scenarios": {
-                    "u": True,
-                    "nu": True,
-                },
-                "standstill": {
-                    "u": True,
-                    "nu": True,
-                },
-                "fast_overtaking": {
-                    "u": True,
-                    "nu": True,
-                },
-            },
+            # "multiple_test": {
+            #     "base_path": "./logs/train_agent_20230628_172734_ae_v10/",
+            #     "rerun_test_scenarios": {
+            #         "u": True,
+            #         "nu": True,
+            #     },
+            #     "standstill": {
+            #         "u": True,
+            #         "nu": True,
+            #     },
+            #     "fast_overtaking": {
+            #         "u": True,
+            #         "nu": True,
+            #     },
+            # },
             "name": "AE DQN",
             "show_uncertainty": True,
-            "negative_uncertainty": True,
             "color": "green",
-            "tests": {
-                "rerun_test_scenarios": None,
-                "standstill": "./logs/train_agent_20230628_172734_ae_v10/standstill_NU_2.csv",
-                "fast_overtaking": "./logs/train_agent_20230628_172734_ae_v10/fast_overtaking_NU_2.csv",
-            },
-            "tests_plots": 5,
+            # "tests": {
+            #     "rerun_test_scenarios": None,
+            #     "standstill": "./logs/train_agent_20230628_172734_ae_v10/standstill_NU_2.csv",
+            #     "fast_overtaking": "./logs/train_agent_20230628_172734_ae_v10/fast_overtaking_NU_2.csv",
+            # },
+            # "tests_plots": 5,
             "test_v3": {
                 "sufix": "_v3",
                 "rerun_sufix": "_v5",
