@@ -50,7 +50,7 @@ save_video = False
 do_save_metrics = True
 do_save_uncert = False
 number_tests = 1
-number_episodes=500
+number_episodes=1000
 csv_sufix='_v5'
 use_gui=False
 """ End options """
