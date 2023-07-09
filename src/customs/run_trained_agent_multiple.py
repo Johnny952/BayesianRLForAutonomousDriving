@@ -152,6 +152,7 @@ elif p.agent_par["model"] == "ae":
         act_loss_weight=p.agent_par["act_loss_weight"],
         obs_loss_weight=p.agent_par["obs_loss_weight"],
         prob_loss_weight=p.agent_par["prob_loss_weight"],
+        min_covar=p.agent_par["min_covar"],
     ).to(p.agent_par["device"])
     if p.agent_par["cnn"]:
         model = NetworkCNN(

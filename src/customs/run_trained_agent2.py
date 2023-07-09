@@ -178,6 +178,7 @@ elif p.agent_par["model"] == "ae":
         act_loss_weight=p.agent_par["act_loss_weight"],
         obs_loss_weight=p.agent_par["obs_loss_weight"],
         prob_loss_weight=p.agent_par["prob_loss_weight"],
+        min_covar=p.agent_par["min_covar"],
     ).to(p.agent_par["device"])
     if p.agent_par["cnn"]:
         u_model = NetworkCNN(
@@ -261,7 +262,7 @@ rerun_test_scenarios_v0(
     number_tests=1,
     use_gui=False,
     number_episodes=number_episodes,
-    do_save_uncert=True,
+    do_save_uncert=False,#True,
     csv_sufix=csv_sufix,
 )
  
