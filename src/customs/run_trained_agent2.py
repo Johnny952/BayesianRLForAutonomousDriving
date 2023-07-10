@@ -262,7 +262,7 @@ rerun_test_scenarios_v0(
     number_tests=1,
     use_gui=False,
     number_episodes=number_episodes,
-    do_save_uncert=False,#True,
+    do_save_uncert=True,
     csv_sufix=csv_sufix,
 )
  
