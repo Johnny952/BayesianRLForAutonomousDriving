@@ -53,7 +53,7 @@ rcParams["ps.fonttype"] = 42
 filepath = "../logs/train_agent_20230628_172734_ae_v10/"
 agent_name = "5950009"
 case = "all-no-rerun"  # 'rerun_test_scenarios', 'fast_overtaking', 'standstill', 'all'
-use_safe_action = True
+use_safe_action = False
 
 thresh_range = [110, 120.86179492830266]#np.linspace(69, 85, 100)
 save_video = False
