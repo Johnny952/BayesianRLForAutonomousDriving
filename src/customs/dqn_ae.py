@@ -122,7 +122,7 @@ class DQNAEAgent(AbstractDQNAgent):
             obs = torch.from_numpy(observation).unsqueeze(dim=0).float().to(self.device)
             act= torch.Tensor([action]).unsqueeze(dim=0).float().to(self.device)
             with torch.no_grad():
-                uncertainty = self.autoencoder.log_prob(obs, act)
+                uncertainty = -self.autoencoder.log_prob(obs, act)
             uncertainty = uncertainty.cpu().numpy()
         else:
             # Uncertainty for all actions
@@ -130,14 +130,14 @@ class DQNAEAgent(AbstractDQNAgent):
             for i in range(self.nb_actions):
                 act = torch.Tensor([i]).unsqueeze(dim=0).float().to(self.device)
                 with torch.no_grad():
-                    uncertainty = self.autoencoder.log_prob(obs, act)
+                    uncertainty = -self.autoencoder.log_prob(obs, act)
                 uncertainties.append(uncertainty.cpu().numpy())
             if hasattr(self.test_policy, 'custom'):
                 action, action_info = self.test_policy.select_action(q_values, uncertainties)
             else:
                 action = self.test_policy.select_action(q_values=q_values)
             
-            uncertainty = np.abs(uncertainties[action])
+            uncertainty = uncertainties[action]
 
         # Book-keeping.
         self.recent_observation = observation

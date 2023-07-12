@@ -53,14 +53,14 @@ agent_par["sample_forward"] = 10
 agent_par["sample_backward"] = 1
 
 agent_par["obs_encoder_arc"] = [128, 64]
-agent_par["act_encoder_arc"] = [16, 32]
+agent_par["act_encoder_arc"] = [16, 64]
 agent_par["shared_encoder_arc"] = [32]
 agent_par["obs_decoder_arc"] = [64, 128]
-agent_par["act_decoder_arc"] = [32, 16]
+agent_par["act_decoder_arc"] = [64, 16]
 agent_par["shared_decoder_arc"] = [32]
 agent_par["covar_decoder_arc"] = [32, 64]
 agent_par["latent_dim"] = 32
-agent_par["act_loss_weight"] = 1
+agent_par["act_loss_weight"] = 1 / 2.3
 agent_par["obs_loss_weight"] = 1 / 0.3
 agent_par["prob_loss_weight"] = 1 / 10000
 agent_par["update_ae_each"] = 5

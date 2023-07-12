@@ -88,7 +88,7 @@ def read_test2(path, ep_type=int):
         for row in csv_reader:
             thresholds.append(float(row[0]))
             episodes.append(ep_type(row[1]))
-            uncert.append([np.abs(float(d)) for d in row[2:]])
+            uncert.append([float(d) for d in row[2:]])
     return thresholds, episodes, uncert
 
 
@@ -108,7 +108,7 @@ def read_file(path, unc_normalized=True):
             unc, nb_steps = step["uncertainties"][()], step["steps"][()]
             
             total_steps = np.sum(nb_steps)
-            unc = np.abs(unc / total_steps)
+            unc = unc / total_steps
             max_ = np.max(unc)
             min_ = np.min(unc)
             mean_ = np.mean(unc)
@@ -139,7 +139,7 @@ def read_file(path, unc_normalized=True):
                 step["steps"][()],
             )
             total_steps = np.sum(nb_steps)
-            unc = np.abs(unc / total_steps)
+            unc = unc / total_steps
             if unc_normalized and max_unc != min_unc:
                 # unc = (unc - min_unc) / (max_unc - min_unc + EPSILON)
                 unc = (unc - mean_min) / (mean_max - mean_min + EPSILON)
@@ -440,7 +440,7 @@ def plot_tests2():
             if filepath:
                 _, _, uncerts = read_test2(filepath)
                 for i, uncert in enumerate(uncerts[:max_plots]):
-                    plots[scenario].plot(np.abs(uncert), label=f'Run {str(i+1)}')
+                    plots[scenario].plot(uncert, label=f'Run {str(i+1)}')
         model_name = model["name"]
         plt.suptitle(f"Model {model_name}")
 
