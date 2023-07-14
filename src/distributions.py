@@ -44,6 +44,9 @@ def plot_distributions(models, mode="hdf5"):
             _, _, uncertainties = read_file2(model["csv"])
         else:
             raise Exception
+
+        if model["negative_unc"]:
+            uncertainties = -uncertainties
         bins = model["bins"]
         range_ = model["range"]
         marks = model["custom_marks"]
@@ -92,6 +95,7 @@ if __name__ == "__main__":
             "path": "./logs/train_agent_20230628_172622_rpf_v10/data.hdf5",
             "csv": "./logs/train_agent_20230628_172622_rpf_v10/rerun_test_scenarios_NU_uncerts.csv",
             "custom_marks": [],
+            "negative_unc": False,
             "bins": 50,
             "range": (0, 0.035),
         },
@@ -100,8 +104,9 @@ if __name__ == "__main__":
             "path": "./logs/train_agent_20230628_172734_ae_v10/data.hdf5",
             "csv": "./logs/train_agent_20230628_172734_ae_v10/rerun_test_scenarios_NU_uncerts.csv",
             "custom_marks": [],
+            "negative_unc": True,
             "bins": 40,
-            "range": (0, 150),
+            "range": (-150, 0),
         }
     ]
 
