@@ -615,7 +615,7 @@ class DQNAgentEnsembleParallel(AbstractDQNAgent):
             info['mean'] = np.mean(q_values_all_nets[:, :], axis=0)
             info['standard_deviation'] = np.std(q_values_all_nets[:, :], axis=0)
             info['coefficient_of_variation'] = np.std(q_values_all_nets[:, :], axis=0) / \
-                                               np.abs(np.mean(q_values_all_nets[:, :], axis=0))
+                                               np.mean(q_values_all_nets[:, :], axis=0)
             info.update(policy_info)
 
         # Book-keeping.

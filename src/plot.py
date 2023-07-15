@@ -79,7 +79,7 @@ def read_test(path):
         np.array(fast_events)
     )
 
-def read_test2(path, ep_type=int, negative_unc=False):
+def read_test2(path, ep_type=int):
     thresholds = []
     episodes = []
     uncert = []
@@ -88,11 +88,11 @@ def read_test2(path, ep_type=int, negative_unc=False):
         for row in csv_reader:
             thresholds.append(float(row[0]))
             episodes.append(ep_type(row[1]))
-            uncert.append([float(d) if not negative_unc else -float(d) for d in row[2:]])
+            uncert.append([float(d)  for d in row[2:]])
     return thresholds, episodes, uncert
 
 
-def read_file(path, unc_normalized=True, negative_unc=False):
+def read_file(path, unc_normalized=True):
     steps = []
     uncertainty = []
     collision_rate = []
@@ -109,8 +109,6 @@ def read_file(path, unc_normalized=True, negative_unc=False):
             
             total_steps = np.sum(nb_steps)
             unc = unc / total_steps
-            if negative_unc:
-                unc = -unc
 
             max_ = np.max(unc)
             min_ = np.min(unc)
@@ -143,8 +141,6 @@ def read_file(path, unc_normalized=True, negative_unc=False):
             )
             total_steps = np.sum(nb_steps)
             unc = unc / total_steps
-            if negative_unc:
-                unc = -unc
             if unc_normalized and max_unc != min_unc:
                 # unc = (unc - min_unc) / (max_unc - min_unc + EPSILON)
                 unc = (unc - mean_min) / (mean_max - mean_min + EPSILON)
@@ -206,7 +202,7 @@ def plot_train(model_nb=-1):
         rewards = []
         steps = []
         for path in model["paths"]:
-            step, _, _, reward = read_file(path, negative_unc=model["negative_unc"])
+            step, _, _, reward = read_file(path)
             rewards.append(reward)
             steps.append(step)
         rewards = np.array(rewards)
@@ -245,7 +241,7 @@ def plot_train(model_nb=-1):
                 _,
                 _,
             ) = read_file(
-                model["paths"][model_nb], negative_unc=model["negative_unc"]
+                model["paths"][model_nb]
             )
             plt.plot(
                 steps,
@@ -279,7 +275,7 @@ def plot_train(model_nb=-1):
     ax3 = plt.subplot(223, sharex=ax2)
     for model in models:
         model_name = model["name"]
-        steps, _, (collision_rate, _), _ = read_file(model["paths"][model_nb])#, negative_unc=model["negative_unc"]
+        steps, _, (collision_rate, _), _ = read_file(model["paths"][model_nb])
         plt.plot(
             steps,
             1 - collision_rate,
@@ -297,7 +293,7 @@ def plot_train(model_nb=-1):
     ax4 = plt.subplot(224, sharex=ax2)
     for model in models:
         model_name = model["name"]
-        steps, _, (_, collision_speed), _ = read_file(model["paths"][model_nb], negative_unc=model["negative_unc"])
+        steps, _, (_, collision_speed), _ = read_file(model["paths"][model_nb])
         plt.plot(
             steps,
             collision_speed,
@@ -630,14 +626,13 @@ def plot_tests_v3():
         model_name = model["name"]
         sufix = model["test_v3"]["sufix"]
         paths = model["test_v3"]["paths"]
-        negative_unc = model["negative_unc"]
 
         fig.suptitle(model_name)
 
         for idx, scenario in enumerate(["standstill", "fast_overtaking"]):#standstill, "fast_overtaking"
             if paths[scenario]["nu"]:
                 path = f"{base_path}{scenario}_NU{sufix}.csv"
-                _, pos_vel, unc = read_test2(path, ep_type=float)#, negative_unc=negative_unc
+                _, pos_vel, unc = read_test2(path, ep_type=float)
                 max_len = len(max(unc, key=len))
                 min_unc = min(unc)
                 unc_range = model["test_v3"]["unc_range"]
@@ -687,7 +682,6 @@ if __name__ == "__main__":
             # },
             "name": "Ensemble RPF DQN",
             "show_uncertainty": True,
-            "negative_unc": False,
             "color": "red",
             # "tests": {
             #     "rerun_test_scenarios": None,
@@ -740,7 +734,6 @@ if __name__ == "__main__":
             # },
             "name": "AE DQN",
             "show_uncertainty": True,
-            "negative_unc": True,
             "color": "green",
             # "tests": {
             #     "rerun_test_scenarios": None,
@@ -793,7 +786,6 @@ if __name__ == "__main__":
             # },
             "name": "Standard DQN",
             "show_uncertainty": False,
-            "negative_unc": False,
             "color": "blue",
             # "tests": {
             #     "rerun_test_scenarios": None,

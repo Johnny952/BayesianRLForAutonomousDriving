@@ -48,10 +48,7 @@ agent_name = "5950057"#rpf: "5950033", dqn: "5950056"
 case = "all-no-rerun"  # 'rerun_test_scenarios', 'fast_overtaking', 'standstill', 'all'
 use_ensemble_test_policy = False
 
-thresh_range = [
-    0.017332849929573544,
-    0.01993920510406339,
-]#np.linspace(0.01, 0.1, 100)
+thresh_range = [0]
 save_video = False
 do_save_metrics = True
 do_save_uncert = True

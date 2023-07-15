@@ -15,7 +15,7 @@ NB_VEHICLES = 25  # 25
 speed_range = [15, 25]  # [15, 35]
 
 # Standstill
-stop_position_range = [250, 300]  # 300 = 280, 500
+stop_position_range = [250, 500]  # 300 = 280, 500
 stop_speed_range = [0, 10]  # 0
 vehicle_distance_range = [12, 22]  # 18
 vehicle_start_pos_range = [0, 36]  # 36
