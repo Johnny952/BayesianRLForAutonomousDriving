@@ -46,8 +46,8 @@ rcParams["ps.fonttype"] = 42
 q_filepath = "../logs/train_agent_20230323_235314_dqn_6M_v3/"
 q_agent_name = "5950056"
 
-u_filepath = "../logs/train_agent_20230628_172622_rpf_v10/"#"../logs/train_agent_20230628_172622_rpf_v10/", "../logs/train_agent_20230323_235314_dqn_6M_v3/"
-u_agent_name = "5950057"#rpf: "5950057", dqn: "5950056"
+u_filepath = "../logs/train_agent_20230715_211722_rpf_v14/"#"../logs/train_agent_20230628_172622_rpf_v10/", "../logs/train_agent_20230323_235314_dqn_6M_v3/"
+u_agent_name = "5950023"#rpf: "5950057", dqn: "5950056"
 use_ensemble_test_policy = True
 
 case = "all"  # 'all', 'uncert'

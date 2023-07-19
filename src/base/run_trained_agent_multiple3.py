@@ -43,8 +43,8 @@ rcParams["pdf.fonttype"] = 42  # To avoid Type 3 fonts in figures
 rcParams["ps.fonttype"] = 42
 
 """ Options: """
-filepath = "../logs/train_agent_20230628_172622_rpf_v10/"#"../logs/train_agent_20230323_235219_rpf_6M_v3/", "../logs/train_agent_20230323_235314_dqn_6M_v3/"
-agent_name = "5950057"#rpf: "5950033", dqn: "5950056"
+filepath = "../logs/train_agent_20230715_211722_rpf_v14/"#"../logs/train_agent_20230323_235219_rpf_6M_v3/", "../logs/train_agent_20230323_235314_dqn_6M_v3/"
+agent_name = "5950023"#rpf: "5950033", dqn: "5950056"
 case = "all-no-rerun"  # 'rerun_test_scenarios', 'fast_overtaking', 'standstill', 'all'
 use_ensemble_test_policy = False
 

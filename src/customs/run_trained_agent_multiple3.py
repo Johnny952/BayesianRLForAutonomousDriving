@@ -50,8 +50,8 @@ rcParams["pdf.fonttype"] = 42  # To avoid Type 3 fonts in figures
 rcParams["ps.fonttype"] = 42
 
 """ Options: """
-filepath = "../logs/train_agent_20230628_172734_ae_v10/"
-agent_name = "5950009"
+filepath = "../logs/train_agent_20230715_211724_ae_v14/"
+agent_name = "5950097"
 case = "all-no-rerun"  # 'rerun_test_scenarios', 'fast_overtaking', 'standstill', 'all'
 use_safe_action = False
 

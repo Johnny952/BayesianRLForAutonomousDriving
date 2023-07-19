@@ -46,8 +46,8 @@ rcParams["ps.fonttype"] = 42
 q_filepath = "../logs/train_agent_20230323_235314_dqn_6M_v3/"
 q_agent_name = "5950056"
 
-u_filepath = "../logs/train_agent_20230628_172622_rpf_v10/"#"../logs/train_agent_20230323_235219_rpf_6M_v3/", "../logs/train_agent_20230323_235314_dqn_6M_v3/"
-u_agent_name = "5950057"#rpf: "5950033", dqn: "5950056"
+u_filepath = "../logs/train_agent_20230715_211722_rpf_v14/"#"../logs/train_agent_20230323_235219_rpf_6M_v3/", "../logs/train_agent_20230323_235314_dqn_6M_v3/"
+u_agent_name = "5950023"#rpf: "5950033", dqn: "5950056"
 
 number_episodes=1000
 csv_sufix='_uncerts'
