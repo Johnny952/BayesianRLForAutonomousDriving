@@ -90,18 +90,18 @@ if __name__ == "__main__":
     models = [
         {
             "name": "Ensemble RPF DQN",
-            "path": "./logs/train_agent_20230628_172622_rpf_v10/data.hdf5",
-            "csv": "./logs/train_agent_20230628_172622_rpf_v10/rerun_test_scenarios_NU_uncerts.csv",
+            "path": "./logs/train_agent_20230715_211722_rpf_v14/data.hdf5",
+            "csv": "./logs/train_agent_20230715_211722_rpf_v14/rerun_test_scenarios_NU_uncerts.csv",
             "custom_marks": [],
-            "bins": 50,
+            "bins": 100,
             "range": (0, 0.035),
         },
         {
             "name": "DAE DQN",
-            "path": "./logs/train_agent_20230628_172734_ae_v10/data.hdf5",
-            "csv": "./logs/train_agent_20230628_172734_ae_v10/rerun_test_scenarios_NU_uncerts.csv",
+            "path": "./logs/train_agent_20230715_211724_ae_v14/data.hdf5",
+            "csv": "./logs/train_agent_20230715_211724_ae_v14/rerun_test_scenarios_NU_uncerts.csv",
             "custom_marks": [],
-            "bins": 40,
+            "bins": 100,
             "range": (-150, 0),
         }
     ]
