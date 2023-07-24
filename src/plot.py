@@ -635,6 +635,10 @@ def plot_tests_v3():
                 _, pos_vel, unc = read_test2(path, ep_type=float)
                 max_len = len(max(unc, key=len))
                 min_unc = min(unc)
+                flat_unc = []
+                for u in unc:
+                    flat_unc += u
+                print(model_name, np.min(flat_unc), np.max(flat_unc))
                 unc_range = model["test_v3"]["unc_range"]
                 padded_unc = np.ones((len(unc), max_len)) * min_unc
                 for i, row in enumerate(unc):
@@ -663,10 +667,10 @@ if __name__ == "__main__":
         
         {
             "paths": [
-                "./logs/train_agent_20230628_172622_rpf_v10/data.hdf5",
+                "./logs/train_agent_20230715_211722_rpf_v14/data.hdf5",
             ],
             # "multiple_test": {
-            #     "base_path": "./logs/train_agent_20230628_172622_rpf_v10/",
+            #     "base_path": "./logs/train_agent_20230715_211722_rpf_v14/",
             #     "rerun_test_scenarios": {
             #         "u": True,
             #         "nu": True,
@@ -685,8 +689,8 @@ if __name__ == "__main__":
             "color": "red",
             # "tests": {
             #     "rerun_test_scenarios": None,
-            #     "standstill": "./logs/train_agent_20230628_172622_rpf_v10/standstill_NU_2.csv",
-            #     "fast_overtaking": "./logs/train_agent_20230628_172622_rpf_v10/fast_overtaking_NU_2.csv",
+            #     "standstill": "./logs/train_agent_20230715_211722_rpf_v14/standstill_NU_2.csv",
+            #     "fast_overtaking": "./logs/train_agent_20230715_211722_rpf_v14/fast_overtaking_NU_2.csv",
             # },
             # "tests_plots": 5,
             "test_v3": {
@@ -694,8 +698,8 @@ if __name__ == "__main__":
                 "rerun_sufix": "_v5",
                 "mark": 'X-',
                 "second_mark": 'D-',
-                "base_path": "./logs/train_agent_20230628_172622_rpf_v10/",
-                "unc_range": [0.01, 0.055],
+                "base_path": "./logs/train_agent_20230715_211722_rpf_v14/",
+                "unc_range": [0.012, 0.08],
                 "paths": {
                     "rerun_test_scenarios": {
                         "u": True,
@@ -715,10 +719,10 @@ if __name__ == "__main__":
         },
         {
             "paths": [
-                "./logs/train_agent_20230628_172734_ae_v10/data.hdf5",
+                "./logs/train_agent_20230715_211724_ae_v14/data.hdf5",
             ],
             # "multiple_test": {
-            #     "base_path": "./logs/train_agent_20230628_172734_ae_v10/",
+            #     "base_path": "./logs/train_agent_20230715_211724_ae_v14/",
             #     "rerun_test_scenarios": {
             #         "u": True,
             #         "nu": True,
@@ -737,8 +741,8 @@ if __name__ == "__main__":
             "color": "green",
             # "tests": {
             #     "rerun_test_scenarios": None,
-            #     "standstill": "./logs/train_agent_20230628_172734_ae_v10/standstill_NU_2.csv",
-            #     "fast_overtaking": "./logs/train_agent_20230628_172734_ae_v10/fast_overtaking_NU_2.csv",
+            #     "standstill": "./logs/train_agent_20230715_211724_ae_v14/standstill_NU_2.csv",
+            #     "fast_overtaking": "./logs/train_agent_20230715_211724_ae_v14/fast_overtaking_NU_2.csv",
             # },
             # "tests_plots": 5,
             "test_v3": {
@@ -746,8 +750,8 @@ if __name__ == "__main__":
                 "rerun_sufix": "_v5",
                 "mark": 'v-',
                 "second_mark": "^-",
-                "base_path": "./logs/train_agent_20230628_172734_ae_v10/",
-                "unc_range": [-135, -20],
+                "base_path": "./logs/train_agent_20230715_211724_ae_v14/",
+                "unc_range": [-145, -72],
                 "paths": {
                     "rerun_test_scenarios": {
                         "u": True,

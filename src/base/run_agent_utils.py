@@ -9,6 +9,7 @@ sys.path.append(os.path.join(os.environ.get("SUMO_HOME"), "tools"))
 import traci
 
 from base.driving_env import Highway
+from base.parameters_simulation import road_params
 
 # test scenarios
 NB_VEHICLES = 25  # 25
@@ -23,7 +24,7 @@ vehicles_speed_range = [10, 20]  # 15
 
 # Fast overtaking
 vehicles_speeds_range_fast = [10, 20]  # 15
-fast_vehicle_speed_range = [25, 60]  # 50
+fast_vehicle_speed_range = [15, 60]  # 50
 fast_vehicle_start_position_range = [100, 200]  # 150
 
 # test scenarios V2
@@ -31,13 +32,16 @@ STOPPED_VEHICLES = 2
 FAST_VEHICLES = 0
 
 # test scenarios V3
-EVENT_PROBABILITY = 0.05
+EVENT_PROBABILITY = 0.1
 STOPPED_VEHICLE_EVENT_PROB = 0.5
 FREEZE_STEPS = 10
-MIN_STOP_VEHICLE_DISTANCE = 100
-STOP_VEHICLE_STEPS = 5
+STOP_VEHICLE_RANGE = [100, 200]
+FAST_VEHICLE_RANGE = [100, 200]
+MIN_STOP_VEHICLE_DISTANCE = 50# 100
+MIN_FAST_VEHICLE_DISTANCE = 50# 100
+STOP_VEHICLE_STEPS = 10
 FAST_VEHICLE_SPEED = 55
-FAST_VEHCILE_STEPS = 5
+FAST_VEHCILE_STEPS = 10
 
 
 def get_name(filepath):
@@ -140,7 +144,7 @@ def traci_before(filepath, case, thresh, episode):
     if not os.path.exists(video_folder):
         os.makedirs(video_folder)
 
-    traci.gui.setZoom("View #0", 10500)
+    traci.gui.setZoom("View #0", 8000)
     traci.gui.screenshot("View #0", video_folder + "/init.png")
 
 
@@ -1238,69 +1242,71 @@ def rerun_test_scenarios_v0(
 stopped_vh = {
     "id": -1,
     "speed": -1,
-    "max_speed": -1,
+    "max_speed": road_params['speed_range'][1],
+    "min_speed": road_params['speed_range'][0],
 }
 
 
 def resume_stop_vehicle():
     vh = stopped_vh["id"]
-    # speed = stopped_vh["speed"]
+    speed = stopped_vh["min_speed"]
     max_speed = stopped_vh["max_speed"]
-    # traci.vehicle.setSpeed(vh, speed)
+    traci.vehicle.setSpeed(vh, speed)
     traci.vehicle.setMaxSpeed(vh, max_speed)
 
 
 def stop_vehicle():
     id_list = traci.vehicle.getIDList()
 
-    agent_lane = traci.vehicle.getLaneIndex(id_list[0])
+    # agent_lane = traci.vehicle.getLaneIndex(id_list[0])
     agent_pos = traci.vehicle.getPosition(id_list[0])[0]
 
     vehicles = id_list[1:]
-    selected_vh = {
-        "id": -1,
-        "distance": 1e10,
-    }
+    distances = []
+    ids = []
     for vh in vehicles:
-        vh_lane = traci.vehicle.getLaneIndex(vh)
+        # vh_lane = traci.vehicle.getLaneIndex(vh)
         vh_pos = traci.vehicle.getPosition(vh)[0]
         distance = vh_pos - agent_pos
         if (
-            vh_lane == agent_lane
-            and 0 < distance
-            and distance < selected_vh["distance"]
+            # vh_lane == agent_lane
+            # and 
+            STOP_VEHICLE_RANGE[0] < distance < STOP_VEHICLE_RANGE[1]
         ):
-            selected_vh = {
-                "id": vh,
-                "distance": distance,
-            }
+            ids.append(vh)
+            distances.append(distance)
 
-    if selected_vh["distance"] < MIN_STOP_VEHICLE_DISTANCE or selected_vh["id"] == -1:
-        print("Vehicle too close to agent to be stopped or Vehicle not selected")
+    if len(ids) == 0:
+        print("Vehicle not selected")
         return False
     else:
-        stopped_vh["id"] = copy.copy(selected_vh["id"])
-        stopped_vh["speed"] = traci.vehicle.getSpeed(selected_vh["id"])
-        stopped_vh["max_speed"] = traci.vehicle.getMaxSpeed(selected_vh["id"])
-        traci.vehicle.setSpeed(selected_vh["id"], 0)
-        traci.vehicle.setMaxSpeed(selected_vh["id"], 0.001)
+        idcs = np.argsort(distances)
+        selected_id = ids[idcs[0]]
+
+        stopped_vh["id"] = copy.copy(selected_id)
+        stopped_vh["speed"] = traci.vehicle.getSpeed(selected_id)
+        # stopped_vh["max_speed"] = traci.vehicle.getMaxSpeed(selected_vh["id"])
+        traci.vehicle.setSpeed(selected_id, 0)
+        traci.vehicle.setMaxSpeed(selected_id, 0.001)
     return True
 
 
 fast_vh = {
     "id": -1,
     "speed": -1,
-    "max_speed": -1,
+    "max_speed": road_params['speed_range'][1],
+    "min_speed": road_params['speed_range'][0],
 }
 
 
 def resume_fast_vehicle():
     vh = fast_vh["id"]
-    # speed = fast_vh["speed"]
+    speed = fast_vh["min_speed"]
     max_speed = fast_vh["max_speed"]
-    # traci.vehicle.setSpeed(vh, speed)
+    traci.vehicle.setSpeed(vh, speed)
     try:
         traci.vehicle.setMaxSpeed(vh, max_speed)
+        traci.vehicle.setSpeed(vh, speed)
     except:
         print("Vehicle does not exist")
 
@@ -1308,37 +1314,36 @@ def resume_fast_vehicle():
 def fast_vehicle():
     id_list = traci.vehicle.getIDList()
 
-    agent_lane = traci.vehicle.getLaneIndex(id_list[0])
+    # agent_lane = traci.vehicle.getLaneIndex(id_list[0])
     agent_pos = traci.vehicle.getPosition(id_list[0])[0]
 
     vehicles = id_list[1:]
-    selected_vh = {
-        "id": -1,
-        "distance": 1e10,
-    }
+    distances = []
+    ids = []
     for vh in vehicles:
-        vh_lane = traci.vehicle.getLaneIndex(vh)
+        # vh_lane = traci.vehicle.getLaneIndex(vh)
         vh_pos = traci.vehicle.getPosition(vh)[0]
         distance = agent_pos - vh_pos
         if (
-            vh_lane != agent_lane
-            and 0 < distance
-            and distance < selected_vh["distance"]
+            # vh_lane != agent_lane
+            # and 
+            FAST_VEHICLE_RANGE[0] < distance < FAST_VEHICLE_RANGE[1]
         ):
-            selected_vh = {
-                "id": vh,
-                "distance": distance,
-            }
+            ids.append(vh)
+            distances.append(distance)
 
-    if selected_vh["id"] == -1:
+    if len(ids) == 0:
         print("Vehicle not selected")
         return False
     else:
-        fast_vh["id"] = copy.copy(selected_vh["id"])
-        fast_vh["speed"] = traci.vehicle.getSpeed(selected_vh["id"])
-        fast_vh["max_speed"] = traci.vehicle.getMaxSpeed(selected_vh["id"])
-        traci.vehicle.setSpeed(selected_vh["id"], FAST_VEHICLE_SPEED)
-        traci.vehicle.setMaxSpeed(selected_vh["id"], FAST_VEHICLE_SPEED)
+        idcs = np.argsort(distances)
+        selected_id = ids[idcs[0]]
+
+        fast_vh["id"] = copy.copy(selected_id)
+        fast_vh["speed"] = traci.vehicle.getSpeed(selected_id)
+        # fast_vh["max_speed"] = traci.vehicle.getMaxSpeed(selected_id)
+        traci.vehicle.setSpeed(selected_id, FAST_VEHICLE_SPEED)
+        traci.vehicle.setMaxSpeed(selected_id, FAST_VEHICLE_SPEED)
     return True
 
 
@@ -1403,68 +1408,68 @@ def rerun_test_scenarios_v3(
 
             ep_stop_events = 0
             ep_fast_events = 0
+            stop_event = False
+            fast_event = False
 
             while done is False:
-                try:
-                    action, action_info = dqn.forward(obs)
-                    obs, rewards, done, _, more_info = env.step(action, action_info)
-                    reward_no_col = more_info["reward_no_col"]
-                    episode_reward += reward_no_col
-                    step += 1
-                    if more_info["ego_collision"]:
-                        collissions += 1
-                        collision_speeds.append(more_info["ego_speed"])
-                    if "safe_action" in action_info:
-                        nb_safe_actions += action_info["safe_action"]
-                        nb_hard_safe_actions += action_info["hard_safe"]
-                    if save_video:
-                        traci_each(filepath, case, thresh, i, step)
-                    if "coefficient_of_variation" in action_info:
-                        unc.append(action_info["coefficient_of_variation"][action])
+                action, action_info = dqn.forward(obs)
+                obs, rewards, done, _, more_info = env.step(action, action_info)
+                reward_no_col = more_info["reward_no_col"]
+                episode_reward += reward_no_col
+                step += 1
+                if more_info["ego_collision"]:
+                    collissions += 1
+                    collision_speeds.append(more_info["ego_speed"])
+                if "safe_action" in action_info:
+                    nb_safe_actions += action_info["safe_action"]
+                    nb_hard_safe_actions += action_info["hard_safe"]
+                
+                if "coefficient_of_variation" in action_info:
+                    unc.append(action_info["coefficient_of_variation"][action])
 
-                    if frozen_steps == 0 and np.random.rand() < EVENT_PROBABILITY:
-                        if np.random.rand() < STOPPED_VEHICLE_EVENT_PROB:
-                            if stop_vehicle():
-                                frozen_steps = FREEZE_STEPS + STOP_VEHICLE_STEPS
-                                stop_vehicle_step = STOP_VEHICLE_STEPS + 1
-                                ep_stop_events += 1
-                        else:
-                            if fast_vehicle():
-                                frozen_steps = FREEZE_STEPS + FAST_VEHCILE_STEPS
-                                fast_vehcile_step = FAST_VEHCILE_STEPS + 1
-                                ep_fast_events += 1
-                    if 0 < frozen_steps:
-                        frozen_steps -= 1
-                    if 0 < stop_vehicle_step:
-                        stop_vehicle_step -= 1
-                        if stop_vehicle_step == 0:
-                            resume_stop_vehicle()
-                    if 0 < fast_vehcile_step:
-                        fast_vehcile_step -= 1
-                        if fast_vehcile_step == 0:
-                            resume_fast_vehicle()
+                if frozen_steps == 0 and np.random.rand() < EVENT_PROBABILITY:
+                    if np.random.rand() < STOPPED_VEHICLE_EVENT_PROB:
+                        if stop_vehicle():
+                            frozen_steps = FREEZE_STEPS + STOP_VEHICLE_STEPS
+                            stop_vehicle_step = STOP_VEHICLE_STEPS + 1
+                            ep_stop_events += 1
+                            stop_event = True
+                    else:
+                        if fast_vehicle():
+                            frozen_steps = FREEZE_STEPS + FAST_VEHCILE_STEPS
+                            fast_vehcile_step = FAST_VEHCILE_STEPS + 1
+                            ep_fast_events += 1
+                            fast_event = True
+                if 0 < frozen_steps:
+                    frozen_steps -= 1
+                if 0 < stop_vehicle_step:
+                    stop_vehicle_step -= 1
+                    if stop_vehicle_step == 0:
+                        stop_event = False
+                        resume_stop_vehicle()
+                if 0 < fast_vehcile_step:
+                    fast_vehcile_step -= 1
+                    if fast_vehcile_step == 0:
+                        fast_event = False
+                        resume_fast_vehicle()
+                
+                if use_gui or save_video:
+                    env.print_info_in_gui2({
+                        "Reward": rewards,
+                        "Action": action,
+                        "Speed": env.speeds[0, :][0],
+                        "Uncertainty": action_info["coefficient_of_variation"][action],
+                        "Threshold": thresh,
+                        "Safe Action": action_info["safe_action"],
+                        "Hard Safe Action": action_info["safe_action"],
+                        "Stop Event": stop_event,
+                        "Fast Event": fast_event,
+                    }, {})
+                if save_video:
+                    traci_each(filepath, case, thresh, i, step)
+                
+                
 
-                except Exception as e:
-                    print(e)
-                    done = False
-                    episode_reward = 0
-                    step = 0
-                    nb_safe_actions = 0
-                    nb_hard_safe_actions = 0
-                    frozen_steps = 0
-                    stop_vehicle_step = 0
-                    fast_vehcile_step = 0
-                    unc = []
-                    env = Highway(
-                        sim_params=ps.sim_params,
-                        road_params=ps.road_params,
-                        use_gui=use_gui,
-                        return_more_info=True,
-                    )
-
-                    obs = env.reset()
-                    if save_video:
-                        traci_before(filepath, case, thresh, i)
 
             if do_save_uncert:
                 save_uncert(case, filepath, thresh, i, unc)

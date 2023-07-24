@@ -38,6 +38,8 @@ sys.path.append("..")
 from dqn_mix import MixDQNAgent, MixTestPolicy
 from dqn_standard import DQNAgent
 from run_agent_utils import rerun_test_scenarios_v3, rerun_test_scenarios_v0
+import warnings
+warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning) 
 
 rcParams["pdf.fonttype"] = 42  # To avoid Type 3 fonts in figures
 rcParams["ps.fonttype"] = 42
@@ -66,7 +68,7 @@ save_video = False
 do_save_metrics = True
 do_save_uncert = False
 number_tests = 1
-number_episodes=1000
+number_episodes=2000
 csv_sufix='_v5'
 use_gui=False
 """ End options """
@@ -191,21 +193,21 @@ def change_thresh_fn(thresh):
 
 
 if case == "all":
-    rerun_test_scenarios_v3(
-        dqn,
-        u_filepath,
-        ps,
-        change_thresh_fn=change_thresh_fn,
-        thresh_range=thresh_range,
-        use_safe_action=False,
-        save_video=save_video,
-        do_save_metrics=do_save_metrics,
-        number_tests=number_tests,
-        use_gui=use_gui,
-        number_episodes=number_episodes,
-        csv_sufix=csv_sufix,
-        do_save_uncert=do_save_uncert,
-    )
+    # rerun_test_scenarios_v3(
+    #     dqn,
+    #     u_filepath,
+    #     ps,
+    #     change_thresh_fn=change_thresh_fn,
+    #     thresh_range=thresh_range,
+    #     use_safe_action=False,
+    #     save_video=save_video,
+    #     do_save_metrics=do_save_metrics,
+    #     number_tests=number_tests,
+    #     use_gui=use_gui,
+    #     number_episodes=number_episodes,
+    #     csv_sufix=csv_sufix,
+    #     do_save_uncert=do_save_uncert,
+    # )
     rerun_test_scenarios_v3(
         dqn,
         u_filepath,
@@ -221,34 +223,34 @@ if case == "all":
         csv_sufix=csv_sufix,
         do_save_uncert=do_save_uncert,
     )
-    rerun_test_scenarios_v0(
-        dqn,
-        u_filepath,
-        ps,
-        change_thresh_fn=change_thresh_fn,
-        thresh_range=thresh_range,
-        use_safe_action=False,
-        save_video=save_video,
-        do_save_metrics=do_save_metrics,
-        number_tests=number_tests,
-        use_gui=use_gui,
-        number_episodes=number_episodes,
-        do_save_uncert=do_save_uncert,
-    )
-    rerun_test_scenarios_v0(
-        dqn,
-        u_filepath,
-        ps,
-        change_thresh_fn=change_thresh_fn,
-        thresh_range=thresh_range,
-        use_safe_action=True,
-        save_video=save_video,
-        do_save_metrics=do_save_metrics,
-        number_tests=number_tests,
-        use_gui=use_gui,
-        number_episodes=number_episodes,
-        do_save_uncert=do_save_uncert,
-    )
+    # rerun_test_scenarios_v0(
+    #     dqn,
+    #     u_filepath,
+    #     ps,
+    #     change_thresh_fn=change_thresh_fn,
+    #     thresh_range=thresh_range,
+    #     use_safe_action=False,
+    #     save_video=save_video,
+    #     do_save_metrics=do_save_metrics,
+    #     number_tests=number_tests,
+    #     use_gui=use_gui,
+    #     number_episodes=number_episodes,
+    #     do_save_uncert=do_save_uncert,
+    # )
+    # rerun_test_scenarios_v0(
+    #     dqn,
+    #     u_filepath,
+    #     ps,
+    #     change_thresh_fn=change_thresh_fn,
+    #     thresh_range=thresh_range,
+    #     use_safe_action=True,
+    #     save_video=save_video,
+    #     do_save_metrics=do_save_metrics,
+    #     number_tests=number_tests,
+    #     use_gui=use_gui,
+    #     number_episodes=number_episodes,
+    #     do_save_uncert=do_save_uncert,
+    # )
 elif case == "uncert":
     rerun_test_scenarios_v3(
         dqn,

@@ -32,6 +32,8 @@ from keras.optimizers import Adam
 from keras.models import model_from_json, clone_model
 from rl.policy import GreedyQPolicy
 from rl.memory import Memory
+
+sys.path.append("..")
 from dqn_standard import DQNAgent
 from dqn_ensemble import DQNAgentEnsemble, UpdateActiveModelCallback
 from policy import EnsembleTestPolicy
@@ -43,10 +45,10 @@ rcParams['pdf.fonttype'] = 42   # To avoid Type 3 fonts in figures
 rcParams['ps.fonttype'] = 42
 
 """ Options: """
-filepath = '../logs/train_agent_20230323_235219_rpf_6M_v3/'
-name = 'dqn'
-agent_name = '5950033'
-case = 'fast_overtaking'   # 'rerun_test_scenarios', 'fast_overtaking', 'standstill'
+filepath = '../logs/train_agent_20230715_211722_rpf_v14/'
+name = 'rpf'
+agent_name = '5950023'
+case = 'standstill'   # 'rerun_test_scenarios', 'fast_overtaking', 'standstill'
 use_ensemble_test_policy = False
 safety_threshold = 0.03   # Only used if ensemble test policy is chosen 0.02
 save_video = True

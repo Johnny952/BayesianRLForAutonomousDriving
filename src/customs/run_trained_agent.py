@@ -45,11 +45,11 @@ rcParams["pdf.fonttype"] = 42  # To avoid Type 3 fonts in figures
 rcParams["ps.fonttype"] = 42
 
 """ Options: """
-filepath = "../logs/train_agent_20230418_225936_bnn_6M_v6/"
-name = 'bnn'
-agent_name = "5950075"
-case = "standstill"  # 'rerun_test_scenarios', 'fast_overtaking', 'standstill'
-safety_threshold = 0.006  # Only used if ensemble test policy is chosen BNN: 0.0045, AE: 0.7
+filepath = "../logs/train_agent_20230715_211724_ae_v14/"
+name = 'ae'
+agent_name = "5950097"
+case = "fast_overtaking"  # 'rerun_test_scenarios', 'fast_overtaking', 'standstill'
+safety_threshold = -80  # Only used if ensemble test policy is chosen BNN: 0.0045, AE: 0.7
 save_video = True
 use_safe_action = False
 """ End options """
@@ -378,8 +378,8 @@ elif case == "fast_overtaking":
         plt.rc('font', size=14)
         ax1 = plt.gca()
         ax1_ = ax1.twinx()
-        cv_log = np.abs(np.array(cv_log))
-        unc = np.abs(np.array(unc))
+        cv_log = np.array(cv_log)
+        unc = np.array(unc)
         ax1.plot(cv_log[:, 0], label='$\dot{v}_{x,0} = 0$')
         ax1.plot(cv_log[:, 1], label='$\dot{v}_{x,0} = 1$')
         ax1.plot(cv_log[:, 2], label='$\dot{v}_{x,0} = -1$')
@@ -392,8 +392,8 @@ elif case == "fast_overtaking":
         #     ax1.axis([0, 7, 0, 3])
         ax1.set_xlabel("Time (s)")
         ax1.set_ylabel("Uncertainty, $c_\mathrm{v}$")
-        ax1.axhline(y=np.abs(safety_threshold), color='k', linestyle='--')
-        y_height = np.abs(safety_threshold)
+        ax1.axhline(y=safety_threshold, color='k', linestyle='--')
+        y_height = safety_threshold
         ax1.text(-0.7, y_height, "$c_\mathrm{v}^\mathrm{safe}$", rotation=0)
         # if p.agent_par["model"] == 'bnn':
         #     ax1.set_yticks([0, 0.01, 0.02])
@@ -541,8 +541,8 @@ elif case == "standstill":
         plt.rc("font", size=14)
         ax1 = plt.gca()
         ax1_ = ax1.twinx()
-        cv_log = np.abs(np.array(cv_log))
-        unc = np.abs(np.array(unc))
+        cv_log = np.array(cv_log)
+        unc = np.array(unc)
         ax1.plot(cv_log[:, 0], label="$\dot{v}_{x,0} = 0$")
         ax1.plot(cv_log[:, 1], label="$\dot{v}_{x,0} = 1$")
         ax1.plot(cv_log[:, 2], label="$\dot{v}_{x,0} = -1$")
@@ -555,8 +555,8 @@ elif case == "standstill":
         #     ax1.axis([0, 10, 0, 2])
         ax1.set_xlabel("Time (s)")
         ax1.set_ylabel("Uncertainty, $c_\mathrm{v}$")
-        ax1.axhline(y=np.abs(safety_threshold), color="k", linestyle="--")
-        y_height = np.abs(safety_threshold)
+        ax1.axhline(y=safety_threshold, color="k", linestyle="--")
+        y_height = safety_threshold
         ax1.text(-0.7, y_height, "$c_\mathrm{v}^\mathrm{safe}$", rotation=0)
         # if p.agent_par["model"] == 'bnn':
         #     ax1.set_yticks([0, 0.01, 0.02])

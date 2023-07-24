@@ -530,6 +530,21 @@ class Highway(object):
                                                action_info['coefficient_of_variation']]),
                                   [self.positions[0] + self.road.road_params['action_info_pos'], self.positions[0] +
                                    self.road.road_params['action_info_pos'] + [1, -11.5*dy]], [0, 0, 0, 0])
+    
+    def print_info_in_gui2(self, upper_info, lower_info={}):
+        polygons = traci.polygon.getIDList()
+        for polygon in polygons:
+            traci.polygon.remove(polygon)
+        dy = 11
+        for i, (key, value) in enumerate(upper_info.items()):
+            traci.polygon.add(f'{key}: {value}',
+                            [self.positions[0] + self.road.road_params['info_pos'], self.positions[0] +
+                            self.road.road_params['info_pos'] + [1, -i * dy]], [0, 0, 0, 0])
+
+        for i, (key, value) in enumerate(lower_info.items()):
+            traci.polygon.add(f'{key}: {value}',
+                            [self.positions[0] + self.road.road_params['action_info_pos'], self.positions[0] +
+                            self.road.road_params['action_info_pos'] + [1, -(-10.5 - i)*dy]], [0, 0, 0, 0])
 
     def close(self):
         return traci.close()

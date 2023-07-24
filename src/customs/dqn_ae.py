@@ -8,7 +8,7 @@ import wandb
 from timeit import default_timer as timer
 
 sys.path.append("..")
-from dqn_bnn import max_q, mean_q, clone_model, soft_target_model_updates, hard_target_model_updates, AbstractDQNAgent
+from dqn_bnn import clone_model, soft_target_model_updates, hard_target_model_updates, AbstractDQNAgent
 
 class DQNAEAgent(AbstractDQNAgent):
     def __init__(

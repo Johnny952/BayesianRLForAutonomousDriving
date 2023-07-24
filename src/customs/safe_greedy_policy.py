@@ -50,10 +50,8 @@ class SimpleSafeGreedyPolicy(GreedyQPolicy):
             assert safe_action is not None
 
     def select_action(self, q_values, uncertainties):
-        act = np.argmax(q_values)
-
         if self.safety_threshold is None:
-            return act, {}
+            return np.argmax(q_values), {}
         else:
             sorted_q_indexes = q_values.argsort()[::-1]
             i = 0
