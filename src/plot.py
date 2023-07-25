@@ -26,7 +26,7 @@ def collapse_duplicated(*arrays, collapse_by=0, sort_by=0, reduction=np.max):
         sorted_arrays.append(array[sorted_array_idcs])
     return unique_idcs, sorted_arrays
 
-def sort_duplicated(*arrays, collapse_by=0, sort_by=0):
+def sort_duplicated(*arrays, sort_by=None, collapse_by=0):
     collapse_array = arrays[collapse_by]
     unique, unique_idcs = np.unique(collapse_array, return_index=True)
     new_arrays = []
@@ -37,7 +37,10 @@ def sort_duplicated(*arrays, collapse_by=0, sort_by=0):
             new_array = np.concatenate((new_array, np.sort(array[filter_])))
         new_arrays.append(new_array)
 
-    sorted_array_idcs = new_arrays[sort_by].argsort()
+    if sort_by is not None:
+        sorted_array_idcs = sort_by.argsort()
+    else:
+        sorted_array_idcs = new_arrays[0].argsort()
     sorted_arrays = []
     for array in new_arrays:
         sorted_arrays.append(array[sorted_array_idcs])
@@ -481,7 +484,7 @@ def plot_rerun_test_v3():
         use_v0 = model["test_v3"]["paths"][scenario]["v0"]
         if model["test_v3"]["paths"][scenario]["u"]:
             (
-                _,
+                thresholds,
                 rewards,
                 collision_rates,
                 nb_safe_actions,
