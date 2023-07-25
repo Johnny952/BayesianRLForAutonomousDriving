@@ -1251,8 +1251,11 @@ def resume_stop_vehicle():
     vh = stopped_vh["id"]
     speed = stopped_vh["min_speed"]
     max_speed = stopped_vh["max_speed"]
-    traci.vehicle.setSpeed(vh, speed)
-    traci.vehicle.setMaxSpeed(vh, max_speed)
+    try:
+        traci.vehicle.setSpeed(vh, speed)
+        traci.vehicle.setMaxSpeed(vh, max_speed)
+    except:
+        print("Vehicle does not exist")
 
 
 def stop_vehicle():
