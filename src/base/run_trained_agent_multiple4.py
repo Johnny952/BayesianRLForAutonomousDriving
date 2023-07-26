@@ -52,7 +52,7 @@ u_filepath = "../logs/train_agent_20230323_235314_dqn_6M_v3/"#"../logs/train_age
 u_agent_name = "5950056"#rpf: "5950023", dqn: "5950056"
 use_ensemble_test_policy = False
 
-case = "all"  # 'all', 'uncert'
+case = "uncert"  # 'all', 'uncert'
 
 thresh_range = [
     0.0221781065992404,
@@ -267,19 +267,19 @@ elif case == "uncert":
         csv_sufix=csv_sufix,
         do_save_uncert=do_save_uncert,
     )
-    rerun_test_scenarios_v0(
-        dqn,
-        u_filepath,
-        ps,
-        change_thresh_fn=change_thresh_fn,
-        thresh_range=thresh_range,
-        use_safe_action=use_ensemble_test_policy,
-        save_video=save_video,
-        do_save_metrics=do_save_metrics,
-        number_tests=number_tests,
-        use_gui=use_gui,
-        number_episodes=number_episodes,
-        do_save_uncert=do_save_uncert,
-    )
+    # rerun_test_scenarios_v0(
+    #     dqn,
+    #     u_filepath,
+    #     ps,
+    #     change_thresh_fn=change_thresh_fn,
+    #     thresh_range=thresh_range,
+    #     use_safe_action=use_ensemble_test_policy,
+    #     save_video=save_video,
+    #     do_save_metrics=do_save_metrics,
+    #     number_tests=number_tests,
+    #     use_gui=use_gui,
+    #     number_episodes=number_episodes,
+    #     do_save_uncert=do_save_uncert,
+    # )
 else:
     raise Exception("Case not defined.")
