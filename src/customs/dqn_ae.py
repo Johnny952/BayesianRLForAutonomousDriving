@@ -21,6 +21,7 @@ class DQNAEAgent(AbstractDQNAgent):
         enable_dueling_network=False,
         dueling_type="avg",
         update_ae_each=1,
+        unc_type="log_prob",
         *args,
         **kwargs
     ):
@@ -122,7 +123,12 @@ class DQNAEAgent(AbstractDQNAgent):
             obs = torch.from_numpy(observation).unsqueeze(dim=0).float().to(self.device)
             act= torch.Tensor([action]).unsqueeze(dim=0).float().to(self.device)
             with torch.no_grad():
-                uncertainty = -self.autoencoder.log_prob(obs, act)
+                if self.unc_type == "log_prob":
+                    uncertainty = -self.autoencoder.log_prob(obs, act)
+                elif self.unc_type == "mse":
+                    uncertainty = -self.autoencoder.mse(obs, act)
+                else:
+                    raise NotImplementedError()
             uncertainty = uncertainty.cpu().numpy()
         else:
             # Uncertainty for all actions
@@ -130,7 +136,12 @@ class DQNAEAgent(AbstractDQNAgent):
             for i in range(self.nb_actions):
                 act = torch.Tensor([i]).unsqueeze(dim=0).float().to(self.device)
                 with torch.no_grad():
-                    uncertainty = -self.autoencoder.log_prob(obs, act)
+                    if self.unc_type == "log_prob":
+                        uncertainty = -self.autoencoder.log_prob(obs, act)
+                    elif self.unc_type == "mse":
+                        uncertainty = -self.autoencoder.mse(obs, act)
+                    else:
+                        raise NotImplementedError()
                 uncertainties.append(uncertainty.cpu().numpy())
             if hasattr(self.test_policy, 'custom'):
                 action, action_info = self.test_policy.select_action(q_values, uncertainties)

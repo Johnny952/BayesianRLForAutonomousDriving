@@ -47,13 +47,13 @@ thresh_range = [
     1000,
 ]
 
-save_video = False
-do_save_metrics = True
+save_video = True
+do_save_metrics = False
 do_save_uncert = False
 number_tests = 1
-number_episodes=2000
+number_episodes=10
 csv_sufix='_v5'
-use_gui=False
+use_gui=True
 """ End options """
 
 safe_action = 3
@@ -253,6 +253,7 @@ elif p.agent_par["model"] == "ae":
         delta_clip=p.agent_par["delta_clip"],
         device=p.agent_par["device"],
         update_ae_each=p.agent_par["update_ae_each"],
+        unc_type=p.agent_par["unc_type"],
     )
 else:
     raise Exception("Model not implemented.")

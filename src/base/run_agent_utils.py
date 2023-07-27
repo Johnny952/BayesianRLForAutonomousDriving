@@ -4,6 +4,7 @@ import os
 import shutil
 import sys
 import copy
+from matplotlib import pyplot as plt
 
 sys.path.append(os.path.join(os.environ.get("SUMO_HOME"), "tools"))
 import traci
@@ -1405,6 +1406,7 @@ def rerun_test_scenarios_v3(
             nb_safe_actions = 0
             nb_hard_safe_actions = 0
             unc = []
+            original_unc = []
             frozen_steps = 0
             stop_vehicle_step = 0
             fast_vehcile_step = 0
@@ -1413,6 +1415,8 @@ def rerun_test_scenarios_v3(
             ep_fast_events = 0
             stop_event = False
             fast_event = False
+
+            events = []
 
             while done is False:
                 action, action_info = dqn.forward(obs)
@@ -1429,6 +1433,8 @@ def rerun_test_scenarios_v3(
                 
                 if "coefficient_of_variation" in action_info:
                     unc.append(action_info["coefficient_of_variation"][action])
+                    if "max_q_action" in action_info:
+                        original_unc.append(action_info["coefficient_of_variation"][action_info["max_q_action"]])
 
                 if frozen_steps == 0 and np.random.rand() < EVENT_PROBABILITY:
                     if np.random.rand() < STOPPED_VEHICLE_EVENT_PROB:
@@ -1437,12 +1443,20 @@ def rerun_test_scenarios_v3(
                             stop_vehicle_step = STOP_VEHICLE_STEPS + 1
                             ep_stop_events += 1
                             stop_event = True
+                            events.append({
+                                "type": "stop",
+                                "step": step,
+                            })
                     else:
                         if fast_vehicle():
                             frozen_steps = FREEZE_STEPS + FAST_VEHCILE_STEPS
                             fast_vehcile_step = FAST_VEHCILE_STEPS + 1
                             ep_fast_events += 1
                             fast_event = True
+                            events.append({
+                                "type": "fast",
+                                "step": step,
+                            })
                 if 0 < frozen_steps:
                     frozen_steps -= 1
                 if 0 < stop_vehicle_step:
@@ -1470,9 +1484,38 @@ def rerun_test_scenarios_v3(
                     }, {})
                 if save_video:
                     traci_each(filepath, case, thresh, i, step)
-                
-                
+                    
+            if save_video:
+                fig1, ax1 = plt.subplots(ncols=1, nrows=1)
+                fig1.set_figwidth(16)
+                fig1.set_figheight(16)
 
+                ax1.plot(original_unc, label='Max Q uncertainty', color="r")
+                ax1.plot(unc, label='Policy uncertainty', color="b")
+                ax1.axhline(y=thresh, color='m', linestyle="--", label='Threshold')
+                ax1.set_ylabel("Uncertainty", fontsize=16)
+                ax1.set_xlabel("Step", fontsize=16)
+                ax1.set_xlim(left=0)
+
+                s_e = 0
+                f_e = 0
+                for e in events:
+                    if e["type"] == "stop":
+                        if s_e == 0:
+                            ax1.axvspan(e["step"], e["step"] + STOP_VEHICLE_STEPS, alpha=0.1, color='c', label='Stop Event')
+                        else:
+                            ax1.axvspan(e["step"], e["step"] + STOP_VEHICLE_STEPS, alpha=0.1, color='c')
+                        s_e += 1
+                    elif e["type"] == "fast":
+                        if f_e == 0:
+                            ax1.axvspan(e["step"], e["step"] + FAST_VEHCILE_STEPS, alpha=0.1, color='g', label="Fast Event")
+                        else:
+                            ax1.axvspan(e["step"], e["step"] + FAST_VEHCILE_STEPS, alpha=0.1, color='g')
+                        f_e += 1
+                ax1.legend()
+
+                name = get_name(filepath)
+                fig1.savefig(f"../videos/{name}/{case}/{thresh}_{i}/uncertainties.png")
 
             if do_save_uncert:
                 save_uncert(case, filepath, thresh, i, unc)

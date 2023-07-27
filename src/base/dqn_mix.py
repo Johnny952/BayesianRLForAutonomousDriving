@@ -19,7 +19,7 @@ class MixDQNAgent(Agent):
         else:
             uncertainties = np.ones_like(q_values)
         action, policy_info = self.policy.select_action(q_values, uncertainties)
-        info = {**action_info_u, **action_info, **policy_info}
+        info = {**action_info_u, **action_info, **policy_info, "max_q_action": np.argmax(q_values)}
         return action, info
     
 

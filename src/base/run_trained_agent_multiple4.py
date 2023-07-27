@@ -48,9 +48,9 @@ rcParams["ps.fonttype"] = 42
 q_filepath = "../logs/train_agent_20230323_235314_dqn_6M_v3/"
 q_agent_name = "5950056"
 
-u_filepath = "../logs/train_agent_20230323_235314_dqn_6M_v3/"#"../logs/train_agent_20230715_211722_rpf_v14/", "../logs/train_agent_20230323_235314_dqn_6M_v3/"
-u_agent_name = "5950056"#rpf: "5950023", dqn: "5950056"
-use_ensemble_test_policy = False
+u_filepath = "../logs/train_agent_20230715_211722_rpf_v14/"#"../logs/train_agent_20230715_211722_rpf_v14/", "../logs/train_agent_20230323_235314_dqn_6M_v3/"
+u_agent_name = "5950023"#rpf: "5950023", dqn: "5950056"
+use_ensemble_test_policy = True
 
 case = "uncert"  # 'all', 'uncert'
 
@@ -64,13 +64,13 @@ thresh_range = [
     0.0551863475,
     1,
 ]
-save_video = False
-do_save_metrics = True
+save_video = True
+do_save_metrics = False
 do_save_uncert = False
 number_tests = 1
-number_episodes=2000
+number_episodes=10
 csv_sufix='_v5'
-use_gui=False
+use_gui=True
 """ End options """
 
 # These import statements need to come after the choice of which agent that should be used.

@@ -215,7 +215,8 @@ elif p.agent_par["model"] == 'ae':
         target_model_update=p.agent_par["target_network_update_freq"],
         delta_clip=p.agent_par["delta_clip"],
         device=p.agent_par["device"],
-        update_ae_each=p.agent_par["update_ae_each"]
+        update_ae_each=p.agent_par["update_ae_each"],
+        unc_type=p.agent_par["unc_type"],
     )
 else:
     raise Exception("Model not implemented.")
