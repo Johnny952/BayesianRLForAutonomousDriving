@@ -34,6 +34,7 @@ class DQNAEAgent(AbstractDQNAgent):
         self.enable_dueling_network = enable_dueling_network
         self.dueling_type = dueling_type
         self.update_ae_each = update_ae_each
+        self.unc_type = unc_type
 
         # Related objects.
         self.model = model
