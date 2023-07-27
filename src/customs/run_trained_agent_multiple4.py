@@ -46,14 +46,13 @@ thresh_range = [
     -0.42423817698,
     0,
 ]
-
-save_video = True
-do_save_metrics = False
+save_video = False
+do_save_metrics = True
 do_save_uncert = False
 number_tests = 1
-number_episodes=10
+number_episodes=2000
 csv_sufix='_v5'
-use_gui=True
+use_gui=False
 """ End options """
 
 safe_action = 3

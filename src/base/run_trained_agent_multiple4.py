@@ -64,13 +64,13 @@ thresh_range = [
     0.0551863475,
     1,
 ]
-save_video = True
-do_save_metrics = False
+save_video = False
+do_save_metrics = True
 do_save_uncert = False
 number_tests = 1
-number_episodes=10
+number_episodes=2000
 csv_sufix='_v5'
-use_gui=True
+use_gui=False
 """ End options """
 
 # These import statements need to come after the choice of which agent that should be used.
