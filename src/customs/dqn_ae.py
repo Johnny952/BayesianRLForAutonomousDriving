@@ -106,6 +106,17 @@ class DQNAEAgent(AbstractDQNAgent):
         self.recent_action = None
         self.recent_observation = None
 
+    def get_uncertainty(self, obs, act):
+        if self.unc_type == "log_prob":
+            uncertainty = -self.autoencoder.log_prob(obs, act)
+        elif self.unc_type == "mse":
+            uncertainty = -self.autoencoder.mse(obs, act)
+        elif self.unc_type == "var":
+            uncertainty = -self.autoencoder.var(obs, act, obs_weight=1, act_weight=10)
+        else:
+            raise NotImplementedError()
+        return uncertainty
+
     def forward(self, observation):
         tick = timer()
         # Select an action.
@@ -124,12 +135,7 @@ class DQNAEAgent(AbstractDQNAgent):
             obs = torch.from_numpy(observation).unsqueeze(dim=0).float().to(self.device)
             act= torch.Tensor([action]).unsqueeze(dim=0).float().to(self.device)
             with torch.no_grad():
-                if self.unc_type == "log_prob":
-                    uncertainty = -self.autoencoder.log_prob(obs, act)
-                elif self.unc_type == "mse":
-                    uncertainty = -self.autoencoder.mse(obs, act)
-                else:
-                    raise NotImplementedError()
+                uncertainty = self.get_uncertainty(obs, act)
             uncertainty = uncertainty.cpu().numpy()
         else:
             # Uncertainty for all actions
@@ -137,12 +143,7 @@ class DQNAEAgent(AbstractDQNAgent):
             for i in range(self.nb_actions):
                 act = torch.Tensor([i]).unsqueeze(dim=0).float().to(self.device)
                 with torch.no_grad():
-                    if self.unc_type == "log_prob":
-                        uncertainty = -self.autoencoder.log_prob(obs, act)
-                    elif self.unc_type == "mse":
-                        uncertainty = -self.autoencoder.mse(obs, act)
-                    else:
-                        raise NotImplementedError()
+                    uncertainty = self.get_uncertainty(obs, act)
                 uncertainties.append(uncertainty.cpu().numpy())
             if hasattr(self.test_policy, 'custom'):
                 action, action_info = self.test_policy.select_action(q_values, uncertainties)
