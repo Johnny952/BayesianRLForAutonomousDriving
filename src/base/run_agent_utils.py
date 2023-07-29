@@ -1307,7 +1307,6 @@ def resume_fast_vehicle():
     vh = fast_vh["id"]
     speed = fast_vh["min_speed"]
     max_speed = fast_vh["max_speed"]
-    traci.vehicle.setSpeed(vh, speed)
     try:
         traci.vehicle.setMaxSpeed(vh, max_speed)
         traci.vehicle.setSpeed(vh, speed)
