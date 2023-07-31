@@ -16,15 +16,17 @@ from network_architecture import (
     NetworkCNN,
 )
 from base.run_agent_utils import rerun_test_scenarios_v3, rerun_test_scenarios_v0
-from base.dqn_mix import MixDQNAgent, MixTestPolicy
+from base.dqn_mix import MixDQNAgent, MixTestPolicy, MixWindowTestPolicy
 from base.dqn_standard import DQNAgent
 from matplotlib import rcParams
 from safe_greedy_policy import SafeGreedyPolicy, SimpleSafeGreedyPolicy
 
-np.warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)
+np.warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
 
 rcParams["pdf.fonttype"] = 42  # To avoid Type 3 fonts in figures
 rcParams["ps.fonttype"] = 42
+
+debug = False
 
 """ Options: """
 q_filepath = "../logs/train_agent_20230323_235314_dqn_6M_v3/"
@@ -37,22 +39,33 @@ use_safe_action = True
 case = "all"  # 'all', 'uncert'
 
 thresh_range = [
-    -0.0494733889,
-    -0.041973789,
-    -0.04321571,
-    -0.039189463875,
-    -0.0338664625,
-    -0.031123897875,
-    -0.026085454025,
-    0,
+    1,
+    1.5,
+    2,
+    2.5,
+    3,
+    3.5,
+    4,
+    5,
+    100,
 ]
-save_video = False
-do_save_metrics = True
+history_length = 20
+start_saving = 3
+if debug:
+    save_video = True
+    do_save_metrics = False
+    number_episodes = 5
+    use_gui = True
+else:
+    save_video = False
+    do_save_metrics = True
+    number_episodes = 2000
+    use_gui = False
+
 do_save_uncert = False
 number_tests = 1
-number_episodes=2000
-csv_sufix='_v5'
-use_gui=False
+csv_sufix = "_v5"
+
 """ End options """
 
 safe_action = 3
@@ -64,7 +77,7 @@ import parameters_stored as p
 import parameters_simulation_stored as ps
 
 nb_actions = len(ps.sim_params["action_interp"])
-nb_observations = 4 + 4 * ps.sim_params['sensor_nb_vehicles']
+nb_observations = 4 + 4 * ps.sim_params["sensor_nb_vehicles"]
 
 with open(q_filepath + "model.txt") as text_file:
     saved_model = model_from_json(text_file.read())
@@ -94,15 +107,6 @@ q_dqn.compile(Adam(lr=p.agent_par["learning_rate"]))
 
 q_dqn.load_weights(q_filepath + q_agent_name)
 q_dqn.training = False
-
-
-
-
-
-
-
-
-
 
 
 # These import statements need to come after the choice of which agent that should be used.
@@ -262,7 +266,13 @@ u_dqn.load_weights(u_filepath + u_agent_name)
 u_dqn.training = False
 
 
-policy = MixTestPolicy(safety_threshold=None, safe_action=3)
+# policy = MixTestPolicy(safety_threshold=None, safe_action=3)
+policy = MixWindowTestPolicy(
+    safety_threshold=None,
+    safe_action=3,
+    history_length=history_length,
+    start_saving=start_saving,
+)
 dqn = MixDQNAgent(
     q_model=q_dqn,
     u_model=u_dqn,

@@ -33,7 +33,7 @@ STOPPED_VEHICLES = 2
 FAST_VEHICLES = 0
 
 # test scenarios V3
-EVENT_PROBABILITY = 0.1
+EVENT_PROBABILITY = 0.05
 STOPPED_VEHICLE_EVENT_PROB = 0.5
 FREEZE_STEPS = 10
 STOP_VEHICLE_RANGE = [100, 200]
@@ -1175,40 +1175,22 @@ def rerun_test_scenarios_v0(
             nb_hard_safe_actions = 0
             unc = []
             while done is False:
-                try:
-                    action, action_info = dqn.forward(obs)
-                    obs, rewards, done, _, more_info = env.step(action, action_info)
-                    reward_no_col = more_info["reward_no_col"]
-                    episode_reward += reward_no_col
-                    step += 1
-                    if more_info["ego_collision"]:
-                        collissions += 1
-                        collision_speeds.append(more_info["ego_speed"])
-                    if "safe_action" in action_info:
-                        nb_safe_actions += action_info["safe_action"]
-                        nb_hard_safe_actions += action_info["hard_safe"]
-                    if save_video:
-                        traci_each(filepath, case, thresh, i, step)
-                    if "coefficient_of_variation" in action_info:
-                        unc.append(action_info["coefficient_of_variation"][action])
-                except Exception as e:
-                    print(e)
-                    done = False
-                    episode_reward = 0
-                    step = 0
-                    nb_safe_actions = 0
-                    nb_hard_safe_actions = 0
-                    unc = []
-                    env = Highway(
-                        sim_params=ps.sim_params,
-                        road_params=ps.road_params,
-                        use_gui=use_gui,
-                        return_more_info=True,
-                    )
+                action, action_info = dqn.forward(obs)
+                obs, rewards, done, _, more_info = env.step(action, action_info)
+                reward_no_col = more_info["reward_no_col"]
+                episode_reward += reward_no_col
+                step += 1
+                if more_info["ego_collision"]:
+                    collissions += 1
+                    collision_speeds.append(more_info["ego_speed"])
+                if "safe_action" in action_info:
+                    nb_safe_actions += action_info["safe_action"]
+                    nb_hard_safe_actions += action_info["hard_safe"]
+                if save_video:
+                    traci_each(filepath, case, thresh, i, step)
+                if "coefficient_of_variation" in action_info:
+                    unc.append(action_info["coefficient_of_variation"][action])
 
-                    obs = env.reset()
-                    if save_video:
-                        traci_before(filepath, case, thresh, i)
 
             if do_save_uncert:
                 save_uncert(case, filepath, thresh, i, unc)
@@ -1396,6 +1378,7 @@ def rerun_test_scenarios_v3(
             change_thresh_fn(thresh)
         for i in range(0, number_episodes):
             # np.random.seed(i)
+            dqn.policy.reset()
             obs = env.reset()
             if save_video:
                 traci_before(filepath, case, thresh, i)
@@ -1406,6 +1389,7 @@ def rerun_test_scenarios_v3(
             nb_hard_safe_actions = 0
             unc = []
             original_unc = []
+            thresholds = []
             frozen_steps = 0
             stop_vehicle_step = 0
             fast_vehcile_step = 0
@@ -1434,6 +1418,9 @@ def rerun_test_scenarios_v3(
                     unc.append(action_info["coefficient_of_variation"][action])
                     if "max_q_action" in action_info:
                         original_unc.append(action_info["coefficient_of_variation"][action_info["max_q_action"]])
+                
+                if "threshold" in action_info:
+                    thresholds.append(action_info["threshold"])
 
                 if frozen_steps == 0 and np.random.rand() < EVENT_PROBABILITY:
                     if np.random.rand() < STOPPED_VEHICLE_EVENT_PROB:
@@ -1468,6 +1455,9 @@ def rerun_test_scenarios_v3(
                     if fast_vehcile_step == 0:
                         fast_event = False
                         resume_fast_vehicle()
+
+                if save_video:
+                    traci_each(filepath, case, thresh, i, step)
                 
                 if use_gui or save_video:
                     env.print_info_in_gui2({
@@ -1481,9 +1471,7 @@ def rerun_test_scenarios_v3(
                         "Stop Event": stop_event,
                         "Fast Event": fast_event,
                     }, {})
-                if save_video:
-                    traci_each(filepath, case, thresh, i, step)
-                    
+                
             if save_video:
                 fig1, ax1 = plt.subplots(ncols=1, nrows=1)
                 fig1.set_figwidth(16)
@@ -1491,7 +1479,8 @@ def rerun_test_scenarios_v3(
 
                 ax1.plot(original_unc, label='Max Q uncertainty', color="r")
                 ax1.plot(unc, label='Policy uncertainty', color="b")
-                ax1.axhline(y=thresh, color='m', linestyle="--", label='Threshold')
+                # ax1.axhline(y=thresh, color='m', linestyle="--", label='Threshold')
+                ax1.plot(thresholds, color='m', linestyle="--", label='Threshold')
                 ax1.set_ylabel("Uncertainty", fontsize=16)
                 ax1.set_xlabel("Step", fontsize=16)
                 ax1.set_xlim(left=0)

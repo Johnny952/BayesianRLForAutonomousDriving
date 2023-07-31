@@ -560,17 +560,17 @@ def plot_rerun_test_v3():
             ax1.plot(
                 collision_rates, rewards, mark, color=model["color"], label=f"{model_name} NU test v1", alpha=1, markersize=16
             )
-            ax2.axhline(y=rewards[0], xmin=0.0, xmax=1.0, label=f"{model_name} NU test v1", color=model["color"], linestyle="--")
-            ax3.axhline(y=collision_rates[0], xmin=0.0, xmax=1.0, label=f"{model_name} NU test v1", color=model["color"], linestyle="--")
-            ax4.axhline(y=collision_speeds[0], xmin=0.0, xmax=1.0, label=f"{model_name} NU", color=model["color"], linestyle="--")
+            ax2.axhline(y=rewards[0], xmin=0.0, label=f"{model_name} NU test v1", color=model["color"], linestyle="--")
+            ax3.axhline(y=collision_rates[0], xmin=0.0, label=f"{model_name} NU test v1", color=model["color"], linestyle="--")
+            ax4.axhline(y=collision_speeds[0], xmin=0.0, label=f"{model_name} NU", color=model["color"], linestyle="--")
 
             if use_v0:
                 ax1.plot(
                     collision_rates_v0, rewards_v0, second_mark, color=model["color"], label=f"{model_name} NU test v0", alpha=1
                 )
-                ax2.axhline(y=rewards_v0[0], xmin=0.0, xmax=1.0, color=model["color"], linestyle="-.")
-                ax3.axhline(y=collision_rates_v0[0], xmin=0.0, xmax=1.0, color=model["color"], linestyle="-.")
-                ax4.axhline(y=collision_speeds_v0[0], xmin=0.0, xmax=1.0, color=model["color"], linestyle="-.")
+                ax2.axhline(y=rewards_v0[0], xmin=0.0, color=model["color"], linestyle="-.")
+                ax3.axhline(y=collision_rates_v0[0], xmin=0.0, color=model["color"], linestyle="-.")
+                ax4.axhline(y=collision_speeds_v0[0], xmin=0.0, color=model["color"], linestyle="-.")
     
 
     ax1.set_title(f"{scenario}", fontsize=25)
@@ -586,7 +586,7 @@ def plot_rerun_test_v3():
 
     ax2.set_title(f"{scenario}", fontsize=25)
     # ax2.set_ylim(bottom=-4)
-    ax2.set_xlim(left=0, right=1)
+    ax2.set_xlim(left=0)
     ax2.legend()
     ax2.set_ylabel("Reward", fontsize=16)
     ax2.set_xlabel("Number Safe actions", fontsize=16)
@@ -595,12 +595,12 @@ def plot_rerun_test_v3():
     ax3.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=0))
     ax3.set_ylim(bottom=0)
     ax3.legend()
-    ax3.set_xlim(left=0, right=1)
+    ax3.set_xlim(left=0)
     ax3.set_ylabel("Collision Rate", fontsize=16)
     ax3.set_xlabel("Number Safe actions", fontsize=16)
 
     ax4.set_ylim(bottom=0)
-    ax4.set_xlim(left=0, right=1)
+    ax4.set_xlim(left=0)
     ax4.legend()
     ax4.set_ylabel("Collision Speeds", fontsize=16)
     ax4.set_xlabel("Number Safe actions", fontsize=16)

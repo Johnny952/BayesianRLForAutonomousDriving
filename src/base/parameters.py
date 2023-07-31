@@ -65,4 +65,4 @@ agent_par["obs_loss_weight"] = 1 / 0.3
 agent_par["prob_loss_weight"] = 1 / 10000
 agent_par["update_ae_each"] = 5
 agent_par["min_covar"] = 0.01
-agent_par["unc_type"] = "var"
+agent_par["unc_type"] = "log_prob"
