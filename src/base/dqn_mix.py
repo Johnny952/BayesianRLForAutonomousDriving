@@ -67,39 +67,45 @@ class MixTestPolicy(Policy):
                 }
 
 
-class MixWindowTestPolicy(Policy):
+class MixEWMATestPolicy(Policy):
     def __init__(
-        self, safety_threshold=None, safe_action=None, history_length=1, start_saving=3
+        self, alpha=None, safe_action=None, offset=10
     ) -> None:
-        self.safety_threshold = safety_threshold
+        self.alpha = alpha
         self.safe_action = safe_action
-        self.start_saving = start_saving
-        self.history = deque([], maxlen=history_length)
-        if self.safety_threshold is not None:
+        self.offset = offset
+
+        self.ewma = 0
+        self.steps = 0
+
+        if self.alpha is not None:
             assert safe_action is not None
 
     def reset(self):
-        self.history.clear()
+        self.ewma = 0
+        self.steps = 0
 
-    def add_to_history(self, uncertainty):
-        self.history.append(uncertainty)
+    def update_ewma(self, uncertainty):
+        if self.steps == 1:
+            self.ewma = uncertainty
+        else:
+            self.ewma = self.alpha * uncertainty + (1 - self.alpha) * self.ewma
 
     def select_action(self, q_values, uncertainties):
-        if self.safety_threshold is None:
+        self.steps += 1
+        if self.alpha is None:
             return np.argmax(q_values), {}
         else:
             sorted_q_indexes = q_values.argsort()[::-1]
-            if len(self.history) < self.start_saving:
+            if self.steps <= 1:
                 action = np.argmax(q_values)
-                self.add_to_history(uncertainties[action])
+                self.update_ewma(uncertainties[action])
                 return action, {
                     "safe_action": False,
                     "hard_safe": False,
                     "threshold": None,
                 }
-            threshold = np.mean(self.history) + self.safety_threshold * np.std(
-                self.history
-            )
+            threshold = self.ewma + self.offset
             i = 0
             while (
                 i < len(uncertainties)
@@ -109,14 +115,14 @@ class MixWindowTestPolicy(Policy):
             if i == len(
                 uncertainties
             ):  # No action is considered safe - use fallback action
-                self.add_to_history(uncertainties[self.safe_action])
+                self.update_ewma(uncertainties[self.safe_action])
                 return self.safe_action, {
                     "safe_action": True,
                     "hard_safe": True,
                     "threshold": threshold,
                 }
             else:
-                self.add_to_history(uncertainties[sorted_q_indexes[i]])
+                self.update_ewma(uncertainties[sorted_q_indexes[i]])
                 return sorted_q_indexes[i], {
                     "safe_action": not i == 0,
                     "hard_safe": False,

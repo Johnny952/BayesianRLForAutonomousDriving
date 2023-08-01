@@ -1403,6 +1403,21 @@ def rerun_test_scenarios_v3(
 
             while done is False:
                 action, action_info = dqn.forward(obs)
+                if save_video:
+                    traci_each(filepath, case, thresh, i, step)
+                
+                if use_gui or save_video:
+                    env.print_info_in_gui2({
+                        # "Reward": rewards,
+                        "Action": action,
+                        "Speed": env.speeds[0, :][0],
+                        "Uncertainty": action_info["coefficient_of_variation"][action],
+                        "Threshold": thresh,
+                        "Safe Action": action_info["safe_action"],
+                        "Hard Safe Action": action_info["safe_action"],
+                        "Stop Event": stop_event,
+                        "Fast Event": fast_event,
+                    }, {})
                 obs, rewards, done, _, more_info = env.step(action, action_info)
                 reward_no_col = more_info["reward_no_col"]
                 episode_reward += reward_no_col
@@ -1456,21 +1471,7 @@ def rerun_test_scenarios_v3(
                         fast_event = False
                         resume_fast_vehicle()
 
-                if save_video:
-                    traci_each(filepath, case, thresh, i, step)
                 
-                if use_gui or save_video:
-                    env.print_info_in_gui2({
-                        "Reward": rewards,
-                        "Action": action,
-                        "Speed": env.speeds[0, :][0],
-                        "Uncertainty": action_info["coefficient_of_variation"][action],
-                        "Threshold": thresh,
-                        "Safe Action": action_info["safe_action"],
-                        "Hard Safe Action": action_info["safe_action"],
-                        "Stop Event": stop_event,
-                        "Fast Event": fast_event,
-                    }, {})
                 
             if save_video:
                 fig1, ax1 = plt.subplots(ncols=1, nrows=1)

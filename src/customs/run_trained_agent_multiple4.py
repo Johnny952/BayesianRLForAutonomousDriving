@@ -16,7 +16,7 @@ from network_architecture import (
     NetworkCNN,
 )
 from base.run_agent_utils import rerun_test_scenarios_v3, rerun_test_scenarios_v0
-from base.dqn_mix import MixDQNAgent, MixTestPolicy, MixWindowTestPolicy
+from base.dqn_mix import MixDQNAgent, MixTestPolicy, MixEWMATestPolicy
 from base.dqn_standard import DQNAgent
 from matplotlib import rcParams
 from safe_greedy_policy import SafeGreedyPolicy, SimpleSafeGreedyPolicy
@@ -38,17 +38,7 @@ use_safe_action = True
 
 case = "all"  # 'all', 'uncert'
 
-thresh_range = [
-    1,
-    1.5,
-    2,
-    2.5,
-    3,
-    3.5,
-    4,
-    5,
-    100,
-]
+thresh_range = [0.01*(i+1) for i in range(10)]
 history_length = 20
 start_saving = 3
 if debug:
@@ -267,12 +257,7 @@ u_dqn.training = False
 
 
 # policy = MixTestPolicy(safety_threshold=None, safe_action=3)
-policy = MixWindowTestPolicy(
-    safety_threshold=None,
-    safe_action=3,
-    history_length=history_length,
-    start_saving=start_saving,
-)
+policy = MixEWMATestPolicy(alpha=None, safe_action=3, offset=30)
 dqn = MixDQNAgent(
     q_model=q_dqn,
     u_model=u_dqn,
@@ -281,7 +266,7 @@ dqn = MixDQNAgent(
 
 
 def change_thresh_fn(thresh):
-    dqn.policy.safety_threshold = thresh
+    dqn.policy.alpha = thresh
 
 
 if case == "all":
