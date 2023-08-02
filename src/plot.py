@@ -9,6 +9,7 @@ PERCENTILE_DOWN = 1
 PERCENTILE_UP = 99
 EPSILON = 1e-15
 
+
 def collapse_duplicated(*arrays, collapse_by=0, sort_by=0, reduction=np.max):
     collapse_array = arrays[collapse_by]
     unique, unique_idcs = np.unique(collapse_array, return_index=True)
@@ -25,6 +26,7 @@ def collapse_duplicated(*arrays, collapse_by=0, sort_by=0, reduction=np.max):
     for array in new_arrays:
         sorted_arrays.append(array[sorted_array_idcs])
     return unique_idcs, sorted_arrays
+
 
 def sort_duplicated(*arrays, sort_by=None, collapse_by=0):
     collapse_array = arrays[collapse_by]
@@ -79,8 +81,9 @@ def read_test(path):
         np.array(collision_speeds),
         np.array(steps),
         np.array(stop_events),
-        np.array(fast_events)
+        np.array(fast_events),
     )
+
 
 def read_test2(path, ep_type=int):
     thresholds = []
@@ -91,7 +94,7 @@ def read_test2(path, ep_type=int):
         for row in csv_reader:
             thresholds.append(float(row[0]))
             episodes.append(ep_type(row[1]))
-            uncert.append([float(d)  for d in row[2:]])
+            uncert.append([float(d) for d in row[2:]])
     return thresholds, episodes, uncert
 
 
@@ -109,7 +112,7 @@ def read_file(path, unc_normalized=True):
     with h5py.File(path, "r") as file:
         for step_key, step in file.items():
             unc, nb_steps = step["uncertainties"][()], step["steps"][()]
-            
+
             total_steps = np.sum(nb_steps)
             unc = unc / total_steps
 
@@ -243,9 +246,7 @@ def plot_train(model_nb=-1):
                 (uncertainty, uncertainty_up, uncertainty_low, uncertainty_std),
                 _,
                 _,
-            ) = read_file(
-                model["paths"][model_nb]
-            )
+            ) = read_file(model["paths"][model_nb])
             plt.plot(
                 steps,
                 uncertainty,
@@ -328,8 +329,6 @@ def plot_train(model_nb=-1):
     plt.savefig("./videos/train.png")
     plt.close()
 
-
-def plot_test():
     for scenario in tests.keys():
         if tests[scenario]["mode"] == "full":
             fig, axs = plt.subplots(ncols=2, nrows=2)
@@ -356,19 +355,68 @@ def plot_test():
                     nb_safe_action_hard,
                     collision_speeds,
                 ) = read_test(f"{base_path}{scenario}_U.csv")
-                _, [filtered_rates, filtered_rewards] = collapse_duplicated(collision_rates, rewards)
+                _, [filtered_rates, filtered_rewards] = collapse_duplicated(
+                    collision_rates, rewards
+                )
                 if tests[scenario]["mode"] == "full":
                     ax1.plot(
-                        filtered_rates, filtered_rewards, '.-', color=model["color"], label=f"{model_name} U", alpha=1
+                        filtered_rates,
+                        filtered_rewards,
+                        ".-",
+                        color=model["color"],
+                        label=f"{model_name} U",
+                        alpha=1,
                     )
 
-                    _, [filtered_safe_action, filtered_rates, filtered_rewards, filtered_speeds] = collapse_duplicated(nb_safe_actions, collision_rates, rewards, collision_speeds)
-                    ax2.plot(filtered_safe_action, filtered_rewards, '.-', color=model["color"], label=f"{model_name} U", alpha=1)
-                    ax3.plot(filtered_safe_action, filtered_rates, '.-', color=model["color"], label=f"{model_name} U", alpha=1)
-                    ax4.plot(filtered_safe_action, filtered_speeds, '.-', color=model["color"], label=f"{model_name} U", alpha=1)
+                    _, [
+                        filtered_safe_action,
+                        filtered_rates,
+                        filtered_rewards,
+                        filtered_speeds,
+                    ] = collapse_duplicated(
+                        nb_safe_actions, collision_rates, rewards, collision_speeds
+                    )
+                    ax2.plot(
+                        filtered_safe_action,
+                        filtered_rewards,
+                        ".-",
+                        color=model["color"],
+                        label=f"{model_name} U",
+                        alpha=1,
+                    )
+                    ax3.plot(
+                        filtered_safe_action,
+                        filtered_rates,
+                        ".-",
+                        color=model["color"],
+                        label=f"{model_name} U",
+                        alpha=1,
+                    )
+                    ax4.plot(
+                        filtered_safe_action,
+                        filtered_speeds,
+                        ".-",
+                        color=model["color"],
+                        label=f"{model_name} U",
+                        alpha=1,
+                    )
                 else:
-                    _, [filtered_safe_action, filtered_rates, filtered_rewards, filtered_speeds] = collapse_duplicated(nb_safe_actions, collision_rates, rewards, collision_speeds)
-                    ax.plot(filtered_safe_action, filtered_rewards, '.-', color=model["color"], label=f"{model_name} U", alpha=1)
+                    _, [
+                        filtered_safe_action,
+                        filtered_rates,
+                        filtered_rewards,
+                        filtered_speeds,
+                    ] = collapse_duplicated(
+                        nb_safe_actions, collision_rates, rewards, collision_speeds
+                    )
+                    ax.plot(
+                        filtered_safe_action,
+                        filtered_rewards,
+                        ".-",
+                        color=model["color"],
+                        label=f"{model_name} U",
+                        alpha=1,
+                    )
 
             if model["multiple_test"][scenario]["nu"]:
                 (
@@ -381,14 +429,45 @@ def plot_test():
                 ) = read_test(f"{base_path}{scenario}_NU.csv")
                 if tests[scenario]["mode"] == "full":
                     ax1.plot(
-                        collision_rates, rewards, '.', color=model["color"], label=f"{model_name} NU", alpha=1, markersize=14
+                        collision_rates,
+                        rewards,
+                        ".",
+                        color=model["color"],
+                        label=f"{model_name} NU",
+                        alpha=1,
+                        markersize=14,
                     )
-                    ax2.axhline(y=rewards[0], xmin=0.0, xmax=1.0, color=model["color"], linestyle="--")
-                    ax3.axhline(y=collision_rates[0], xmin=0.0, xmax=1.0, color=model["color"], linestyle="--")
-                    ax4.axhline(y=collision_speeds[0], xmin=0.0, xmax=1.0, color=model["color"], linestyle="--")
+                    ax2.axhline(
+                        y=rewards[0],
+                        xmin=0.0,
+                        xmax=1.0,
+                        color=model["color"],
+                        linestyle="--",
+                    )
+                    ax3.axhline(
+                        y=collision_rates[0],
+                        xmin=0.0,
+                        xmax=1.0,
+                        color=model["color"],
+                        linestyle="--",
+                    )
+                    ax4.axhline(
+                        y=collision_speeds[0],
+                        xmin=0.0,
+                        xmax=1.0,
+                        color=model["color"],
+                        linestyle="--",
+                    )
                 else:
-                    ax.axhline(y=rewards[0], xmin=0.0, xmax=1.0, color=model["color"], linestyle="--", label=f"{model_name} NU")
-        
+                    ax.axhline(
+                        y=rewards[0],
+                        xmin=0.0,
+                        xmax=1.0,
+                        color=model["color"],
+                        linestyle="--",
+                        label=f"{model_name} NU",
+                    )
+
         plt.suptitle(f"{scenario}", fontsize=25)
         if tests[scenario]["mode"] == "full":
             ax1.set_xlim(left=0)
@@ -428,6 +507,7 @@ def plot_test():
         plt.savefig(f"./videos/{scenario}.png")
         plt.close()
 
+
 def plot_tests2():
     for model in models:
         plt.figure()
@@ -444,18 +524,19 @@ def plot_tests2():
             if filepath:
                 _, _, uncerts = read_test2(filepath)
                 for i, uncert in enumerate(uncerts[:max_plots]):
-                    plots[scenario].plot(uncert, label=f'Run {str(i+1)}')
+                    plots[scenario].plot(uncert, label=f"Run {str(i+1)}")
         model_name = model["name"]
         plt.suptitle(f"Model {model_name}")
 
         for scenario, ax in plots.items():
-            ax.set_ylabel('Uncertainty')
-            ax.set_xlabel(' Timestamp')
+            ax.set_ylabel("Uncertainty")
+            ax.set_xlabel(" Timestamp")
             ax.set_title(scenario)
         axs[0].legend()
-            
+
         plt.savefig(f"./videos/{model_name}.png")
         plt.close()
+
 
 def plot_rerun_test_v3():
     scenario = "rerun_test_scenarios"
@@ -494,10 +575,35 @@ def plot_rerun_test_v3():
                 _,
                 _,
             ) = read_test(f"{base_path}{scenario}_U{sufix}.csv")
+            print(model_name)
+            print("Threshold\tReward\tSafe Actions\tCollision Rates")
+            for i in range(len(thresholds)):
+                print(
+                    "{:.3f}\t\t{:.3f}\t{:.2f}\t\t\t{:.0f}%".format(
+                        thresholds[i],
+                        rewards[i],
+                        nb_safe_actions[i],
+                        collision_rates[i] * 100,
+                    )
+                )
+            print("\n\n")
             # _, [filtered_rates_s, filtered_rewards_s] = collapse_duplicated(collision_rates, rewards)
-            _, [filtered_rates_s, filtered_rewards_s] = sort_duplicated(collision_rates, rewards)
+            _, [filtered_rates_s, filtered_rewards_s] = sort_duplicated(
+                collision_rates, rewards
+            )
             # filtered_rates_s, filtered_rewards_s = collision_rates, rewards
-            _, [filtered_safe_action, filtered_rates, filtered_rewards, filtered_speeds] = collapse_duplicated(nb_safe_actions, collision_rates, rewards, collision_speeds, reduction=np.mean)
+            _, [
+                filtered_safe_action,
+                filtered_rates,
+                filtered_rewards,
+                filtered_speeds,
+            ] = collapse_duplicated(
+                nb_safe_actions,
+                collision_rates,
+                rewards,
+                collision_speeds,
+                reduction=np.mean,
+            )
 
             if use_v0:
                 (
@@ -512,26 +618,90 @@ def plot_rerun_test_v3():
                     _,
                 ) = read_test(f"{base_path}{scenario}_U_v0.csv")
                 # _, [filtered_rates_s_v0, filtered_rewards_s_v0] = collapse_duplicated(collision_rates_v0, rewards_v0)
-                _, [filtered_rates_s_v0, filtered_rewards_s_v0] = sort_duplicated(collision_rates_v0, rewards_v0)
+                _, [filtered_rates_s_v0, filtered_rewards_s_v0] = sort_duplicated(
+                    collision_rates_v0, rewards_v0
+                )
                 # filtered_rates_s_v0, filtered_rewards_s_v0 = collision_rates_v0, rewards_v0
-                _, [filtered_safe_action_v0, filtered_rates_v0, filtered_rewards_v0, filtered_speeds_v0] = collapse_duplicated(nb_safe_actions_v0, collision_rates_v0, rewards_v0, collision_speeds_v0, reduction=np.mean)
+                _, [
+                    filtered_safe_action_v0,
+                    filtered_rates_v0,
+                    filtered_rewards_v0,
+                    filtered_speeds_v0,
+                ] = collapse_duplicated(
+                    nb_safe_actions_v0,
+                    collision_rates_v0,
+                    rewards_v0,
+                    collision_speeds_v0,
+                    reduction=np.mean,
+                )
             ax1.plot(
-                filtered_rates_s, filtered_rewards_s, mark, color=model["color"], label=f"{model_name} U test v1", alpha=1, linewidth=2
+                filtered_rates_s,
+                filtered_rewards_s,
+                mark,
+                color=model["color"],
+                label=f"{model_name} U test v1",
+                alpha=1,
+                linewidth=2,
             )
 
-            
-            ax2.plot(filtered_safe_action, filtered_rewards, mark, color=model["color"], label=f"{model_name} U test v1", alpha=1)
-            ax3.plot(filtered_safe_action, filtered_rates, mark, color=model["color"], label=f"{model_name} U test v1", alpha=1)
-            ax4.plot(filtered_safe_action, filtered_speeds, mark, color=model["color"], label=f"{model_name} U", alpha=1)
+            ax2.plot(
+                filtered_safe_action,
+                filtered_rewards,
+                mark,
+                color=model["color"],
+                label=f"{model_name} U test v1",
+                alpha=1,
+            )
+            ax3.plot(
+                filtered_safe_action,
+                filtered_rates,
+                mark,
+                color=model["color"],
+                label=f"{model_name} U test v1",
+                alpha=1,
+            )
+            ax4.plot(
+                filtered_safe_action,
+                filtered_speeds,
+                mark,
+                color=model["color"],
+                label=f"{model_name} U",
+                alpha=1,
+            )
 
             if use_v0:
                 ax1.plot(
-                    filtered_rates_s_v0, filtered_rewards_s_v0, second_mark, color=model["color"], label=f"{model_name} U test v0", alpha=1
+                    filtered_rates_s_v0,
+                    filtered_rewards_s_v0,
+                    second_mark,
+                    color=model["color"],
+                    label=f"{model_name} U test v0",
+                    alpha=1,
                 )
-                ax2.plot(filtered_safe_action_v0, filtered_rewards_v0, second_mark, color=model["color"], label=f"{model_name} U test v0", alpha=1)
-                ax3.plot(filtered_safe_action_v0, filtered_rates_v0, second_mark, color=model["color"], label=f"{model_name} U test v0", alpha=1)
-                ax4.plot(filtered_safe_action_v0, filtered_speeds_v0, second_mark, color=model["color"], label=f"{model_name} U", alpha=1)
-            
+                ax2.plot(
+                    filtered_safe_action_v0,
+                    filtered_rewards_v0,
+                    second_mark,
+                    color=model["color"],
+                    label=f"{model_name} U test v0",
+                    alpha=1,
+                )
+                ax3.plot(
+                    filtered_safe_action_v0,
+                    filtered_rates_v0,
+                    second_mark,
+                    color=model["color"],
+                    label=f"{model_name} U test v0",
+                    alpha=1,
+                )
+                ax4.plot(
+                    filtered_safe_action_v0,
+                    filtered_speeds_v0,
+                    second_mark,
+                    color=model["color"],
+                    label=f"{model_name} U",
+                    alpha=1,
+                )
 
         if model["test_v3"]["paths"][scenario]["nu"]:
             (
@@ -558,20 +728,60 @@ def plot_rerun_test_v3():
                     _,
                 ) = read_test(f"{base_path}{scenario}_NU_v0.csv")
             ax1.plot(
-                collision_rates, rewards, mark, color=model["color"], label=f"{model_name} NU test v1", alpha=1, markersize=16
+                collision_rates,
+                rewards,
+                mark,
+                color=model["color"],
+                label=f"{model_name} NU test v1",
+                alpha=1,
+                markersize=16,
             )
-            ax2.axhline(y=rewards[0], xmin=0.0, label=f"{model_name} NU test v1", color=model["color"], linestyle="--")
-            ax3.axhline(y=collision_rates[0], xmin=0.0, label=f"{model_name} NU test v1", color=model["color"], linestyle="--")
-            ax4.axhline(y=collision_speeds[0], xmin=0.0, label=f"{model_name} NU", color=model["color"], linestyle="--")
+            ax2.axhline(
+                y=rewards[0],
+                xmin=0.0,
+                label=f"{model_name} NU test v1",
+                color=model["color"],
+                linestyle="--",
+            )
+            ax3.axhline(
+                y=collision_rates[0],
+                xmin=0.0,
+                label=f"{model_name} NU test v1",
+                color=model["color"],
+                linestyle="--",
+            )
+            ax4.axhline(
+                y=collision_speeds[0],
+                xmin=0.0,
+                label=f"{model_name} NU",
+                color=model["color"],
+                linestyle="--",
+            )
 
             if use_v0:
                 ax1.plot(
-                    collision_rates_v0, rewards_v0, second_mark, color=model["color"], label=f"{model_name} NU test v0", alpha=1
+                    collision_rates_v0,
+                    rewards_v0,
+                    second_mark,
+                    color=model["color"],
+                    label=f"{model_name} NU test v0",
+                    alpha=1,
                 )
-                ax2.axhline(y=rewards_v0[0], xmin=0.0, color=model["color"], linestyle="-.")
-                ax3.axhline(y=collision_rates_v0[0], xmin=0.0, color=model["color"], linestyle="-.")
-                ax4.axhline(y=collision_speeds_v0[0], xmin=0.0, color=model["color"], linestyle="-.")
-    
+                ax2.axhline(
+                    y=rewards_v0[0], xmin=0.0, color=model["color"], linestyle="-."
+                )
+                ax3.axhline(
+                    y=collision_rates_v0[0],
+                    xmin=0.0,
+                    color=model["color"],
+                    linestyle="-.",
+                )
+                ax4.axhline(
+                    y=collision_speeds_v0[0],
+                    xmin=0.0,
+                    color=model["color"],
+                    linestyle="-.",
+                )
 
     ax1.set_title(f"{scenario}", fontsize=25)
     ax1.set_xlim(left=0)
@@ -615,6 +825,7 @@ def plot_rerun_test_v3():
     fig4.savefig(f"./videos/{scenario}_speeds_v3.png")
     plt.close()
 
+
 def plot_tests_v3():
     import seaborn as sn
     import pandas as pd
@@ -632,7 +843,9 @@ def plot_tests_v3():
 
         fig.suptitle(model_name)
 
-        for idx, scenario in enumerate(["standstill", "fast_overtaking"]):#standstill, "fast_overtaking"
+        for idx, scenario in enumerate(
+            ["standstill", "fast_overtaking"]
+        ):  # standstill, "fast_overtaking"
             if paths[scenario]["nu"]:
                 path = f"{base_path}{scenario}_NU{sufix}.csv"
                 _, pos_vel, unc = read_test2(path, ep_type=float)
@@ -645,12 +858,29 @@ def plot_tests_v3():
                 unc_range = model["test_v3"]["unc_range"]
                 padded_unc = np.ones((len(unc), max_len)) * min_unc
                 for i, row in enumerate(unc):
-                    padded_unc[i, :len(row)] = row
-                df_cm = pd.DataFrame(padded_unc[:, ::-1], columns = [max_len-i for i in range(max_len)],
-                    index = [int(p) if scenario == "standstill" else f"{p:.1f}" for p in pos_vel])
+                    padded_unc[i, : len(row)] = row
+                df_cm = pd.DataFrame(
+                    padded_unc[:, ::-1],
+                    columns=[max_len - i for i in range(max_len)],
+                    index=[
+                        int(p) if scenario == "standstill" else f"{p:.1f}"
+                        for p in pos_vel
+                    ],
+                )
                 ax_idx = 0 if scenario == "standstill" else 1
-                sn.heatmap(df_cm.T, annot=False, ax=axs[ax_idx], cbar_kws={'label': 'uncertainty'}, vmin=unc_range[0], vmax=unc_range[1])
-                xlabel = "Stopped vehicle position" if scenario == "standstill" else "Fast vehicle speed"
+                sn.heatmap(
+                    df_cm.T,
+                    annot=False,
+                    ax=axs[ax_idx],
+                    cbar_kws={"label": "uncertainty"},
+                    vmin=unc_range[0],
+                    vmax=unc_range[1],
+                )
+                xlabel = (
+                    "Stopped vehicle position"
+                    if scenario == "standstill"
+                    else "Fast vehicle speed"
+                )
                 axs[ax_idx].set_xlabel(xlabel, fontsize=16)
                 axs[ax_idx].set_ylabel("Step", fontsize=16)
                 axs[ax_idx].set_title(scenario, fontsize=16)
@@ -658,8 +888,8 @@ def plot_tests_v3():
 
                 xticks = axs[ax_idx].xaxis.get_major_ticks()
                 for i in range(len(xticks) // 2):
-                    xticks[2*i + 1].set_visible(False)
-        
+                    xticks[2 * i + 1].set_visible(False)
+
         # plt.show()
         plt.savefig(f"./videos/{model_name}_v3.png")
         plt.close()
@@ -667,7 +897,6 @@ def plot_tests_v3():
 
 if __name__ == "__main__":
     models = [
-        
         {
             "paths": [
                 "./logs/train_agent_20230715_211722_rpf_v14/data.hdf5",
@@ -699,8 +928,8 @@ if __name__ == "__main__":
             "test_v3": {
                 "sufix": "_v3",
                 "rerun_sufix": "_v5",
-                "mark": 'X-',
-                "second_mark": 'D-',
+                "mark": "X-",
+                "second_mark": "D-",
                 "base_path": "./logs/train_agent_20230715_211722_rpf_v14/",
                 "unc_range": [0.012, 0.08],
                 "paths": {
@@ -717,8 +946,8 @@ if __name__ == "__main__":
                         "u": False,
                         "nu": True,
                     },
-                }
-            }
+                },
+            },
         },
         {
             "paths": [
@@ -751,10 +980,13 @@ if __name__ == "__main__":
             "test_v3": {
                 "sufix": "_v3",
                 "rerun_sufix": "_v5",
-                "mark": 'v-',
+                "mark": "v-",
                 "second_mark": "^-",
                 "base_path": "./logs/train_agent_20230715_211724_ae_v14/",
-                "unc_range": [-0.06414734, -0.02169895], #[-0.67, -0.43], #[-145, -72],
+                "unc_range": [
+                    -0.06414734,
+                    -0.02169895,
+                ],  # [-0.67, -0.43], #[-145, -72],
                 "paths": {
                     "rerun_test_scenarios": {
                         "u": True,
@@ -769,8 +1001,8 @@ if __name__ == "__main__":
                         "u": False,
                         "nu": True,
                     },
-                }
-            }
+                },
+            },
         },
         {
             "paths": [
@@ -803,8 +1035,8 @@ if __name__ == "__main__":
             "test_v3": {
                 "sufix": "_v5",
                 "rerun_sufix": "_v5",
-                "mark": '.',
-                "second_mark": '*',
+                "mark": ".",
+                "second_mark": "*",
                 "base_path": "./logs/train_agent_20230323_235314_dqn_6M_v3/",
                 "paths": {
                     "rerun_test_scenarios": {
@@ -820,13 +1052,12 @@ if __name__ == "__main__":
                         "u": False,
                         "nu": False,
                     },
-                }
-            }
+                },
+            },
         },
     ]
 
     plot_train()
-    # plot_test()
     # plot_tests2()
     plot_rerun_test_v3()
     plot_tests_v3()
