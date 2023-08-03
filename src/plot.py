@@ -329,183 +329,143 @@ def plot_train(model_nb=-1):
     plt.savefig("./videos/train.png")
     plt.close()
 
-    for scenario in tests.keys():
-        if tests[scenario]["mode"] == "full":
-            fig, axs = plt.subplots(ncols=2, nrows=2)
-            fig.set_figwidth(16)
-            fig.set_figheight(16)
-            ax1 = axs[0, 0]
-            ax2 = axs[0, 1]
-            ax3 = axs[1, 0]
-            ax4 = axs[1, 1]
-        else:
-            fig, ax = plt.subplots(ncols=1, nrows=1)
-            fig.set_figwidth(16)
-            fig.set_figheight(16)
+    # for scenario in '':
+    #     fig, axs = plt.subplots(ncols=2, nrows=2)
+    #     fig.set_figwidth(16)
+    #     fig.set_figheight(16)
+    #     ax1 = axs[0, 0]
+    #     ax2 = axs[0, 1]
+    #     ax3 = axs[1, 0]
+    #     ax4 = axs[1, 1]
 
-        for model in models:
-            base_path = model["multiple_test"]["base_path"]
-            model_name = model["name"]
-            if model["multiple_test"][scenario]["u"]:
-                (
-                    _,
-                    rewards,
-                    collision_rates,
-                    nb_safe_actions,
-                    nb_safe_action_hard,
-                    collision_speeds,
-                ) = read_test(f"{base_path}{scenario}_U.csv")
-                _, [filtered_rates, filtered_rewards] = collapse_duplicated(
-                    collision_rates, rewards
-                )
-                if tests[scenario]["mode"] == "full":
-                    ax1.plot(
-                        filtered_rates,
-                        filtered_rewards,
-                        ".-",
-                        color=model["color"],
-                        label=f"{model_name} U",
-                        alpha=1,
-                    )
+    #     for model in models:
+    #         base_path = model["multiple_test"]["base_path"]
+    #         model_name = model["name"]
+    #         if model["multiple_test"][scenario]["u"]:
+    #             (
+    #                 _,
+    #                 rewards,
+    #                 collision_rates,
+    #                 nb_safe_actions,
+    #                 nb_safe_action_hard,
+    #                 collision_speeds,
+    #             ) = read_test(f"{base_path}{scenario}_U.csv")
+    #             _, [filtered_rates, filtered_rewards] = collapse_duplicated(
+    #                 collision_rates, rewards
+    #             )
+    #             ax1.plot(
+    #                 filtered_rates,
+    #                 filtered_rewards,
+    #                 ".-",
+    #                 color=model["color"],
+    #                 label=f"{model_name} U",
+    #                 alpha=1,
+    #             )
 
-                    _, [
-                        filtered_safe_action,
-                        filtered_rates,
-                        filtered_rewards,
-                        filtered_speeds,
-                    ] = collapse_duplicated(
-                        nb_safe_actions, collision_rates, rewards, collision_speeds
-                    )
-                    ax2.plot(
-                        filtered_safe_action,
-                        filtered_rewards,
-                        ".-",
-                        color=model["color"],
-                        label=f"{model_name} U",
-                        alpha=1,
-                    )
-                    ax3.plot(
-                        filtered_safe_action,
-                        filtered_rates,
-                        ".-",
-                        color=model["color"],
-                        label=f"{model_name} U",
-                        alpha=1,
-                    )
-                    ax4.plot(
-                        filtered_safe_action,
-                        filtered_speeds,
-                        ".-",
-                        color=model["color"],
-                        label=f"{model_name} U",
-                        alpha=1,
-                    )
-                else:
-                    _, [
-                        filtered_safe_action,
-                        filtered_rates,
-                        filtered_rewards,
-                        filtered_speeds,
-                    ] = collapse_duplicated(
-                        nb_safe_actions, collision_rates, rewards, collision_speeds
-                    )
-                    ax.plot(
-                        filtered_safe_action,
-                        filtered_rewards,
-                        ".-",
-                        color=model["color"],
-                        label=f"{model_name} U",
-                        alpha=1,
-                    )
+    #             _, [
+    #                 filtered_safe_action,
+    #                 filtered_rates,
+    #                 filtered_rewards,
+    #                 filtered_speeds,
+    #             ] = collapse_duplicated(
+    #                 nb_safe_actions, collision_rates, rewards, collision_speeds
+    #             )
+    #             ax2.plot(
+    #                 filtered_safe_action,
+    #                 filtered_rewards,
+    #                 ".-",
+    #                 color=model["color"],
+    #                 label=f"{model_name} U",
+    #                 alpha=1,
+    #             )
+    #             ax3.plot(
+    #                 filtered_safe_action,
+    #                 filtered_rates,
+    #                 ".-",
+    #                 color=model["color"],
+    #                 label=f"{model_name} U",
+    #                 alpha=1,
+    #             )
+    #             ax4.plot(
+    #                 filtered_safe_action,
+    #                 filtered_speeds,
+    #                 ".-",
+    #                 color=model["color"],
+    #                 label=f"{model_name} U",
+    #                 alpha=1,
+    #             )
 
-            if model["multiple_test"][scenario]["nu"]:
-                (
-                    _,
-                    rewards,
-                    collision_rates,
-                    _,
-                    _,
-                    collision_speeds,
-                ) = read_test(f"{base_path}{scenario}_NU.csv")
-                if tests[scenario]["mode"] == "full":
-                    ax1.plot(
-                        collision_rates,
-                        rewards,
-                        ".",
-                        color=model["color"],
-                        label=f"{model_name} NU",
-                        alpha=1,
-                        markersize=14,
-                    )
-                    ax2.axhline(
-                        y=rewards[0],
-                        xmin=0.0,
-                        xmax=1.0,
-                        color=model["color"],
-                        linestyle="--",
-                    )
-                    ax3.axhline(
-                        y=collision_rates[0],
-                        xmin=0.0,
-                        xmax=1.0,
-                        color=model["color"],
-                        linestyle="--",
-                    )
-                    ax4.axhline(
-                        y=collision_speeds[0],
-                        xmin=0.0,
-                        xmax=1.0,
-                        color=model["color"],
-                        linestyle="--",
-                    )
-                else:
-                    ax.axhline(
-                        y=rewards[0],
-                        xmin=0.0,
-                        xmax=1.0,
-                        color=model["color"],
-                        linestyle="--",
-                        label=f"{model_name} NU",
-                    )
+    #         if model["multiple_test"][scenario]["nu"]:
+    #             (
+    #                 _,
+    #                 rewards,
+    #                 collision_rates,
+    #                 _,
+    #                 _,
+    #                 collision_speeds,
+    #             ) = read_test(f"{base_path}{scenario}_NU.csv")
+    #             ax1.plot(
+    #                 collision_rates,
+    #                 rewards,
+    #                 ".",
+    #                 color=model["color"],
+    #                 label=f"{model_name} NU",
+    #                 alpha=1,
+    #                 markersize=14,
+    #             )
+    #             ax2.axhline(
+    #                 y=rewards[0],
+    #                 xmin=0.0,
+    #                 xmax=1.0,
+    #                 color=model["color"],
+    #                 linestyle="--",
+    #             )
+    #             ax3.axhline(
+    #                 y=collision_rates[0],
+    #                 xmin=0.0,
+    #                 xmax=1.0,
+    #                 color=model["color"],
+    #                 linestyle="--",
+    #             )
+    #             ax4.axhline(
+    #                 y=collision_speeds[0],
+    #                 xmin=0.0,
+    #                 xmax=1.0,
+    #                 color=model["color"],
+    #                 linestyle="--",
+    #             )
 
-        plt.suptitle(f"{scenario}", fontsize=25)
-        if tests[scenario]["mode"] == "full":
-            ax1.set_xlim(left=0)
-            # ax1.set_ylim(bottom=-4)
-            ax1.set_ylabel("Rewards", fontsize=16)
+    #     plt.suptitle(f"{scenario}", fontsize=25)
+    #     ax1.set_xlim(left=0)
+    #     # ax1.set_ylim(bottom=-4)
+    #     ax1.set_ylabel("Rewards", fontsize=16)
 
-            # ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
-            ax1.xaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=0))
-            ax1.set_xlabel("Collision Rate", fontsize=16)
-            ax1.legend()
-            ax1.grid()
+    #     # ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+    #     ax1.xaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=0))
+    #     ax1.set_xlabel("Collision Rate", fontsize=16)
+    #     ax1.legend()
+    #     ax1.grid()
 
-            # ax2.set_ylim(bottom=-4)
-            ax2.set_xlim(left=0, right=1)
-            ax2.set_ylabel("Reward", fontsize=16)
-            ax2.set_xlabel("Number Safe actions", fontsize=16)
+    #     # ax2.set_ylim(bottom=-4)
+    #     ax2.set_xlim(left=0, right=1)
+    #     ax2.set_ylabel("Reward", fontsize=16)
+    #     ax2.set_xlabel("Number Safe actions", fontsize=16)
 
-            ax3.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=0))
-            ax3.set_ylim(bottom=0)
-            ax3.set_xlim(left=0, right=1)
-            ax3.set_ylabel("Collision Rate", fontsize=16)
-            ax3.set_xlabel("Number Safe actions", fontsize=16)
+    #     ax3.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=0))
+    #     ax3.set_ylim(bottom=0)
+    #     ax3.set_xlim(left=0, right=1)
+    #     ax3.set_ylabel("Collision Rate", fontsize=16)
+    #     ax3.set_xlabel("Number Safe actions", fontsize=16)
 
-            ax4.set_ylim(bottom=0)
-            ax4.set_xlim(left=0, right=1)
-            ax4.legend()
-            ax4.set_ylabel("Collision Speeds", fontsize=16)
-            ax4.set_xlabel("Number Safe actions", fontsize=16)
-        else:
-            # ax2.set_ylim(bottom=-4)
-            ax.set_xlim(left=0, right=1)
-            ax.set_ylabel("Reward", fontsize=16)
-            ax.legend()
-            ax.set_xlabel("Number Safe actions", fontsize=16)
+    #     ax4.set_ylim(bottom=0)
+    #     ax4.set_xlim(left=0, right=1)
+    #     ax4.legend()
+    #     ax4.set_ylabel("Collision Speeds", fontsize=16)
+    #     ax4.set_xlabel("Number Safe actions", fontsize=16)
 
-        # plt.show()
-        plt.savefig(f"./videos/{scenario}.png")
-        plt.close()
+    #     # plt.show()
+    #     plt.savefig(f"./videos/{scenario}.png")
+    #     plt.close()
 
 
 def plot_tests2():
