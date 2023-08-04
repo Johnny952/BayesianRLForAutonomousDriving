@@ -38,7 +38,7 @@ use_safe_action = True
 
 case = "all"  # 'all', 'uncert'
 
-thresh_range = [0.25*(i+1) for i in range(10)]
+thresh_range = [5*(i+1) for i in range(10)]
 history_length = 20
 start_saving = 3
 if debug:
@@ -257,7 +257,7 @@ u_dqn.training = False
 
 
 # policy = MixTestPolicy(safety_threshold=None, safe_action=3)
-policy = MixEWMATestPolicy(alpha=None, safe_action=3, offset=50)
+policy = MixEWMATestPolicy(alpha=1.25, safe_action=3, offset=None)
 dqn = MixDQNAgent(
     q_model=q_dqn,
     u_model=u_dqn,
@@ -266,7 +266,7 @@ dqn = MixDQNAgent(
 
 
 def change_thresh_fn(thresh):
-    dqn.policy.alpha = thresh
+    dqn.policy.offset = thresh
 
 
 if case == "all":
