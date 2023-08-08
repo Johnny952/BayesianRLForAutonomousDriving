@@ -539,7 +539,7 @@ def plot_rerun_test_v3():
             print("Threshold\tReward\tSafe Actions\tCollision Rates")
             for i in range(len(thresholds)):
                 print(
-                    "{:.3f}\t\t{:.3f}\t{:.2f}\t\t\t{:.0f}%".format(
+                    "{:.3f}\t\t{:.3f}\t{:.2f}\t\t\t{:.2f}%".format(
                         thresholds[i],
                         rewards[i],
                         nb_safe_actions[i],
