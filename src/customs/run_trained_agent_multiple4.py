@@ -44,7 +44,7 @@ start_saving = 3
 if debug:
     save_video = True
     do_save_metrics = False
-    number_episodes = 5
+    number_episodes = 30
     use_gui = True
 else:
     save_video = False
@@ -257,7 +257,7 @@ u_dqn.training = False
 
 
 # policy = MixTestPolicy(safety_threshold=None, safe_action=3)
-policy = MixEWMATestPolicy(alpha=0.75, safe_action=3, offset=None)
+policy = MixEWMATestPolicy(alpha=0.075, safe_action=3, offset=None)
 dqn = MixDQNAgent(
     q_model=q_dqn,
     u_model=u_dqn,
