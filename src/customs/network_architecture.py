@@ -952,13 +952,31 @@ class NetworkAE(nn.Module):
         obs_mu, act_mu, covar = self(obs, act)[:3]
         return -self.log_prob_loss(obs_mu, obs, act_mu, act, covar)
     
-    def mse(self, obs, act):
-        obs_mu, act_mu, covar = self(obs, act)[:3]
+    def get_uncertainties(self, obs, device='cpu'):
+        log_probs = []
+        for i in range(self.nb_actions):
+            act = torch.Tensor([i]).unsqueeze(dim=0).float().to(device)
+            log_prob = self.get_uncertainty(obs, act)
+            log_probs.append(log_prob)
+        return log_probs
+    
+    def get_uncertainty(self, obs, act):
+        one_hot_act = nn.functional.one_hot(act.long(), num_classes=self.nb_actions)
+        _, act_mu, covar = self(obs, act)[:3]
+        act_mu_ = act_mu[0]
+        covar_ = covar[0, -self.nb_actions:, -self.nb_actions:]
+
+        distribution = torch.distributions.multivariate_normal.MultivariateNormal(act_mu_, covar_)
+        return -distribution.log_prob(one_hot_act).cpu().numpy()
+
+
+    def mse(self, obs, act, reduction=torch.mean):
+        obs_mu, act_mu, _ = self(obs, act)[:3]
 
         one_hot_act = nn.functional.one_hot(act.squeeze(dim=1).long(), num_classes=self.nb_actions)
         target_ = torch.cat((torch.flatten(obs, start_dim=1), one_hot_act), dim=-1)
         mu = torch.cat((obs_mu, act_mu), dim=-1)
-        return torch.mean((mu - target_)**2)
+        return reduction((mu - target_)**2)
 
     def var(self, obs, act, obs_weight=0.5, act_weight=0.5):
         covar = self(obs, act)[2]
@@ -967,13 +985,21 @@ class NetworkAE(nn.Module):
         act_var_sum = act_weight*torch.sum(diag_covar[obs.shape[1]:])
         return (obs_var_sum + act_var_sum) / (diag_covar.shape[1] * (obs_weight + act_weight))
 
+    def get_var_mse(self, obs, act):
+        obs_mu, act_mu, covar = self(obs, act)[:3]
+
+        one_hot_act = nn.functional.one_hot(act.squeeze(dim=1).long(), num_classes=self.nb_actions)
+        target_ = torch.cat((torch.flatten(obs, start_dim=1), one_hot_act), dim=-1)
+        mu = torch.cat((obs_mu, act_mu), dim=-1)
+        return (mu - target_)**2, torch.diagonal(covar, dim1=1, dim2=2)
+
     def log_prob_loss(self, obs_mu, obs, act_mu, act, covar):
         one_hot_act = nn.functional.one_hot(act.squeeze(dim=1).long(), num_classes=self.nb_actions)
         target_ = torch.cat((torch.flatten(obs, start_dim=1), one_hot_act), dim=-1)
         mu = torch.cat((obs_mu, act_mu), dim=-1)
         if True:
             for i in range(obs_mu.shape[0]):
-                mu_i, covar_i, target_i = mu[i],covar[i], target_[i]
+                mu_i, covar_i, target_i = mu[i], covar[i], target_[i]
                 distribution = torch.distributions.multivariate_normal.MultivariateNormal(mu_i, covar_i)
                 if i == 0:
                     log_prob = distribution.log_prob(target_i)

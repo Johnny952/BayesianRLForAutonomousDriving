@@ -38,13 +38,22 @@ use_safe_action = True
 
 case = "all"  # 'all', 'uncert'
 
-thresh_range = [10*(i+1) for i in range(10)] + [1000]
+thresh_range = [
+    -8.4293526,
+    -7.99887725,
+    -8.8517488,
+    -8.6707039,
+    -5.99141208,
+    -5.450208608,
+    -4.8586104064,
+    100,
+] #10*(i+1) for i in range(10)] + [1000
 history_length = 20
 start_saving = 3
 if debug:
     save_video = True
     do_save_metrics = False
-    number_episodes = 30
+    number_episodes = 50
     use_gui = True
 else:
     save_video = False
@@ -256,8 +265,8 @@ u_dqn.load_weights(u_filepath + u_agent_name)
 u_dqn.training = False
 
 
-# policy = MixTestPolicy(safety_threshold=None, safe_action=3)
-policy = MixEWMATestPolicy(alpha=0.075, safe_action=3, offset=None)
+policy = MixTestPolicy(safety_threshold=None, safe_action=3)
+# policy = MixEWMATestPolicy(alpha=0.075, safe_action=3, offset=None)
 dqn = MixDQNAgent(
     q_model=q_dqn,
     u_model=u_dqn,
@@ -266,7 +275,7 @@ dqn = MixDQNAgent(
 
 
 def change_thresh_fn(thresh):
-    dqn.policy.offset = thresh
+    dqn.policy.safety_threshold = thresh
 
 
 if case == "all":

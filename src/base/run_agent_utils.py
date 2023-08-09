@@ -1331,6 +1331,23 @@ def fast_vehicle():
         traci.vehicle.setMaxSpeed(selected_id, FAST_VEHICLE_SPEED)
     return True
 
+def plot_metrics_hist(action_info, filepath, case, thresh, episode, step):
+    name = get_name(filepath)
+    plot_path = f"../videos/{name}/{case}/{thresh}_{episode}/plot_{str(step)}.png"
+
+    if "var" in action_info and "mse" in action_info:
+        var, mse = action_info["var"], action_info["mse"]
+        # print(f'Max VAR: {np.max(var)}\tIndex VAR: {np.argmax(var)}\tMax MSE: {np.mean(mse)}\tIndex MSE: {np.argmax(mse)}')
+        plt.figure()
+        fig, axs = plt.subplots(ncols=2, nrows=1)
+        fig.set_figwidth(10)
+        fig.set_figheight(5)
+        axs[0].hist(var, bins=30)#, range=(0, 100)
+        axs[1].hist(mse, bins=30)#, range=(0, 100)
+        axs[0].set_title("Sigma Distribution", fontsize=25)
+        axs[1].set_title("MSE Distribution", fontsize=25)
+        fig.savefig(plot_path)
+        plt.close()
 
 def rerun_test_scenarios_v3(
     dqn,
@@ -1405,7 +1422,7 @@ def rerun_test_scenarios_v3(
                 action, action_info = dqn.forward(obs)
                 if save_video:
                     traci_each(filepath, case, thresh, i, step)
-                
+                    # plot_metrics_hist(action_info, filepath, case, thresh, i, step)
                 if use_gui or save_video:
                     env.print_info_in_gui2({
                         # "Reward": rewards,
@@ -1414,7 +1431,7 @@ def rerun_test_scenarios_v3(
                         "Uncertainty": action_info["coefficient_of_variation"][action],
                         "Threshold": thresh,
                         "Safe Action": action_info["safe_action"],
-                        "Hard Safe Action": action_info["safe_action"],
+                        "Hard Safe Action": action_info["hard_safe"],
                         "Stop Event": stop_event,
                         "Fast Event": fast_event,
                     }, {})
