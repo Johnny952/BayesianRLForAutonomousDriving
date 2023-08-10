@@ -967,7 +967,7 @@ class NetworkAE(nn.Module):
         covar_ = covar[0, -self.nb_actions:, -self.nb_actions:]
 
         distribution = torch.distributions.multivariate_normal.MultivariateNormal(act_mu_, covar_)
-        return -distribution.log_prob(one_hot_act).cpu().numpy()
+        return distribution.log_prob(one_hot_act).cpu().numpy()
 
 
     def mse(self, obs, act, reduction=torch.mean):
