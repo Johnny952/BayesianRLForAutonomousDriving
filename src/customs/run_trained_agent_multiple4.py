@@ -26,7 +26,7 @@ np.warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
 rcParams["pdf.fonttype"] = 42  # To avoid Type 3 fonts in figures
 rcParams["ps.fonttype"] = 42
 
-debug = False
+debug = True
 
 """ Options: """
 q_filepath = "../logs/train_agent_20230323_235314_dqn_6M_v3/"
@@ -39,14 +39,14 @@ use_safe_action = True
 case = "all"  # 'all', 'uncert'
 
 thresh_range = [
-    9.29675784432668,
-    9.737254578085468,
-    9.0396983,
-    9.052814075,
-    9.05951992,
-    9.06270384,
-    9.068475204,
-    100,
+    -150.15884765415882,
+    -96.75956942462634,
+    -124.859905,
+    -102.52886625,
+    -71.7848498,
+    -41.294662275,
+    68.522810575,
+    5000,
 ] #10*(i+1) for i in range(10)] + [1000
 history_length = 20
 start_saving = 3

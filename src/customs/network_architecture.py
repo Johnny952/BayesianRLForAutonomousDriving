@@ -961,13 +961,19 @@ class NetworkAE(nn.Module):
         return log_probs
     
     def get_uncertainty(self, obs, act):
-        one_hot_act = nn.functional.one_hot(act.long(), num_classes=self.nb_actions)
-        _, act_mu, covar = self(obs, act)[:3]
-        act_mu_ = act_mu[0]
-        covar_ = covar[0, -self.nb_actions:, -self.nb_actions:]
+        one_hot_act = nn.functional.one_hot(act.squeeze(dim=1).long(), num_classes=self.nb_actions)
+        obs_mu, act_mu, covar = self(obs, act)[:3]
 
-        distribution = torch.distributions.multivariate_normal.MultivariateNormal(act_mu_, covar_)
-        return distribution.log_prob(one_hot_act).cpu().numpy()
+        target_ = torch.cat((torch.flatten(obs, start_dim=1), one_hot_act), dim=-1)
+        mu = torch.cat((obs_mu, act_mu), dim=-1)
+        distribution = torch.distributions.multivariate_normal.MultivariateNormal(mu, covar)
+        log_p_act_obs = torch.sum(distribution.log_prob(target_))
+
+        covar_ = covar[:, :-self.nb_actions, :-self.nb_actions]
+        distribution = torch.distributions.multivariate_normal.MultivariateNormal(obs_mu, covar_)
+        log_p_obs = torch.sum(distribution.log_prob(obs))
+
+        return -(log_p_act_obs + log_p_obs)
 
 
     def mse(self, obs, act, reduction=torch.mean):
