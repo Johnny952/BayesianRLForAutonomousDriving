@@ -26,7 +26,7 @@ np.warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
 rcParams["pdf.fonttype"] = 42  # To avoid Type 3 fonts in figures
 rcParams["ps.fonttype"] = 42
 
-debug = True
+debug = False
 
 """ Options: """
 q_filepath = "../logs/train_agent_20230323_235314_dqn_6M_v3/"
