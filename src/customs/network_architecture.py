@@ -897,7 +897,7 @@ class NetworkAE(nn.Module):
         )
         self.act_encoder = nn.Sequential(
             nn.Flatten(),
-            Base(1, architecture=act_encoder_arc)
+            Base(self.nb_actions, architecture=act_encoder_arc)
         )
         self.shared_encoder = nn.Sequential(
             Base(act_encoder_arc[-1] + obs_encoder_arc[-1], architecture=shared_encoder_arc)
@@ -944,7 +944,8 @@ class NetworkAE(nn.Module):
         return obs_mu, act_mu, covar
 
     def forward(self, obs, act):
-        z = self.encode(obs, act)
+        one_hot_act = nn.functional.one_hot(act.long(), num_classes=self.nb_actions).float()
+        z = self.encode(obs, one_hot_act)
         reconst_obs, reconst_act, covar = self.decode(z)
         return [reconst_obs, reconst_act, covar, (obs, act)]
 

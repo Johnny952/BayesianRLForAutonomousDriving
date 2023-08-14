@@ -5,6 +5,7 @@ import shutil
 import sys
 import copy
 from matplotlib import pyplot as plt
+import base.parameters_simulation as ps
 
 sys.path.append(os.path.join(os.environ.get("SUMO_HOME"), "tools"))
 import traci
@@ -1349,6 +1350,7 @@ def plot_metrics_hist(action_info, filepath, case, thresh, episode, step):
         fig.savefig(plot_path)
         plt.close()
 
+
 def rerun_test_scenarios_v3(
     dqn,
     filepath,
@@ -1406,6 +1408,7 @@ def rerun_test_scenarios_v3(
             nb_hard_safe_actions = 0
             unc = []
             original_unc = []
+            uncertainties = [[] for _ in range(10)]
             thresholds = []
             frozen_steps = 0
             stop_vehicle_step = 0
@@ -1448,6 +1451,8 @@ def rerun_test_scenarios_v3(
                 
                 if "coefficient_of_variation" in action_info:
                     unc.append(action_info["coefficient_of_variation"][action])
+                    for idx, u in enumerate(action_info["coefficient_of_variation"]):
+                        uncertainties[idx].append(u)
                     if "max_q_action" in action_info:
                         original_unc.append(action_info["coefficient_of_variation"][action_info["max_q_action"]])
                 
@@ -1522,6 +1527,17 @@ def rerun_test_scenarios_v3(
 
                 name = get_name(filepath)
                 fig1.savefig(f"../videos/{name}/{case}/{thresh}_{i}/uncertainties.png")
+                plt.close()
+
+
+                fig1, ax1 = plt.subplots(ncols=1, nrows=1)
+                fig1.set_figwidth(16)
+                fig1.set_figheight(16)
+                for idx, u in enumerate(uncertainties):
+                    ax1.plot(u, label=ps.sim_params["action_interp"][idx])
+                ax1.legend()
+                fig1.savefig(f"../videos/{name}/{case}/{thresh}_{i}/uncertainties_plot.png")
+                plt.close()
 
             if do_save_uncert:
                 save_uncert(case, filepath, thresh, i, unc)
