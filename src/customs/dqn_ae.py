@@ -126,9 +126,9 @@ class DQNAEAgent(AbstractDQNAgent):
         uncertainties = []
         action_info = {}
         obs = torch.from_numpy(observation).unsqueeze(dim=0).float().to(self.device)
+        with torch.no_grad():
+            uncertainties = self.autoencoder.get_uncertainties(obs, device=self.device)
         if self.training:
-            with torch.no_grad():
-                uncertainties = self.autoencoder.get_uncertainties(obs, device=self.device)
             if hasattr(self.policy, 'custom'):
                 action, action_info = self.policy.select_action(q_values)
             else:
@@ -148,14 +148,12 @@ class DQNAEAgent(AbstractDQNAgent):
             #     with torch.no_grad():
             #         uncertainty = self.get_uncertainty(obs, act)
             #     uncertainties.append(uncertainty.cpu().numpy())
-            with torch.no_grad():
-                uncertainties = self.autoencoder.get_uncertainties(obs, device=self.device)
             if hasattr(self.test_policy, 'custom'):
                 action, action_info = self.test_policy.select_action(q_values, uncertainties)
             else:
                 action = self.test_policy.select_action(q_values=q_values)
         
-        uncertainties = np.array([u.data for u in uncertainties])
+        uncertainties = np.array([u.data.cpu().numpy() for u in uncertainties])
         uncertainty = uncertainties[action]
 
         # with torch.no_grad():
