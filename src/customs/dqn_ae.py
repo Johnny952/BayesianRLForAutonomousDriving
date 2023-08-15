@@ -127,6 +127,8 @@ class DQNAEAgent(AbstractDQNAgent):
         action_info = {}
         obs = torch.from_numpy(observation).unsqueeze(dim=0).float().to(self.device)
         if self.training:
+            with torch.no_grad():
+                uncertainties = self.autoencoder.get_uncertainties(obs, device=self.device)
             if hasattr(self.policy, 'custom'):
                 action, action_info = self.policy.select_action(q_values)
             else:
@@ -134,10 +136,10 @@ class DQNAEAgent(AbstractDQNAgent):
 
             # Uncertainty
             
-            act = torch.Tensor([action]).unsqueeze(dim=0).float().to(self.device)
-            with torch.no_grad():
-                # uncertainty = self.get_uncertainty(obs, act)
-                uncertainty = self.autoencoder.get_uncertainty(obs, act)
+            # act = torch.Tensor([action]).unsqueeze(dim=0).float().to(self.device)
+            # with torch.no_grad():
+            #     # uncertainty = self.get_uncertainty(obs, act)
+            #     uncertainty = self.autoencoder.get_uncertainty(obs, act)
             # uncertainty = uncertainty.cpu().numpy()
         else:
             # Uncertainty for all actions
@@ -152,13 +154,14 @@ class DQNAEAgent(AbstractDQNAgent):
                 action, action_info = self.test_policy.select_action(q_values, uncertainties)
             else:
                 action = self.test_policy.select_action(q_values=q_values)
-            
-            uncertainty = uncertainties[action]
+        
+        uncertainties = np.array([u.data for u in uncertainties])
+        uncertainty = uncertainties[action]
 
-        with torch.no_grad():
-            mse, var = self.autoencoder.get_var_mse(obs, torch.Tensor([action]).unsqueeze(dim=0).float().to(self.device))
-        action_info["mse"] = mse.squeeze(dim=0).cpu().numpy()
-        action_info["var"] = var.squeeze(dim=0).cpu().numpy()
+        # with torch.no_grad():
+        #     mse, var = self.autoencoder.get_var_mse(obs, torch.Tensor([action]).unsqueeze(dim=0).float().to(self.device))
+        # action_info["mse"] = mse.squeeze(dim=0).cpu().numpy()
+        # action_info["var"] = var.squeeze(dim=0).cpu().numpy()
 
         # Book-keeping.
         self.recent_observation = observation
@@ -167,8 +170,7 @@ class DQNAEAgent(AbstractDQNAgent):
         if self.forward_nb % 1000 == 0:
             tock = timer()
             wandb.log({'Forward time': (tock - tick), 'Uncertainty': uncertainty})
-
-
+        
         self.forward_nb += 1
         action_info["mean"] = q_values
         action_info["q_values"] = q_values
