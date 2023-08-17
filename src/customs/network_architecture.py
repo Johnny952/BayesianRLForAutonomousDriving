@@ -1027,6 +1027,8 @@ class NetworkAE(nn.Module):
         act_loss = self.act_loss(act_mu, act.squeeze(dim=1).long())
         prob_loss = self.log_prob_loss(obs_mu, obs, act_mu, act, covar)
 
+        one_hot_act = nn.functional.one_hot(act.squeeze(dim=1).long(), num_classes=self.nb_actions)
+
         loss = self.act_loss_weight * act_loss + self.obs_loss_weight * obs_loss + prob_loss * self.prob_loss_weight
 
         l = {
@@ -1034,6 +1036,7 @@ class NetworkAE(nn.Module):
             'Obs Loss': obs_loss.detach(),
             'Act Loss': act_loss.detach(),
             'Prob Loss': prob_loss.detach(),
+            'Act MSE Loss': nn.functional.mse_loss(act_mu, one_hot_act)
         }
         return l
 

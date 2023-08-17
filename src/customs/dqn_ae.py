@@ -8,7 +8,13 @@ import wandb
 from timeit import default_timer as timer
 
 sys.path.append("..")
-from dqn_bnn import clone_model, soft_target_model_updates, hard_target_model_updates, AbstractDQNAgent
+from dqn_bnn import (
+    clone_model,
+    soft_target_model_updates,
+    hard_target_model_updates,
+    AbstractDQNAgent,
+)
+
 
 class DQNAEAgent(AbstractDQNAgent):
     def __init__(
@@ -79,7 +85,9 @@ class DQNAEAgent(AbstractDQNAgent):
         self.target_model = clone_model(self.model)
 
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=learning_rate)
-        self.autoencoder_optimizer = torch.optim.Adam(self.autoencoder.parameters(), lr=learning_rate)
+        self.autoencoder_optimizer = torch.optim.Adam(
+            self.autoencoder.parameters(), lr=learning_rate
+        )
 
         self.loss = nn.HuberLoss(delta=self.delta_clip)
 
@@ -129,13 +137,13 @@ class DQNAEAgent(AbstractDQNAgent):
         with torch.no_grad():
             uncertainties = self.autoencoder.get_uncertainties(obs, device=self.device)
         if self.training:
-            if hasattr(self.policy, 'custom'):
+            if hasattr(self.policy, "custom"):
                 action, action_info = self.policy.select_action(q_values)
             else:
                 action = self.policy.select_action(q_values=q_values)
 
             # Uncertainty
-            
+
             # act = torch.Tensor([action]).unsqueeze(dim=0).float().to(self.device)
             # with torch.no_grad():
             #     # uncertainty = self.get_uncertainty(obs, act)
@@ -148,11 +156,13 @@ class DQNAEAgent(AbstractDQNAgent):
             #     with torch.no_grad():
             #         uncertainty = self.get_uncertainty(obs, act)
             #     uncertainties.append(uncertainty.cpu().numpy())
-            if hasattr(self.test_policy, 'custom'):
-                action, action_info = self.test_policy.select_action(q_values, uncertainties)
+            if hasattr(self.test_policy, "custom"):
+                action, action_info = self.test_policy.select_action(
+                    q_values, uncertainties
+                )
             else:
                 action = self.test_policy.select_action(q_values=q_values)
-        
+
         uncertainties = np.array([u.data.cpu().numpy() for u in uncertainties])
         uncertainty = uncertainties[action]
 
@@ -167,8 +177,8 @@ class DQNAEAgent(AbstractDQNAgent):
 
         if self.forward_nb % 1000 == 0:
             tock = timer()
-            wandb.log({'Forward time': (tock - tick), 'Uncertainty': uncertainty})
-        
+            wandb.log({"Forward time": (tock - tick), "Uncertainty": uncertainty})
+
         self.forward_nb += 1
         action_info["mean"] = q_values
         action_info["q_values"] = q_values
@@ -243,7 +253,9 @@ class DQNAEAgent(AbstractDQNAgent):
                 # target_q_values = self.target_model(torch.from_numpy(state1_batch).float())
                 # q_batch = target_q_values[range(self.batch_size), actions]
             else:
-                state_action_values = self.target_model(state0_batch).max(dim=-1).detach()
+                state_action_values = (
+                    self.target_model(state0_batch).max(dim=-1).detach()
+                )
                 expected_state_action_values = state_action_values
 
             loss = self.loss(state_action_values, expected_state_action_values)
@@ -253,17 +265,32 @@ class DQNAEAgent(AbstractDQNAgent):
             self.optimizer.step()
 
             if self.backward_nb % self.update_ae_each == 0:
-                act_batch = torch.from_numpy(np.array(action_batch)).unsqueeze(dim=1).float().to(self.device)
+                act_batch = (
+                    torch.from_numpy(np.array(action_batch))
+                    .unsqueeze(dim=1)
+                    .float()
+                    .to(self.device)
+                )
                 outputs = self.autoencoder(state0_batch, act_batch)
                 auto_loss = self.autoencoder.loss_function(*outputs)
 
                 self.autoencoder_optimizer.zero_grad()
-                auto_loss['loss'].backward()
+                auto_loss["loss"].backward()
                 self.autoencoder_optimizer.step()
 
                 if self.backward_ae_nb % 1000 == 0:
                     tock = timer()
-                    wandb.log({'Q Loss': loss, 'Auto Loss': auto_loss['loss'], 'Obs Loss': auto_loss['Obs Loss'], 'Act Loss': auto_loss['Act Loss'], 'Prob Loss': auto_loss['Prob Loss'], 'Back time': (tock - tick)})
+                    wandb.log(
+                        {
+                            "Q Loss": loss,
+                            "Auto Loss": auto_loss["loss"],
+                            "Obs Loss": auto_loss["Obs Loss"],
+                            "Act Loss": auto_loss["Act Loss"],
+                            "Act MSE Loss": auto_loss["Act MSE Loss"],
+                            "Prob Loss": auto_loss["Prob Loss"],
+                            "Back time": (tock - tick),
+                        }
+                    )
 
                 self.backward_ae_nb += 1
 
