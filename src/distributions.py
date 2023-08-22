@@ -98,8 +98,8 @@ if __name__ == "__main__":
         },
         {
             "name": "DAE DQN",
-            "path": "./logs/train_agent_20230715_211724_ae_v14/data.hdf5",
-            "csv": "./logs/train_agent_20230715_211724_ae_v14/rerun_test_scenarios_NU_uncerts.csv",
+            "path": "./logs/train_agent_20230815_160313_ae_v15/data.hdf5",
+            "csv": "./logs/train_agent_20230815_160313_ae_v15/rerun_test_scenarios_NU_uncerts.csv",
             "custom_marks": [],
             "bins": 100,
             "range": (-300, 100),

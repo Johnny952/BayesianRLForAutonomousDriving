@@ -32,20 +32,20 @@ debug = False
 q_filepath = "../logs/train_agent_20230323_235314_dqn_6M_v3/"
 q_agent_name = "5950056"
 
-u_filepath = "../logs/train_agent_20230715_211724_ae_v14/"
-u_agent_name = "5950097"
+u_filepath = "../logs/train_agent_20230815_160313_ae_v15/"
+u_agent_name = "5950077"
 use_safe_action = True
 
 case = "all"  # 'all', 'uncert'
 
 thresh_range = [
-    -150.15884765415882,
-    -96.75956942462634,
-    -124.859905,
-    -102.52886625,
-    -71.7848498,
-    -41.294662275,
-    68.522810575,
+    -98.30686,
+    -46.65,
+    -89.205284,
+    67.6067555,
+    123.6883761,
+    157.3473855,
+    199.35760393,
     5000,
 ] #10*(i+1) for i in range(10)] + [1000
 history_length = 20
