@@ -27,7 +27,6 @@ class DQNAEAgent(AbstractDQNAgent):
         enable_dueling_network=False,
         dueling_type="avg",
         update_ae_each=1,
-        unc_type="log_prob",
         *args,
         **kwargs
     ):
@@ -40,7 +39,6 @@ class DQNAEAgent(AbstractDQNAgent):
         self.enable_dueling_network = enable_dueling_network
         self.dueling_type = dueling_type
         self.update_ae_each = update_ae_each
-        self.unc_type = unc_type
 
         # Related objects.
         self.model = model
@@ -114,17 +112,6 @@ class DQNAEAgent(AbstractDQNAgent):
         self.recent_action = None
         self.recent_observation = None
 
-    def get_uncertainty(self, obs, act):
-        if self.unc_type == "log_prob":
-            uncertainty = -self.autoencoder.log_prob(obs, act)
-        elif self.unc_type == "mse":
-            uncertainty = -self.autoencoder.mse(obs, act)
-        elif self.unc_type == "var":
-            uncertainty = -self.autoencoder.var(obs, act, obs_weight=1, act_weight=10)
-        else:
-            raise NotImplementedError()
-        return uncertainty
-
     def forward(self, observation):
         tick = timer()
         # Select an action.
@@ -142,20 +129,7 @@ class DQNAEAgent(AbstractDQNAgent):
             else:
                 action = self.policy.select_action(q_values=q_values)
 
-            # Uncertainty
-
-            # act = torch.Tensor([action]).unsqueeze(dim=0).float().to(self.device)
-            # with torch.no_grad():
-            #     # uncertainty = self.get_uncertainty(obs, act)
-            #     uncertainty = self.autoencoder.get_uncertainty(obs, act)
-            # uncertainty = uncertainty.cpu().numpy()
         else:
-            # Uncertainty for all actions
-            # for i in range(self.nb_actions):
-            #     act = torch.Tensor([i]).unsqueeze(dim=0).float().to(self.device)
-            #     with torch.no_grad():
-            #         uncertainty = self.get_uncertainty(obs, act)
-            #     uncertainties.append(uncertainty.cpu().numpy())
             if hasattr(self.test_policy, "custom"):
                 action, action_info = self.test_policy.select_action(
                     q_values, uncertainties
@@ -165,11 +139,6 @@ class DQNAEAgent(AbstractDQNAgent):
 
         uncertainties = np.array([u.data.cpu().numpy() for u in uncertainties])
         uncertainty = uncertainties[action]
-
-        # with torch.no_grad():
-        #     mse, var = self.autoencoder.get_var_mse(obs, torch.Tensor([action]).unsqueeze(dim=0).float().to(self.device))
-        # action_info["mse"] = mse.squeeze(dim=0).cpu().numpy()
-        # action_info["var"] = var.squeeze(dim=0).cpu().numpy()
 
         # Book-keeping.
         self.recent_observation = observation
@@ -286,7 +255,6 @@ class DQNAEAgent(AbstractDQNAgent):
                             "Auto Loss": auto_loss["loss"],
                             "Obs Loss": auto_loss["Obs Loss"],
                             "Act Loss": auto_loss["Act Loss"],
-                            "Act MSE Loss": auto_loss["Act MSE Loss"],
                             "Prob Loss": auto_loss["Prob Loss"],
                             "Back time": (tock - tick),
                         }

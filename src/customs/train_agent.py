@@ -134,7 +134,7 @@ elif p.agent_par["model"] == 'ae':
     ae = NetworkAE(
         p.agent_par["window_length"],
         nb_observations,
-        nb_actions,
+        actions=ps.sim_params['action_interp'],
         obs_encoder_arc=p.agent_par["obs_encoder_arc"],
         act_encoder_arc=p.agent_par["act_encoder_arc"],
         shared_encoder_arc=p.agent_par["shared_encoder_arc"],

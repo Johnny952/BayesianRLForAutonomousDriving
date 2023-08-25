@@ -818,18 +818,23 @@ class Base(nn.Module):
     def __init__(self, input_dim, architecture=[256, 128, 64], dropout=None):
         super(Base, self).__init__()
 
-        modules = [
-            nn.Linear(input_dim, architecture[0]),
-            nn.ReLU(),
-        ]
-        for i in range(len(architecture) - 1):
-            if dropout:
-                modules.append(nn.Dropout(p=dropout))
-            modules += [
-                nn.Linear(architecture[i], architecture[i + 1]),
+
+        if (len(architecture) > 0):
+            modules = [
+                nn.Linear(input_dim, architecture[0]),
                 nn.ReLU(),
             ]
-        self.fc = nn.Sequential(*modules)
+            for i in range(len(architecture) - 1):
+                if dropout:
+                    modules.append(nn.Dropout(p=dropout))
+                modules += [
+                    nn.Linear(architecture[i], architecture[i + 1]),
+                    nn.ReLU(),
+                ]
+            self.fc = nn.Sequential(*modules)
+        else:
+            self.fc = lambda x: x
+        
 
     def forward(self, x):
         return self.fc(x)
@@ -839,19 +844,22 @@ class InverseBase(nn.Module):
     def __init__(self, output_dim, architecture=[64, 128, 256], dropout=None):
         super(InverseBase, self).__init__()
 
-        modules = []
-        for i in range(len(architecture) - 1):
-            if dropout:
-                modules.append(nn.Dropout(p=dropout))
+        if (len(architecture) > 0):
+            modules = []
+            for i in range(len(architecture) - 1):
+                if dropout:
+                    modules.append(nn.Dropout(p=dropout))
+                modules += [
+                    nn.Linear(architecture[i], architecture[i + 1]),
+                    nn.ReLU(),
+                ]
             modules += [
-                nn.Linear(architecture[i], architecture[i + 1]),
+                nn.Linear(architecture[-1], output_dim),
                 nn.ReLU(),
             ]
-        modules += [
-            nn.Linear(architecture[-1], output_dim),
-            nn.ReLU(),
-        ]
-        self.fc = nn.Sequential(*modules)
+            self.fc = nn.Sequential(*modules)
+        else:
+            self.fc = lambda x: x
 
     def forward(self, x):
         return self.fc(x)
@@ -862,7 +870,7 @@ class NetworkAE(nn.Module):
         self,
         state_stack: int,
         obs_dim: int,
-        nb_actions: int,
+        actions: int,
         obs_encoder_arc: "list[int]" = [64, 32],
         act_encoder_arc: "list[int]" = [4, 16],
         shared_encoder_arc: "list[int]" = [512, 512],
@@ -881,7 +889,9 @@ class NetworkAE(nn.Module):
         self.latent_dim = latent_dim
         self.state_stack = state_stack
         self.obs_dim = obs_dim
-        self.nb_actions = nb_actions
+        self.actions = torch.Tensor(actions)
+        self.act_dim = len(actions[0])
+        self.nb_actions = len(actions)
         self.obs_encoder_arc = obs_encoder_arc
         self.act_encoder_arc = act_encoder_arc
         self.obs_decoder_arc = obs_decoder_arc
@@ -892,7 +902,7 @@ class NetworkAE(nn.Module):
         self.act_loss_weight = act_loss_weight
         self.obs_loss_weight = obs_loss_weight
         self.obs_loss = nn.MSELoss()
-        self.act_loss = nn.CrossEntropyLoss()
+        self.act_loss = nn.MSELoss()
         self.loss = nn.GaussianNLLLoss()
 
         # Encoders
@@ -900,7 +910,7 @@ class NetworkAE(nn.Module):
             nn.Flatten(), Base(state_stack * obs_dim, architecture=obs_encoder_arc)
         )
         self.act_encoder = nn.Sequential(
-            nn.Flatten(), Base(self.nb_actions, architecture=act_encoder_arc)
+            nn.Flatten(), Base(self.act_dim, architecture=act_encoder_arc)
         )
         self.shared_encoder = nn.Sequential(
             Base(
@@ -928,14 +938,14 @@ class NetworkAE(nn.Module):
         # Decoding distribution parameters
         self.obs_mu = nn.Linear(obs_decoder_arc[-1], state_stack * obs_dim)
         covar_decoder_arc.insert(0, obs_decoder_arc[0] + act_decoder_arc[0])
-        self.covar_dim = state_stack * obs_dim + nb_actions
+        self.covar_dim = state_stack * obs_dim + self.act_dim
         self.covar = nn.Sequential(
             InverseBase(covar_decoder_arc[-1], architecture=covar_decoder_arc[:-1]),
             nn.Linear(covar_decoder_arc[-1], self.covar_dim),
             nn.Softplus(),
         )
 
-        self.act_mu = nn.Linear(act_decoder_arc[-1], nb_actions)
+        self.act_mu = nn.Linear(act_decoder_arc[-1], self.act_dim)
 
     def encode(self, obs: torch.Tensor, act: torch.Tensor):
         x = self.obs_encoder(obs)
@@ -956,16 +966,10 @@ class NetworkAE(nn.Module):
         return obs_mu, act_mu, covar
 
     def forward(self, obs: torch.Tensor, act: torch.Tensor):
-        one_hot_act = nn.functional.one_hot(
-            act.long(), num_classes=self.nb_actions
-        ).float()
-        z = self.encode(obs, one_hot_act)
+        act_ = torch.index_select(self.actions, 0, act.squeeze(dim=1).long()).float()
+        z = self.encode(obs, act_)
         reconst_obs, reconst_act, covar = self.decode(z)
         return [reconst_obs, reconst_act, covar, (obs, act)]
-
-    def log_prob(self, obs: torch.Tensor, act: torch.Tensor):
-        obs_mu, act_mu, covar = self(obs, act)[:3]
-        return -self.log_prob_loss(obs_mu, obs, act_mu, act, covar)
 
     def get_uncertainties(self, obs: torch.Tensor, device: str = "cpu"):
         log_probs = []
@@ -976,63 +980,10 @@ class NetworkAE(nn.Module):
         return log_probs
 
     def get_uncertainty(self, obs: torch.Tensor, act: torch.Tensor):
-        # one_hot_act = nn.functional.one_hot(
-        #     act.squeeze(dim=1).long(), num_classes=self.nb_actions
-        # )
         obs_mu, act_mu, covar = self(obs, act)[:3]
+        return self.custom_nll_loss(obs_mu, obs, act_mu, act, covar, obs_copies=1, act_copies=1)
 
-        # target_ = torch.cat((torch.flatten(obs, start_dim=1), one_hot_act), dim=-1)
-        # mu = torch.cat((obs_mu, act_mu), dim=-1)
-        # distribution = torch.distributions.multivariate_normal.MultivariateNormal(
-        #     mu, covar
-        # )
-        # log_p_act_obs = torch.sum(distribution.log_prob(target_))
-
-        # covar_ = covar[:, : -self.nb_actions, : -self.nb_actions]
-        # distribution = torch.distributions.multivariate_normal.MultivariateNormal(
-        #     obs_mu, covar_
-        # )
-        # log_p_obs = torch.sum(distribution.log_prob(obs))
-
-        # return -(log_p_act_obs + log_p_obs)
-        return self.custom_log_prob(obs_mu, obs, act_mu, act, covar, obs_copies=1, act_copies=5)
-
-    def mse(self, obs: torch.Tensor, act: torch.Tensor, reduction=torch.mean):
-        obs_mu, act_mu, _ = self(obs, act)[:3]
-
-        one_hot_act = nn.functional.one_hot(
-            act.squeeze(dim=1).long(), num_classes=self.nb_actions
-        )
-        target_ = torch.cat((torch.flatten(obs, start_dim=1), one_hot_act), dim=-1)
-        mu = torch.cat((obs_mu, act_mu), dim=-1)
-        return reduction((mu - target_) ** 2)
-
-    def var(
-        self,
-        obs: torch.Tensor,
-        act: torch.Tensor,
-        obs_weight: int = 0.5,
-        act_weight: int = 0.5,
-    ):
-        covar = self(obs, act)[2]
-        diag_covar = torch.diagonal(covar, dim1=1, dim2=2)
-        obs_var_sum = obs_weight * torch.sum(diag_covar[: obs.shape[1]])
-        act_var_sum = act_weight * torch.sum(diag_covar[obs.shape[1] :])
-        return (obs_var_sum + act_var_sum) / (
-            diag_covar.shape[1] * (obs_weight + act_weight)
-        )
-
-    def get_var_mse(self, obs: torch.Tensor, act: torch.Tensor):
-        obs_mu, act_mu, covar = self(obs, act)[:3]
-
-        one_hot_act = nn.functional.one_hot(
-            act.squeeze(dim=1).long(), num_classes=self.nb_actions
-        )
-        target_ = torch.cat((torch.flatten(obs, start_dim=1), one_hot_act), dim=-1)
-        mu = torch.cat((obs_mu, act_mu), dim=-1)
-        return (mu - target_) ** 2, torch.diagonal(covar, dim1=1, dim2=2)
-
-    def custom_log_prob(
+    def custom_nll_loss(
         self,
         obs_mu: torch.Tensor,
         obs: torch.Tensor,
@@ -1043,8 +994,8 @@ class NetworkAE(nn.Module):
         act_copies: int = 1,
     ):
         diag_covar = torch.diagonal(covar, dim1=1, dim2=2)
-        diag_covar_obs = diag_covar[:, : -self.nb_actions]
-        diag_covar_act = diag_covar[:, -self.nb_actions :]
+        diag_covar_obs = diag_covar[:, : -self.act_dim]
+        diag_covar_act = diag_covar[:, -self.act_dim :]
 
         diag_covar_obs_ext = diag_covar_obs.repeat(1, obs_copies)
         diag_covar_act_ext = diag_covar_act.repeat(1, act_copies)
@@ -1054,11 +1005,9 @@ class NetworkAE(nn.Module):
         obs_mu_ext = obs_mu.repeat(1, obs_copies)
         obs_ext = torch.flatten(obs, start_dim=1).repeat(1, obs_copies)
         act_mu_ext = act_mu.repeat(1, act_copies)
-        one_hot_act = nn.functional.one_hot(
-            act.squeeze(dim=1).long(), num_classes=self.nb_actions
-        ).repeat(1, act_copies)
+        act_ = torch.index_select(self.actions, 0, act.squeeze(dim=1).long()).float().repeat(1, act_copies)
 
-        target_ = torch.cat((obs_ext, one_hot_act), dim=-1)
+        target_ = torch.cat((obs_ext, act_), dim=-1)
         mu = torch.cat((obs_mu_ext, act_mu_ext), dim=-1)
         for i in range(obs_mu.shape[0]):
             mu_i, covar_i, target_i = mu[i], covar_ext[i], target_[i]
@@ -1071,18 +1020,17 @@ class NetworkAE(nn.Module):
                 log_prob += distribution.log_prob(target_i)
         return -log_prob
 
-    def log_prob_loss(
+    def nll_loss(
         self,
         obs_mu: torch.Tensor,
         obs: torch.Tensor,
         act_mu: torch.Tensor,
         act: torch.Tensor,
         covar: torch.Tensor,
+        **kwargs
     ):
-        one_hot_act = nn.functional.one_hot(
-            act.squeeze(dim=1).long(), num_classes=self.nb_actions
-        )
-        target_ = torch.cat((torch.flatten(obs, start_dim=1), one_hot_act), dim=-1)
+        act_ = torch.index_select(self.actions, 0, act.squeeze(dim=1).long()).float()
+        target_ = torch.cat((torch.flatten(obs, start_dim=1), act_), dim=-1)
         mu = torch.cat((obs_mu, act_mu), dim=-1)
         if True:
             for i in range(obs_mu.shape[0]):
@@ -1109,13 +1057,11 @@ class NetworkAE(nn.Module):
         covar = args[2]
         obs, act = args[3]
 
-        obs_loss = self.obs_loss(obs_mu, torch.flatten(obs, start_dim=1))
-        act_loss = self.act_loss(act_mu, act.squeeze(dim=1).long())
-        prob_loss = self.log_prob_loss(obs_mu, obs, act_mu, act, covar)
+        act_ = torch.index_select(self.actions, 0, act.squeeze(dim=1).long()).float()
 
-        one_hot_act = nn.functional.one_hot(
-            act.squeeze(dim=1).long(), num_classes=self.nb_actions
-        )
+        obs_loss = self.obs_loss(obs_mu, torch.flatten(obs, start_dim=1))
+        act_loss = self.act_loss(act_mu, act_)
+        prob_loss = self.nll_loss(obs_mu, obs, act_mu, act, covar)
 
         loss = (
             self.act_loss_weight * act_loss
@@ -1128,7 +1074,6 @@ class NetworkAE(nn.Module):
             "Obs Loss": obs_loss.detach(),
             "Act Loss": act_loss.detach(),
             "Prob Loss": prob_loss.detach(),
-            "Act MSE Loss": nn.functional.mse_loss(act_mu, one_hot_act),
         }
         return l
 

@@ -216,7 +216,6 @@ elif p.agent_par["model"] == "ae":
         delta_clip=p.agent_par["delta_clip"],
         device=p.agent_par["device"],
         update_ae_each=p.agent_par["update_ae_each"],
-        unc_type=p.agent_par["unc_type"],
     )
 else:
     raise Exception("Model not implemented.")
