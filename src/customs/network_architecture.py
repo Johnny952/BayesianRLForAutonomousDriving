@@ -818,8 +818,7 @@ class Base(nn.Module):
     def __init__(self, input_dim, architecture=[256, 128, 64], dropout=None):
         super(Base, self).__init__()
 
-
-        if (len(architecture) > 0):
+        if len(architecture) > 0:
             modules = [
                 nn.Linear(input_dim, architecture[0]),
                 nn.ReLU(),
@@ -834,7 +833,6 @@ class Base(nn.Module):
             self.fc = nn.Sequential(*modules)
         else:
             self.fc = lambda x: x
-        
 
     def forward(self, x):
         return self.fc(x)
@@ -844,7 +842,7 @@ class InverseBase(nn.Module):
     def __init__(self, output_dim, architecture=[64, 128, 256], dropout=None):
         super(InverseBase, self).__init__()
 
-        if (len(architecture) > 0):
+        if len(architecture) > 0:
             modules = []
             for i in range(len(architecture) - 1):
                 if dropout:
@@ -966,7 +964,11 @@ class NetworkAE(nn.Module):
         return obs_mu, act_mu, covar
 
     def forward(self, obs: torch.Tensor, act: torch.Tensor):
-        act_ = torch.index_select(self.actions, 0, act.squeeze(dim=1).long()).float()
+        act_ = (
+            torch.index_select(self.actions, 0, act.squeeze(dim=1).long())
+            .float()
+            .to(act.get_device())
+        )
         z = self.encode(obs, act_)
         reconst_obs, reconst_act, covar = self.decode(z)
         return [reconst_obs, reconst_act, covar, (obs, act)]
@@ -981,7 +983,9 @@ class NetworkAE(nn.Module):
 
     def get_uncertainty(self, obs: torch.Tensor, act: torch.Tensor):
         obs_mu, act_mu, covar = self(obs, act)[:3]
-        return self.custom_nll_loss(obs_mu, obs, act_mu, act, covar, obs_copies=1, act_copies=1)
+        return self.custom_nll_loss(
+            obs_mu, obs, act_mu, act, covar, obs_copies=1, act_copies=1
+        )
 
     def custom_nll_loss(
         self,
@@ -1005,7 +1009,12 @@ class NetworkAE(nn.Module):
         obs_mu_ext = obs_mu.repeat(1, obs_copies)
         obs_ext = torch.flatten(obs, start_dim=1).repeat(1, obs_copies)
         act_mu_ext = act_mu.repeat(1, act_copies)
-        act_ = torch.index_select(self.actions, 0, act.squeeze(dim=1).long()).float().repeat(1, act_copies)
+        act_ = (
+            torch.index_select(self.actions, 0, act.squeeze(dim=1).long())
+            .float()
+            .to(act.get_device())
+            .repeat(1, act_copies)
+        )
 
         target_ = torch.cat((obs_ext, act_), dim=-1)
         mu = torch.cat((obs_mu_ext, act_mu_ext), dim=-1)
@@ -1029,7 +1038,11 @@ class NetworkAE(nn.Module):
         covar: torch.Tensor,
         **kwargs
     ):
-        act_ = torch.index_select(self.actions, 0, act.squeeze(dim=1).long()).float()
+        act_ = (
+            torch.index_select(self.actions, 0, act.squeeze(dim=1).long())
+            .float()
+            .to(act.get_device())
+        )
         target_ = torch.cat((torch.flatten(obs, start_dim=1), act_), dim=-1)
         mu = torch.cat((obs_mu, act_mu), dim=-1)
         if True:
@@ -1057,7 +1070,11 @@ class NetworkAE(nn.Module):
         covar = args[2]
         obs, act = args[3]
 
-        act_ = torch.index_select(self.actions, 0, act.squeeze(dim=1).long()).float()
+        act_ = (
+            torch.index_select(self.actions, 0, act.squeeze(dim=1).long())
+            .float()
+            .to(act.get_device())
+        )
 
         obs_loss = self.obs_loss(obs_mu, torch.flatten(obs, start_dim=1))
         act_loss = self.act_loss(act_mu, act_)
