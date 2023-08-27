@@ -965,9 +965,8 @@ class NetworkAE(nn.Module):
 
     def forward(self, obs: torch.Tensor, act: torch.Tensor):
         act_ = (
-            torch.index_select(self.actions, 0, act.squeeze(dim=1).long())
+            torch.index_select(self.actions.to(act.get_device()), 0, act.squeeze(dim=1).long())
             .float()
-            .to(act.get_device())
         )
         z = self.encode(obs, act_)
         reconst_obs, reconst_act, covar = self.decode(z)
@@ -1010,9 +1009,8 @@ class NetworkAE(nn.Module):
         obs_ext = torch.flatten(obs, start_dim=1).repeat(1, obs_copies)
         act_mu_ext = act_mu.repeat(1, act_copies)
         act_ = (
-            torch.index_select(self.actions, 0, act.squeeze(dim=1).long())
+            torch.index_select(self.actions.to(act.get_device()), 0, act.squeeze(dim=1).long())
             .float()
-            .to(act.get_device())
             .repeat(1, act_copies)
         )
 
@@ -1039,7 +1037,7 @@ class NetworkAE(nn.Module):
         **kwargs
     ):
         act_ = (
-            torch.index_select(self.actions, 0, act.squeeze(dim=1).long())
+            torch.index_select(self.actions.to(act.get_device()), 0, act.squeeze(dim=1).long())
             .float()
             .to(act.get_device())
         )
@@ -1071,7 +1069,7 @@ class NetworkAE(nn.Module):
         obs, act = args[3]
 
         act_ = (
-            torch.index_select(self.actions, 0, act.squeeze(dim=1).long())
+            torch.index_select(self.actions.to(act.get_device()), 0, act.squeeze(dim=1).long())
             .float()
             .to(act.get_device())
         )
