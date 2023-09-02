@@ -289,3 +289,82 @@ class DQNAEAgent(AbstractDQNAgent):
     def test_policy(self, policy):
         self.__test_policy = policy
         self.__test_policy._set_agent(self)
+
+
+class DQNAEAgent2(DQNAEAgent):
+    def backward(self, reward, terminal):
+        # Store most recent experience in memory.
+        if self.step % self.memory_interval == 0:
+            self.memory.append(
+                self.recent_observation,
+                self.recent_action,
+                reward,
+                terminal,
+                training=self.training,
+            )
+
+        metrics = []
+        if not self.training:
+            # We're done here. No need to update the experience memory since we only use the working
+            # memory to obtain the state over the most recent observations.
+            return metrics
+
+        # Train the network on a single stochastic batch.
+        if self.step > self.nb_steps_warmup and self.step % self.train_interval == 0:
+            tick = timer()
+            experiences = self.memory.sample(self.batch_size)
+            assert len(experiences) == self.batch_size
+
+            # Start by extracting the necessary parameters (we use a vectorized implementation).
+            state0_batch = []
+            reward_batch = []
+            action_batch = []
+            terminal1_batch = []
+            state1_batch = []
+            for e in experiences:
+                state0_batch.append(e.state0)
+                state1_batch.append(e.state1)
+                reward_batch.append(e.reward)
+                action_batch.append(e.action)
+                terminal1_batch.append(0.0 if e.terminal1 else 1.0)
+
+            # Prepare and validate parameters.
+            state0_batch = self.process_state_batch(state0_batch)
+            state1_batch = self.process_state_batch(state1_batch)
+            terminal1_batch = np.array(terminal1_batch)
+            reward_batch = np.array(reward_batch)
+            assert reward_batch.shape == (self.batch_size,)
+            assert terminal1_batch.shape == reward_batch.shape
+            assert len(action_batch) == len(reward_batch)
+
+            state0_batch = torch.from_numpy(state0_batch).float().to(self.device)
+            reward_batch = torch.from_numpy(reward_batch).float().to(self.device)
+            # action_batch = torch.from_numpy(action_batch).long().to(self.device)
+            terminal1_batch = torch.from_numpy(terminal1_batch).float().to(self.device)
+            state1_batch = torch.from_numpy(state1_batch).float().to(self.device)
+
+            act_batch = (
+                torch.from_numpy(np.array(action_batch))
+                .unsqueeze(dim=1)
+                .float()
+                .to(self.device)
+            )
+            outputs = self.autoencoder(state0_batch, act_batch)
+            auto_loss = self.autoencoder.loss_function(*outputs)
+
+            self.autoencoder_optimizer.zero_grad()
+            auto_loss["loss"].backward()
+            self.autoencoder_optimizer.step()
+
+            if self.backward_ae_nb % 1000 == 0:
+                tock = timer()
+                wandb.log(
+                    {
+                        "Auto Loss": auto_loss["loss"],
+                        "Obs Loss": auto_loss["Obs Loss"],
+                        "Act Loss": auto_loss["Act Loss"],
+                        "Prob Loss": auto_loss["Prob Loss"],
+                        "Back time": (tock - tick),
+                    }
+                )
+        return metrics
