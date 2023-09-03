@@ -132,7 +132,7 @@ dqn = DQNAEAgent2(
 )
 
 dqn.compile(p.agent_par["learning_rate"])
-dqn.load_weights(filepath + agent_name)
+dqn.partial_load_weights(filepath + agent_name)
 dqn.training = True
 
 # Run training

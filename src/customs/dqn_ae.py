@@ -292,6 +292,12 @@ class DQNAEAgent(AbstractDQNAgent):
 
 
 class DQNAEAgent2(DQNAEAgent):
+    def partial_load_weights(self, filepath):
+        checkpoint = torch.load(filepath, map_location=torch.device(self.device))
+        self.model.load_state_dict(checkpoint["model_state_disct"])
+        self.optimizer.load_state_dict(checkpoint["optimizer_state_disct"])
+        self.target_model = clone_model(self.model)
+
     def backward(self, reward, terminal):
         # Store most recent experience in memory.
         if self.step % self.memory_interval == 0:
