@@ -50,8 +50,8 @@ rcParams["pdf.fonttype"] = 42  # To avoid Type 3 fonts in figures
 rcParams["ps.fonttype"] = 42
 
 """ Options: """
-filepath = "../logs/train_agent_20230815_160313_ae_v15/"
-agent_name = "5950077"
+filepath = "../logs/train_agent2_20230903_214928_ae_v22_3/"
+agent_name = "950045"
 case = "all-no-rerun"  # 'rerun_test_scenarios', 'fast_overtaking', 'standstill', 'all'
 use_safe_action = False
 
@@ -147,7 +147,7 @@ elif p.agent_par["model"] == "ae":
     ae = NetworkAE(
         p.agent_par["window_length"],
         nb_observations,
-        nb_actions,
+        ps.sim_params['action_interp'],
         obs_encoder_arc=p.agent_par["obs_encoder_arc"],
         act_encoder_arc=p.agent_par["act_encoder_arc"],
         shared_encoder_arc=p.agent_par["shared_encoder_arc"],

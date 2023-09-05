@@ -963,6 +963,58 @@ if __name__ == "__main__":
         },
         {
             "paths": [
+                "./logs/train_agent2_20230903_214928_ae_v22_3/data.hdf5",
+            ],
+            # "multiple_test": {
+            #     "base_path": "./logs/train_agent2_20230903_214928_ae_v22_3/",
+            #     "rerun_test_scenarios": {
+            #         "u": True,
+            #         "nu": True,
+            #     },
+            #     "standstill": {
+            #         "u": True,
+            #         "nu": True,
+            #     },
+            #     "fast_overtaking": {
+            #         "u": True,
+            #         "nu": True,
+            #     },
+            # },
+            "name": "AE DQN 2",
+            "show_uncertainty": False,
+            "color": "magenta",
+            # "tests": {
+            #     "rerun_test_scenarios": None,
+            #     "standstill": "./logs/train_agent2_20230903_214928_ae_v22_3/standstill_NU_2.csv",
+            #     "fast_overtaking": "./logs/train_agent2_20230903_214928_ae_v22_3/fast_overtaking_NU_2.csv",
+            # },
+            # "tests_plots": 5,
+            "test_v3": {
+                "sufix": "_v3",
+                "rerun_sufix": "_v5",
+                "mark": "v-",
+                "second_mark": "^-",
+                "base_path": "./logs/train_agent2_20230903_214928_ae_v22_3/",
+                "unc_range": [None, None],
+                "paths": {
+                    "rerun_test_scenarios": {
+                        "u": True,
+                        "nu": False,
+                        "v0": False,
+                    },
+                    "standstill": {
+                        "u": False,
+                        "nu": True,
+                    },
+                    "fast_overtaking": {
+                        "u": False,
+                        "nu": True,
+                    },
+                },
+            },
+        },
+        {
+            "paths": [
                 "./logs/train_agent_20230323_235314_dqn_6M_v3/data.hdf5",
             ],
             # "multiple_test": {
@@ -1014,7 +1066,7 @@ if __name__ == "__main__":
         },
     ]
 
-    plot_train()
+    # plot_train()
     #### plot_tests2()
-    plot_rerun_test_v3()
+    # plot_rerun_test_v3()
     plot_tests_v3()
