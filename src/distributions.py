@@ -110,7 +110,7 @@ if __name__ == "__main__":
             "csv": "./logs/train_agent2_20230903_214928_ae_v22_3/rerun_test_scenarios_NU_uncerts.csv",
             "custom_marks": [],
             "bins": 100,
-            "range": (-125, 50),
+            "range": (-400, -200),
         }
     ]
 
