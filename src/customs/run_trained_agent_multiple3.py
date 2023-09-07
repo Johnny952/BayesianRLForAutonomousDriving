@@ -40,11 +40,16 @@ from network_architecture import (
     NetworkMLP,
     NetworkCNN,
 )
-from base.run_agent_utils import rerun_test_scenarios_v2, fast_overtaking_v2, standstill_v2, rerun_test_scenarios_v0
+from base.run_agent_utils import (
+    rerun_test_scenarios_v2,
+    fast_overtaking_v2,
+    standstill_v2,
+    rerun_test_scenarios_v0,
+)
 from matplotlib import rcParams
 from safe_greedy_policy import SafeGreedyPolicy, SimpleSafeGreedyPolicy
 
-np.warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)
+np.warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
 
 rcParams["pdf.fonttype"] = 42  # To avoid Type 3 fonts in figures
 rcParams["ps.fonttype"] = 42
@@ -52,18 +57,27 @@ rcParams["ps.fonttype"] = 42
 """ Options: """
 filepath = "../logs/train_agent2_20230903_214928_ae_v22_3/"
 agent_name = "950045"
-case = "all-no-rerun"  # 'rerun_test_scenarios', 'fast_overtaking', 'standstill', 'all'
+case = "all-rerun"  # 'rerun_test_scenarios', 'fast_overtaking', 'standstill', 'all'
 use_safe_action = False
 
-thresh_range = [0]#np.linspace(69, 85, 100)
+thresh_range = [
+    -302.74082,
+    -260.7271164,
+    -304.989225,
+    -295.09937125,
+    -281.326306,
+    -268.3212155,
+    -183.396484,
+    5000,
+]
 save_video = False
 do_save_metrics = True
 do_save_uncert = True
 number_tests = 1
-number_episodes=100
-csv_sufix='_v3'
-position_steps=100
-use_gui=False
+number_episodes = 100
+csv_sufix = "_v3"
+position_steps = 100
+use_gui = False
 """ End options """
 
 safe_action = 3
@@ -76,7 +90,7 @@ import parameters_simulation_stored as ps
 ps.sim_params["remove_sumo_warnings"] = False
 nb_actions = len(ps.sim_params["action_interp"])
 
-nb_observations = 4 + 4 * ps.sim_params['sensor_nb_vehicles']
+nb_observations = 4 + 4 * ps.sim_params["sensor_nb_vehicles"]
 if p.agent_par["model"] == "bnn":
     if p.agent_par["cnn"]:
         model = NetworkCNNBNN(
@@ -147,7 +161,7 @@ elif p.agent_par["model"] == "ae":
     ae = NetworkAE(
         p.agent_par["window_length"],
         nb_observations,
-        ps.sim_params['action_interp'],
+        ps.sim_params["action_interp"],
         obs_encoder_arc=p.agent_par["obs_encoder_arc"],
         act_encoder_arc=p.agent_par["act_encoder_arc"],
         shared_encoder_arc=p.agent_par["shared_encoder_arc"],
@@ -223,6 +237,7 @@ dqn.compile(p.agent_par["learning_rate"])
 
 dqn.load_weights(filepath + agent_name)
 dqn.training = False
+
 
 def change_thresh_fn(thresh):
     if p.agent_par["model"] == "bnn":
@@ -310,6 +325,58 @@ elif case == "all-no-rerun":
         use_gui=use_gui,
         csv_sufix=csv_sufix,
         do_save_uncert=True,
+    )
+elif case == "all-rerun":
+    fast_overtaking_v2(
+        dqn,
+        filepath,
+        ps,
+        use_safe_action=False,
+        save_video=save_video,
+        position_steps=position_steps,
+        use_gui=use_gui,
+        csv_sufix=csv_sufix,
+        do_save_uncert=True,
+    )
+    standstill_v2(
+        dqn,
+        filepath,
+        ps,
+        use_safe_action=False,
+        save_video=save_video,
+        position_steps=position_steps,
+        use_gui=use_gui,
+        csv_sufix=csv_sufix,
+        do_save_uncert=True,
+    )
+    rerun_test_scenarios_v2(
+        dqn,
+        filepath,
+        ps,
+        change_thresh_fn=change_thresh_fn,
+        thresh_range=thresh_range,
+        use_safe_action=True,
+        save_video=save_video,
+        do_save_metrics=True,
+        number_tests=number_tests,
+        use_gui=use_gui,
+        number_episodes=number_episodes,
+        csv_sufix=csv_sufix,
+        do_save_uncert=False,
+    )
+    rerun_test_scenarios_v0(
+        dqn,
+        filepath,
+        ps,
+        change_thresh_fn=change_thresh_fn,
+        thresh_range=thresh_range,
+        use_safe_action=True,
+        save_video=save_video,
+        do_save_metrics=True,
+        number_tests=number_tests,
+        use_gui=use_gui,
+        number_episodes=number_episodes,
+        do_save_uncert=False,
     )
 elif case == "all":
     rerun_test_scenarios_v2(

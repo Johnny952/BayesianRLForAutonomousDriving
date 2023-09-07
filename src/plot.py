@@ -963,7 +963,7 @@ if __name__ == "__main__":
         },
         {
             "paths": [
-                "./logs/train_agent2_20230903_214928_ae_v22_3/data.hdf5",
+                "./logs/train_agent_20230828_020015_ae_v22/data.hdf5",
             ],
             # "multiple_test": {
             #     "base_path": "./logs/train_agent2_20230903_214928_ae_v22_3/",
@@ -1066,7 +1066,7 @@ if __name__ == "__main__":
         },
     ]
 
-    # plot_train()
+    plot_train()
     #### plot_tests2()
     plot_rerun_test_v3()
     plot_tests_v3()
