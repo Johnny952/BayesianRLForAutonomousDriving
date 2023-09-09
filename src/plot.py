@@ -994,7 +994,7 @@ if __name__ == "__main__":
                 "rerun_sufix": "_v5",
                 "mark": "v-",
                 "second_mark": "^-",
-                "base_path": "./logs/train_agent2_20230903_214928_ae_v22_3/",
+                "base_path": "./logs/train_agent_20230828_020015_ae_v22/",
                 "unc_range": [None, None],
                 "paths": {
                     "rerun_test_scenarios": {
@@ -1068,5 +1068,5 @@ if __name__ == "__main__":
 
     plot_train()
     #### plot_tests2()
-    plot_rerun_test_v3()
+    # plot_rerun_test_v3()
     plot_tests_v3()
