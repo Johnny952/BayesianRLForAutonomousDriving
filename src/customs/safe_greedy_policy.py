@@ -1,5 +1,6 @@
 from rl.policy import GreedyQPolicy
 import numpy as np
+import torch
 
 
 class SafeGreedyPolicy(GreedyQPolicy):
@@ -69,7 +70,7 @@ class SimpleSafeGreedyPolicy(GreedyQPolicy):
 
 
 class SimpleSafeGreedyPolicyHard(GreedyQPolicy):
-    def __init__(self, safety_threshold=None, safe_action=None, reduction=np.mean):
+    def __init__(self, safety_threshold=None, safe_action=None, reduction=torch.mean):
         super(SimpleSafeGreedyPolicyHard, self).__init__()
         self.custom = True
         self.safety_threshold = safety_threshold
