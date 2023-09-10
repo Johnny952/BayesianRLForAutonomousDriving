@@ -83,6 +83,6 @@ class SimpleSafeGreedyPolicyHard(GreedyQPolicy):
         if self.safety_threshold is None:
             return np.argmax(q_values), {}
         else:
-            if self.reduction(uncertainties) > self.safety_threshold:
+            if self.reduction(torch.stack(uncertainties)) > self.safety_threshold:
                 return self.safe_action, {"safe_action": True, "hard_safe": True}
             return np.argmax(q_values), {"safe_action": False, "hard_safe": False}
