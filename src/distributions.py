@@ -97,7 +97,7 @@ if __name__ == "__main__":
             "range": (0, 0.035),
         },
         {
-            "name": "DAE DQN",
+            "name": "DAE DQN 2",
             "path": "./logs/train_agent_20230815_160313_ae_v15/data.hdf5",
             "csv": "./logs/train_agent_20230815_160313_ae_v15/rerun_test_scenarios_NU_uncerts.csv",
             "custom_marks": [],
@@ -105,7 +105,7 @@ if __name__ == "__main__":
             "range": (-300, 100),
         },
         {
-            "name": "DAE DQN 2",
+            "name": "DAE DQN",
             "path": "./logs/train_agent_20230828_020015_ae_v22/data.hdf5",
             "csv": "./logs/train_agent_20230828_020015_ae_v22/rerun_test_scenarios_NU_uncerts.csv",
             "custom_marks": [],

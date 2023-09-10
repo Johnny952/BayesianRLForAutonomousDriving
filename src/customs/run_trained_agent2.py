@@ -19,7 +19,7 @@ from base.run_agent_utils import rerun_test_scenarios_v3, rerun_test_scenarios_v
 from base.dqn_mix import MixDQNAgent, MixTestPolicy
 from base.dqn_standard import DQNAgent
 from matplotlib import rcParams
-from safe_greedy_policy import SafeGreedyPolicy, SimpleSafeGreedyPolicy
+from safe_greedy_policy import SafeGreedyPolicy, SimpleSafeGreedyPolicy, SimpleSafeGreedyPolicyHard
 
 np.warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)
 
@@ -215,7 +215,7 @@ elif p.agent_par["model"] == "ae":
 
     u_policy = GreedyQPolicy()
     if use_safe_action:
-        u_test_policy = SimpleSafeGreedyPolicy(0, safe_action)
+        u_test_policy = SimpleSafeGreedyPolicyHard(0, safe_action)
     else:
         u_test_policy = GreedyQPolicy()
     u_dqn = DQNAEAgent(

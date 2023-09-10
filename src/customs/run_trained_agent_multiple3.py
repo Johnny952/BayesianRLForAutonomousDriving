@@ -47,7 +47,7 @@ from base.run_agent_utils import (
     rerun_test_scenarios_v0,
 )
 from matplotlib import rcParams
-from safe_greedy_policy import SafeGreedyPolicy, SimpleSafeGreedyPolicy
+from safe_greedy_policy import SafeGreedyPolicy, SimpleSafeGreedyPolicy, SimpleSafeGreedyPolicyHard
 
 np.warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
 
@@ -210,7 +210,7 @@ elif p.agent_par["model"] == "ae":
 
     policy = GreedyQPolicy()
     if use_safe_action:
-        test_policy = SimpleSafeGreedyPolicy(0, safe_action)
+        test_policy = SimpleSafeGreedyPolicyHard(0, safe_action)
     else:
         test_policy = GreedyQPolicy()
     dqn = DQNAEAgent(
@@ -245,7 +245,7 @@ def change_thresh_fn(thresh):
             safety_threshold=thresh, safe_action=safe_action
         )
     elif p.agent_par["model"] == "ae":
-        dqn.test_policy = SimpleSafeGreedyPolicy(thresh, safe_action)
+        dqn.test_policy = SimpleSafeGreedyPolicyHard(thresh, safe_action)
 
 
 if case == "rerun_test_scenarios":

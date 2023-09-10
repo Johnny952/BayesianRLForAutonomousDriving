@@ -19,7 +19,7 @@ from base.run_agent_utils import rerun_test_scenarios_v3, rerun_test_scenarios_v
 from base.dqn_mix import MixDQNAgent, MixTestPolicy, MixEWMATestPolicy
 from base.dqn_standard import DQNAgent
 from matplotlib import rcParams
-from safe_greedy_policy import SafeGreedyPolicy, SimpleSafeGreedyPolicy
+from safe_greedy_policy import SafeGreedyPolicy, SimpleSafeGreedyPolicy, SimpleSafeGreedyPolicyHard
 
 np.warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
 
@@ -40,12 +40,12 @@ case = "all"  # 'all', 'uncert'
 
 thresh_range = [
     -49.88,
-    -26.8469,
-    -33.717117,
-    -25.06321,
-    -13.5309574,
-    -4.1,
-    20.595445,
+    -26.682848,
+    -34.203619,
+    -25.0921676,
+    -12.63939624,
+    -2.70966,
+    24.3357152,
     5000,
 ]
 history_length = 20
@@ -235,7 +235,7 @@ elif p.agent_par["model"] == "ae":
 
     u_policy = GreedyQPolicy()
     if use_safe_action:
-        u_test_policy = SimpleSafeGreedyPolicy(0, safe_action)
+        u_test_policy = SimpleSafeGreedyPolicyHard(0, safe_action)
     else:
         u_test_policy = GreedyQPolicy()
     u_dqn = DQNAEAgent(
@@ -278,21 +278,6 @@ def change_thresh_fn(thresh):
 
 
 if case == "all":
-    # rerun_test_scenarios_v3(
-    #     dqn,
-    #     u_filepath,
-    #     ps,
-    #     change_thresh_fn=change_thresh_fn,
-    #     thresh_range=thresh_range,
-    #     use_safe_action=False,
-    #     save_video=save_video,
-    #     do_save_metrics=do_save_metrics,
-    #     number_tests=number_tests,
-    #     use_gui=use_gui,
-    #     number_episodes=number_episodes,
-    #     csv_sufix=csv_sufix,
-    #     do_save_uncert=do_save_uncert,
-    # )
     rerun_test_scenarios_v3(
         dqn,
         u_filepath,
@@ -308,20 +293,6 @@ if case == "all":
         csv_sufix=csv_sufix,
         do_save_uncert=do_save_uncert,
     )
-    # rerun_test_scenarios_v0(
-    #     dqn,
-    #     u_filepath,
-    #     ps,
-    #     change_thresh_fn=change_thresh_fn,
-    #     thresh_range=thresh_range,
-    #     use_safe_action=False,
-    #     save_video=save_video,
-    #     do_save_metrics=do_save_metrics,
-    #     number_tests=number_tests,
-    #     use_gui=use_gui,
-    #     number_episodes=number_episodes,
-    #     do_save_uncert=do_save_uncert,
-    # )
     # rerun_test_scenarios_v0(
     #     dqn,
     #     u_filepath,

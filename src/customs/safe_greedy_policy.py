@@ -66,3 +66,22 @@ class SimpleSafeGreedyPolicy(GreedyQPolicy):
                     "safe_action": not i == 0,
                     "hard_safe": False,
                 }
+
+
+class SimpleSafeGreedyPolicyHard(GreedyQPolicy):
+    def __init__(self, safety_threshold=None, safe_action=None, reduction=np.mean):
+        super(SimpleSafeGreedyPolicyHard, self).__init__()
+        self.custom = True
+        self.safety_threshold = safety_threshold
+        self.safe_action = safe_action
+        self.reduction = reduction
+        if self.safety_threshold is not None:
+            assert safe_action is not None
+
+    def select_action(self, q_values, uncertainties):
+        if self.safety_threshold is None:
+            return np.argmax(q_values), {}
+        else:
+            if self.reduction(uncertainties) > self.safety_threshold:
+                return self.safe_action, {"safe_action": True, "hard_safe": True}
+            return np.argmax(q_values), {"safe_action": False, "hard_safe": False}

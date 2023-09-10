@@ -928,7 +928,7 @@ if __name__ == "__main__":
             #         "nu": True,
             #     },
             # },
-            "name": "AE DQN",
+            "name": "AE DQN 2",
             "show_uncertainty": True,
             "color": "green",
             # "tests": {
@@ -980,7 +980,7 @@ if __name__ == "__main__":
             #         "nu": True,
             #     },
             # },
-            "name": "AE DQN 2",
+            "name": "AE DQN",
             "show_uncertainty": False,
             "color": "magenta",
             # "tests": {
@@ -1068,5 +1068,5 @@ if __name__ == "__main__":
 
     plot_train()
     #### plot_tests2()
-    # plot_rerun_test_v3()
+    plot_rerun_test_v3()
     plot_tests_v3()
