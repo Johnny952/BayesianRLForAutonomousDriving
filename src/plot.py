@@ -911,10 +911,10 @@ if __name__ == "__main__":
         },
         {
             "paths": [
-                "./logs/train_agent_20230815_160313_ae_v15/data.hdf5",
+                "./logs/train_agent_20230828_020015_ae_v22/data.hdf5",
             ],
             # "multiple_test": {
-            #     "base_path": "./logs/train_agent_20230815_160313_ae_v15/",
+            #     "base_path": "./logs/train_agent2_20230903_214928_ae_v22_3/",
             #     "rerun_test_scenarios": {
             #         "u": True,
             #         "nu": True,
@@ -929,12 +929,12 @@ if __name__ == "__main__":
             #     },
             # },
             "name": "AE DQN 2",
-            "show_uncertainty": True,
+            "show_uncertainty": False,
             "color": "green",
             # "tests": {
             #     "rerun_test_scenarios": None,
-            #     "standstill": "./logs/train_agent_20230815_160313_ae_v15/standstill_NU_2.csv",
-            #     "fast_overtaking": "./logs/train_agent_20230815_160313_ae_v15/fast_overtaking_NU_2.csv",
+            #     "standstill": "./logs/train_agent2_20230903_214928_ae_v22_3/standstill_NU_2.csv",
+            #     "fast_overtaking": "./logs/train_agent2_20230903_214928_ae_v22_3/fast_overtaking_NU_2.csv",
             # },
             # "tests_plots": 5,
             "test_v3": {
@@ -942,8 +942,8 @@ if __name__ == "__main__":
                 "rerun_sufix": "_v5",
                 "mark": "v-",
                 "second_mark": "^-",
-                "base_path": "./logs/train_agent_20230815_160313_ae_v15/",
-                "unc_range": [-200, 250],
+                "base_path": "./logs/train_agent2_20230903_214928_ae_v22_3/",
+                "unc_range": [None, None],
                 "paths": {
                     "rerun_test_scenarios": {
                         "u": True,
