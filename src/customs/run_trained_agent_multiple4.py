@@ -32,8 +32,8 @@ debug = False
 q_filepath = "../logs/train_agent_20230323_235314_dqn_6M_v3/"
 q_agent_name = "5950056"
 
-u_filepath = "../logs/train_agent_20230828_020015_ae_v22/"
-u_agent_name = "5950008"
+u_filepath = "../logs/train_agent2_20230903_214928_ae_v22_3/"
+u_agent_name = "950045"
 use_safe_action = True
 
 case = "all"  # 'all', 'uncert'
