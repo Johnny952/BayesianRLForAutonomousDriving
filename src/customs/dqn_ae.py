@@ -151,7 +151,8 @@ class DQNAEAgent(AbstractDQNAgent):
         self.forward_nb += 1
         action_info["mean"] = q_values
         action_info["q_values"] = q_values
-        action_info["coefficient_of_variation"] = np.array(uncertainties).reshape(-1)
+        action_info["coefficient_of_variation"] = np.tile(np.max(uncertainties), self.nb_actions).reshape(-1)
+        # np.array(uncertainties).reshape(-1)
         return action, action_info
 
     def backward(self, reward, terminal):
