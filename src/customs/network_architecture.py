@@ -983,7 +983,7 @@ class NetworkAE(nn.Module):
     def get_uncertainty(self, obs: torch.Tensor, act: torch.Tensor):
         obs_mu, act_mu, covar = self(obs, act)[:3]
         return self.custom_nll_loss(
-            obs_mu, obs, act_mu, act, covar, obs_copies=1, act_copies=50
+            obs_mu, obs, act_mu, act, covar, obs_copies=1, act_copies=200
         )
 
     def custom_nll_loss(

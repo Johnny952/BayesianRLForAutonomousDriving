@@ -102,7 +102,7 @@ if __name__ == "__main__":
             "csv": "./logs/train_agent2_20230903_214928_ae_v22_3/rerun_test_scenarios_NU_uncerts.csv",
             "custom_marks": [],
             "bins": 100,
-            "range": (-300, 0),
+            "range": (-1000, 2000),
         },
         {
             "name": "DAE DQN",
@@ -110,7 +110,7 @@ if __name__ == "__main__":
             "csv": "./logs/train_agent_20230828_020015_ae_v22/rerun_test_scenarios_NU_uncerts.csv",
             "custom_marks": [],
             "bins": 100,
-            "range": (-300, 0),
+            "range": (-700, 0),
         }
     ]
 
