@@ -878,7 +878,7 @@ class Cholesky(nn.Module):
         x = self.in_layer(x)
         x = torch.where(self.is_diag.to(x.device), self.positive_fun(x) + self.min_value.to(x.device), x)
         L = torch.zeros((x.shape[0], self.output_shape, self.output_shape),
-                        dtype=x.dtype)
+                        dtype=x.dtype).to(x.device)
         L[:, self.inds_a, self.inds_b] = x
         LT = L.transpose(1, 2)
         out = L @ LT
