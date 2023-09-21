@@ -876,7 +876,7 @@ class Cholesky(nn.Module):
 
     def forward(self, x):
         x = self.in_layer(x)
-        x = torch.where(self.is_diag, self.positive_fun(x) + self.min_value.to(x.device), x)
+        x = torch.where(self.is_diag.to(x.device), self.positive_fun(x) + self.min_value.to(x.device), x)
         L = torch.zeros((x.shape[0], self.output_shape, self.output_shape),
                         dtype=x.dtype)
         L[:, self.inds_a, self.inds_b] = x
