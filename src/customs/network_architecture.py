@@ -1153,8 +1153,8 @@ class NetworkAESimple(nn.Module):
 
     def loss_function(self, *args, **kwargs) -> dict:
         mu = args[0]
-        covar = args[2]
-        x = args[3]
+        covar = args[1]
+        x = args[2]
 
         input_loss = self.input_loss(mu, torch.flatten(x, start_dim=1))
         prob_loss = self.nll_loss(mu, x, covar)
