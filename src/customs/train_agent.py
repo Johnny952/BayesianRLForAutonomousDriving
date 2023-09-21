@@ -146,6 +146,7 @@ elif p.agent_par["model"] == 'ae':
         act_loss_weight=p.agent_par["act_obs act_loss_weight"],
         obs_loss_weight=p.agent_par["act_obs obs_loss_weight"],
         prob_loss_weight=p.agent_par["act_obs prob_loss_weight"],
+        min_value=p.agent_par["min_value"],
     ).to(p.agent_par['device'])
     obs_ae = NetworkAESimple(
         p.agent_par["window_length"],
@@ -157,6 +158,7 @@ elif p.agent_par["model"] == 'ae':
         latent_dim=p.agent_par["obs latent_dim"],
         input_loss_weight=p.agent_par["obs input_loss_weight"],
         prob_loss_weight=p.agent_par["obs prob_loss_weight"],
+        min_value=p.agent_par["min_value"],
     ).to(p.agent_par['device'])
     if p.agent_par["cnn"]:
         model = NetworkCNN(

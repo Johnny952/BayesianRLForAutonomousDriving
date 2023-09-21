@@ -901,6 +901,7 @@ class NetworkAE(nn.Module):
         act_loss_weight: float = 1,
         obs_loss_weight: float = 1,
         prob_loss_weight: float = 0.1,
+        min_value: float = 1e-8,
     ):
         super(NetworkAE, self).__init__()
 
@@ -967,7 +968,7 @@ class NetworkAE(nn.Module):
         self.covar = nn.Sequential(
             InverseBase(covar_decoder_arc[-1], architecture=[shared_decoder_out] + covar_decoder_arc[:-1]),
             nn.ReLU(),
-            Cholesky(covar_decoder_arc[-1], self.covar_dim),
+            Cholesky(covar_decoder_arc[-1], self.covar_dim, min_value),
         )
 
     def encode(self, obs: torch.Tensor, act: torch.Tensor):
@@ -1071,6 +1072,7 @@ class NetworkAESimple(nn.Module):
         latent_dim: int = 8,
         input_loss_weight: float = 1,
         prob_loss_weight: float = 0.1,
+        min_value: float = 1e-8,
     ):
         super(NetworkAESimple, self).__init__()
 
@@ -1108,7 +1110,7 @@ class NetworkAESimple(nn.Module):
         self.covar = nn.Sequential(
             InverseBase(covar_decoder_arc[-1], architecture=covar_decoder_arc[:-1]),
             nn.ReLU(),
-            Cholesky(covar_decoder_arc[-1], self.input_dim),
+            Cholesky(covar_decoder_arc[-1], self.input_dim, min_value),
         )
 
     def encode(self, x: torch.Tensor):
