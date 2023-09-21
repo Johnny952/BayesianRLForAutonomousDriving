@@ -2,12 +2,6 @@ import torch
 import torch.nn as nn
 import torchbnn as bnn
 
-
-def printState(state):
-    print(state.shape)
-    return state
-
-
 class LambdaLayer(nn.Module):
     def __init__(self, lambd):
         super(LambdaLayer, self).__init__()
@@ -818,21 +812,26 @@ class Base(nn.Module):
     def __init__(self, input_dim, architecture=[256, 128, 64], dropout=None):
         super(Base, self).__init__()
 
-        if len(architecture) > 0:
+        if len(architecture) == 0:
+            self.fc = lambda x: x
+        elif len(architecture) == 1:
+            self.fc = nn.Linear(input_dim, architecture[0])
+        else:
             modules = [
                 nn.Linear(input_dim, architecture[0]),
                 nn.ReLU(),
             ]
-            for i in range(len(architecture) - 1):
+            for i in range(len(architecture) - 2):
                 if dropout:
                     modules.append(nn.Dropout(p=dropout))
                 modules += [
                     nn.Linear(architecture[i], architecture[i + 1]),
                     nn.ReLU(),
                 ]
+            modules += [
+                nn.Linear(architecture[-2], architecture[-1]),
+            ]
             self.fc = nn.Sequential(*modules)
-        else:
-            self.fc = lambda x: x
 
     def forward(self, x):
         return self.fc(x)
@@ -842,7 +841,11 @@ class InverseBase(nn.Module):
     def __init__(self, output_dim, architecture=[64, 128, 256], dropout=None):
         super(InverseBase, self).__init__()
 
-        if len(architecture) > 0:
+        if len(architecture) == 0:
+            self.fc = lambda x: x
+        elif len(architecture) == 1:
+            self.fc = nn.Linear(architecture[0], output_dim)
+        else:
             modules = []
             for i in range(len(architecture) - 1):
                 if dropout:
@@ -853,15 +856,33 @@ class InverseBase(nn.Module):
                 ]
             modules += [
                 nn.Linear(architecture[-1], output_dim),
-                nn.ReLU(),
             ]
             self.fc = nn.Sequential(*modules)
-        else:
-            self.fc = lambda x: x
 
     def forward(self, x):
         return self.fc(x)
 
+class Cholesky(nn.Module):
+    def __init__(self, input_shape, output_shape=6, min_value=1e-8):
+        super(Cholesky, self).__init__()
+        self.inds_a, self.inds_b = torch.tril_indices(output_shape, output_shape)
+        self.is_diag = self.inds_a == self.inds_b
+        self.output_shape = output_shape
+        self.positive_fun = torch.nn.Softplus()
+        self.min_value = torch.tensor(min_value)
+        self.register_buffer('_min_value', self.min_value)
+        mid_shape = int(output_shape * (output_shape + 1) / 2)
+        self.in_layer = nn.Linear(input_shape, mid_shape)
+
+    def forward(self, x):
+        x = self.in_layer(x)
+        x = torch.where(self.is_diag, self.positive_fun(x) + self.min_value, x)
+        L = torch.zeros((x.shape[0], self.output_shape, self.output_shape),
+                        dtype=x.dtype)
+        L[:, self.inds_a, self.inds_b] = x
+        LT = L.transpose(1, 2)
+        out = L @ LT
+        return out
 
 class NetworkAE(nn.Module):
     def __init__(
@@ -880,7 +901,6 @@ class NetworkAE(nn.Module):
         act_loss_weight: float = 1,
         obs_loss_weight: float = 1,
         prob_loss_weight: float = 0.1,
-        min_covar=0.5,
     ):
         super(NetworkAE, self).__init__()
 
@@ -894,7 +914,6 @@ class NetworkAE(nn.Module):
         self.act_encoder_arc = act_encoder_arc
         self.obs_decoder_arc = obs_decoder_arc
         self.act_decoder_arc = act_decoder_arc
-        self.min_covar = min_covar
 
         self.prob_loss_weight = prob_loss_weight
         self.act_loss_weight = act_loss_weight
@@ -905,62 +924,64 @@ class NetworkAE(nn.Module):
 
         # Encoders
         self.obs_encoder = nn.Sequential(
-            nn.Flatten(), Base(state_stack * obs_dim, architecture=obs_encoder_arc)
+            nn.Flatten(), Base(state_stack * obs_dim, architecture=obs_encoder_arc), nn.ReLU(),
         )
         self.act_encoder = nn.Sequential(
-            nn.Flatten(), Base(self.act_dim, architecture=act_encoder_arc)
+            nn.Flatten(), Base(self.act_dim, architecture=act_encoder_arc), nn.ReLU(),
         )
         self.shared_encoder = nn.Sequential(
             Base(
                 act_encoder_arc[-1] + obs_encoder_arc[-1],
                 architecture=shared_encoder_arc,
-            )
+            ),
+            nn.Linear(shared_encoder_arc[-1], latent_dim),
         )
-        self.encoding = Base(shared_encoder_arc[-1], architecture=[latent_dim])
 
         # Decoders
+        shared_decoder_out = obs_decoder_arc[0] + act_decoder_arc[0]
         self.shared_decoder = nn.Sequential(
             nn.Linear(latent_dim, shared_decoder_arc[0]),
             nn.ReLU(),
             InverseBase(
-                obs_decoder_arc[0] + act_decoder_arc[0], architecture=shared_decoder_arc
+                shared_decoder_out, architecture=shared_decoder_arc
             ),
+            nn.ReLU(),
         )
-        self.obs_decoder = InverseBase(
-            obs_decoder_arc[-1], architecture=obs_decoder_arc[:-1]
+        self.obs_mu = nn.Sequential(
+            InverseBase(
+                obs_decoder_arc[-1], architecture=obs_decoder_arc[:-1]
+            ),
+            nn.ReLU(),
+            nn.Linear(obs_decoder_arc[-1], state_stack * obs_dim),
         )
-        self.act_decoder = InverseBase(
-            act_decoder_arc[-1], architecture=act_decoder_arc[:-1]
+        self.act_mu = nn.Sequential(
+            InverseBase(
+                act_decoder_arc[-1], architecture=act_decoder_arc[:-1]
+            ),
+            nn.ReLU(),
+            nn.Linear(act_decoder_arc[-1], self.act_dim),
         )
 
         # Decoding distribution parameters
-        self.obs_mu = nn.Linear(obs_decoder_arc[-1], state_stack * obs_dim)
-        covar_decoder_arc.insert(0, obs_decoder_arc[0] + act_decoder_arc[0])
         self.covar_dim = state_stack * obs_dim + self.act_dim
         self.covar = nn.Sequential(
-            InverseBase(covar_decoder_arc[-1], architecture=covar_decoder_arc[:-1]),
-            nn.Linear(covar_decoder_arc[-1], self.covar_dim),
-            nn.Softplus(),
+            InverseBase(covar_decoder_arc[-1], architecture=[shared_decoder_out] + covar_decoder_arc[:-1]),
+            nn.ReLU(),
+            Cholesky(covar_decoder_arc[-1], self.covar_dim),
         )
-
-        self.act_mu = nn.Linear(act_decoder_arc[-1], self.act_dim)
 
     def encode(self, obs: torch.Tensor, act: torch.Tensor):
         x = self.obs_encoder(obs)
         y = self.act_encoder(act)
         z = torch.cat((x, y), dim=-1)
-        z = self.shared_encoder(z)
-        return self.encoding(z)
+        return self.shared_encoder(z)
 
     def decode(self, x: torch.Tensor):
         x = self.shared_decoder(x)
-        obs = self.obs_decoder(x[:, : self.obs_decoder_arc[0]])
-        act = self.act_decoder(x[:, -self.act_decoder_arc[0] :])
+        obs_mu = self.obs_mu(x[:, : self.obs_decoder_arc[0]])
+        act_mu = self.act_mu(x[:, -self.act_decoder_arc[0] :])
 
-        obs_mu = self.obs_mu(obs)
-        act_mu = self.act_mu(act)
-
-        covar = torch.diag_embed(self.covar(x) + self.min_covar)
+        covar = self.covar(x)
         return obs_mu, act_mu, covar
 
     def forward(self, obs: torch.Tensor, act: torch.Tensor):
@@ -971,61 +992,6 @@ class NetworkAE(nn.Module):
         z = self.encode(obs, act_)
         reconst_obs, reconst_act, covar = self.decode(z)
         return [reconst_obs, reconst_act, covar, (obs, act)]
-
-    def get_uncertainties(self, obs: torch.Tensor, device: str = "cpu"):
-        log_probs = []
-        for i in range(self.nb_actions):
-            act = torch.Tensor([i]).unsqueeze(dim=0).float().to(device)
-            log_prob = self.get_uncertainty(obs, act)
-            log_probs.append(log_prob)
-        return log_probs
-
-    def get_uncertainty(self, obs: torch.Tensor, act: torch.Tensor):
-        obs_mu, act_mu, covar = self(obs, act)[:3]
-        return self.custom_nll_loss(
-            obs_mu, obs, act_mu, act, covar, obs_copies=1, act_copies=200
-        )
-
-    def custom_nll_loss(
-        self,
-        obs_mu: torch.Tensor,
-        obs: torch.Tensor,
-        act_mu: torch.Tensor,
-        act: torch.Tensor,
-        covar: torch.Tensor,
-        obs_copies: int = 1,
-        act_copies: int = 1,
-    ):
-        diag_covar = torch.diagonal(covar, dim1=1, dim2=2)
-        diag_covar_obs = diag_covar[:, : -self.act_dim]
-        diag_covar_act = diag_covar[:, -self.act_dim :]
-
-        diag_covar_obs_ext = diag_covar_obs.repeat(1, obs_copies)
-        diag_covar_act_ext = diag_covar_act.repeat(1, act_copies)
-        diag_covar_ext = torch.cat((diag_covar_obs_ext, diag_covar_act_ext), dim=-1)
-        covar_ext = torch.diag_embed(diag_covar_ext)
-
-        obs_mu_ext = obs_mu.repeat(1, obs_copies)
-        obs_ext = torch.flatten(obs, start_dim=1).repeat(1, obs_copies)
-        act_mu_ext = act_mu.repeat(1, act_copies)
-        act_ = (
-            torch.index_select(self.actions.to(act.device), 0, act.squeeze(dim=1).long())
-            .float()
-            .repeat(1, act_copies)
-        )
-
-        target_ = torch.cat((obs_ext, act_), dim=-1)
-        mu = torch.cat((obs_mu_ext, act_mu_ext), dim=-1)
-        for i in range(obs_mu.shape[0]):
-            mu_i, covar_i, target_i = mu[i], covar_ext[i], target_[i]
-            distribution = torch.distributions.multivariate_normal.MultivariateNormal(
-                mu_i, covar_i
-            )
-            if i == 0:
-                log_prob = distribution.log_prob(target_i)
-            else:
-                log_prob += distribution.log_prob(target_i)
-        return -log_prob
 
     def nll_loss(
         self,
@@ -1088,6 +1054,119 @@ class NetworkAE(nn.Module):
             "loss": loss,
             "Obs Loss": obs_loss.detach(),
             "Act Loss": act_loss.detach(),
+            "Prob Loss": prob_loss.detach(),
+        }
+        return l
+    
+
+class NetworkAESimple(nn.Module):
+    def __init__(
+        self,
+        stack: int,
+        input_dim: int,
+        encoder_arc: "list[int]" = [64, 32],
+        shared_decoder_arc: "list[int]" = [16.32],
+        decoder_arc: "list[int]" = [32, 64],
+        covar_decoder_arc: "list[int]" = [512, 1024, 2048],
+        latent_dim: int = 8,
+        input_loss_weight: float = 1,
+        prob_loss_weight: float = 0.1,
+    ):
+        super(NetworkAESimple, self).__init__()
+
+        self.latent_dim = latent_dim
+        self.stack = stack
+        self.input_dim = input_dim
+        self.encoder_arc = encoder_arc
+        self.decoder_arc = decoder_arc
+        self.shared_decoder_arc = shared_decoder_arc
+
+        self.prob_loss_weight = prob_loss_weight
+        self.input_loss_weight = input_loss_weight
+        self.input_loss = nn.MSELoss()
+        self.loss = nn.GaussianNLLLoss()
+
+        self.input_dim = stack * input_dim
+
+        # Encoders
+        self.encoder = nn.Sequential(
+            nn.Flatten(),
+            Base(self.input_dim, architecture=encoder_arc + [latent_dim])
+        )
+
+        # Decoders
+        self.shared_decoder = nn.Sequential(
+            InverseBase(
+                shared_decoder_arc[-1], architecture=[latent_dim] + shared_decoder_arc[:-1]
+            ),
+            nn.ReLU()
+        )
+        self.mu = InverseBase(
+            self.input_dim, architecture=[shared_decoder_arc[-1]] + decoder_arc,
+        )
+        covar_decoder_arc.insert(0, shared_decoder_arc[-1])
+        self.covar = nn.Sequential(
+            InverseBase(covar_decoder_arc[-1], architecture=covar_decoder_arc[:-1]),
+            nn.ReLU(),
+            Cholesky(covar_decoder_arc[-1], self.input_dim),
+        )
+
+    def encode(self, x: torch.Tensor):
+        return self.encoder(x)
+
+    def decode(self, x: torch.Tensor):
+        x = self.shared_decoder(x)
+        mu = self.mu(x)
+        covar = self.covar(x)
+        return mu, covar
+
+    def forward(self, x: torch.Tensor):
+        z = self.encode(x)
+        reconst_x, covar = self.decode(z)
+        return [reconst_x, covar, x]
+
+    def nll_loss(
+        self,
+        mu: torch.Tensor,
+        x: torch.Tensor,
+        covar: torch.Tensor,
+        **kwargs
+    ):
+        if True:
+            for i in range(x.shape[0]):
+                mu_i, covar_i, x_i = mu[i], covar[i], x[i]
+                distribution = (
+                    torch.distributions.multivariate_normal.MultivariateNormal(
+                        mu_i, covar_i
+                    )
+                )
+                if i == 0:
+                    log_prob = distribution.log_prob(x_i)
+                else:
+                    log_prob += distribution.log_prob(x_i)
+        else:
+            distribution = torch.distributions.multivariate_normal.MultivariateNormal(
+                mu, covar
+            )
+            log_prob = distribution.log_prob(x)
+        return -log_prob
+
+    def loss_function(self, *args, **kwargs) -> dict:
+        mu = args[0]
+        covar = args[2]
+        x = args[3]
+
+        input_loss = self.input_loss(mu, torch.flatten(x, start_dim=1))
+        prob_loss = self.nll_loss(mu, x, covar)
+
+        loss = (
+            input_loss * self.input_loss_weight
+            + prob_loss * self.prob_loss_weight
+        )
+
+        l = {
+            "loss": loss,
+            "Input Loss": input_loss.detach(),
             "Prob Loss": prob_loss.detach(),
         }
         return l

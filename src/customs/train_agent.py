@@ -19,7 +19,7 @@ from rl.memory import SequentialMemory
 
 from dqn_bnn import DQNBNNAgent
 from dqn_ae import DQNAEAgent
-from network_architecture import NetworkMLPBNN, NetworkCNNBNN, NetworkMLP, NetworkCNN, NetworkAE
+from network_architecture import NetworkMLPBNN, NetworkCNNBNN, NetworkMLP, NetworkCNN, NetworkAE, NetworkAESimple
 
 
 
@@ -131,22 +131,32 @@ if p.agent_par["model"] == 'bnn':
         sample_backward=p.agent_par["sample_backward"],
     )
 elif p.agent_par["model"] == 'ae':
-    ae = NetworkAE(
+    act_obs_ae = NetworkAE(
         p.agent_par["window_length"],
         nb_observations,
         actions=ps.sim_params['action_interp'],
-        obs_encoder_arc=p.agent_par["obs_encoder_arc"],
-        act_encoder_arc=p.agent_par["act_encoder_arc"],
-        shared_encoder_arc=p.agent_par["shared_encoder_arc"],
-        obs_decoder_arc=p.agent_par["obs_decoder_arc"],
-        act_decoder_arc=p.agent_par["act_decoder_arc"],
-        shared_decoder_arc=p.agent_par["shared_decoder_arc"],
-        covar_decoder_arc=p.agent_par["covar_decoder_arc"],
-        latent_dim=p.agent_par["latent_dim"],
-        act_loss_weight=p.agent_par["act_loss_weight"],
-        obs_loss_weight=p.agent_par["obs_loss_weight"],
-        prob_loss_weight=p.agent_par["prob_loss_weight"],
-        min_covar=p.agent_par["min_covar"],
+        obs_encoder_arc=p.agent_par["act_obs obs_encoder_arc"],
+        act_encoder_arc=p.agent_par["act_obs act_encoder_arc"],
+        shared_encoder_arc=p.agent_par["act_obs shared_encoder_arc"],
+        obs_decoder_arc=p.agent_par["act_obs obs_decoder_arc"],
+        act_decoder_arc=p.agent_par["act_obs act_decoder_arc"],
+        shared_decoder_arc=p.agent_par["act_obs shared_decoder_arc"],
+        covar_decoder_arc=p.agent_par["act_obs covar_decoder_arc"],
+        latent_dim=p.agent_par["act_obs latent_dim"],
+        act_loss_weight=p.agent_par["act_obs act_loss_weight"],
+        obs_loss_weight=p.agent_par["act_obs obs_loss_weight"],
+        prob_loss_weight=p.agent_par["act_obs prob_loss_weight"],
+    ).to(p.agent_par['device'])
+    obs_ae = NetworkAESimple(
+        p.agent_par["window_length"],
+        nb_observations,
+        encoder_arc=p.agent_par["obs encoder_arc"],
+        shared_decoder_arc=p.agent_par["obs shared_encoder_arc"],
+        decoder_arc=p.agent_par["obs decoder_arc"],
+        covar_decoder_arc=p.agent_par["obs covar_decoder_arc"],
+        latent_dim=p.agent_par["obs latent_dim"],
+        input_loss_weight=p.agent_par["obs input_loss_weight"],
+        prob_loss_weight=p.agent_par["obs prob_loss_weight"],
     ).to(p.agent_par['device'])
     if p.agent_par["cnn"]:
         model = NetworkCNN(
@@ -190,7 +200,8 @@ elif p.agent_par["model"] == 'ae':
     )
     dqn = DQNAEAgent(
         model,
-        ae,
+        act_obs_ae,
+        obs_ae,
         policy,
         test_policy,
         enable_double_dqn=p.agent_par["double_q"],

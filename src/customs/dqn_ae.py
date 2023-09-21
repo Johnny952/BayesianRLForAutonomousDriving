@@ -20,7 +20,8 @@ class DQNAEAgent(AbstractDQNAgent):
     def __init__(
         self,
         model,
-        autoencoder,
+        act_obs_ae,
+        obs_ae,
         policy=None,
         test_policy=None,
         enable_double_dqn=True,
@@ -42,7 +43,8 @@ class DQNAEAgent(AbstractDQNAgent):
 
         # Related objects.
         self.model = model
-        self.autoencoder = autoencoder
+        self.act_obs_ae = act_obs_ae
+        self.obs_ae = obs_ae
         if policy is None:
             policy = EpsGreedyQPolicy()
         if test_policy is None:
@@ -52,7 +54,8 @@ class DQNAEAgent(AbstractDQNAgent):
 
         self.target_model = None
         self.optimizer = None
-        self.autoencoder_optimizer = None
+        self.act_obs_ae_optimizer = None
+        self.obs_ae_optimizer = None
         self.loss = None
         self.kl_loss = None
         self.recent_observation = None
@@ -83,8 +86,11 @@ class DQNAEAgent(AbstractDQNAgent):
         self.target_model = clone_model(self.model)
 
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=learning_rate)
-        self.autoencoder_optimizer = torch.optim.Adam(
-            self.autoencoder.parameters(), lr=learning_rate
+        self.act_obs_ae_optimizer = torch.optim.Adam(
+            self.act_obs_ae.parameters(), lr=learning_rate
+        )
+        self.obs_ae_optimizer = torch.optim.Adam(
+            self.obs_ae.parameters(), lr=learning_rate
         )
 
         self.loss = nn.HuberLoss(delta=self.delta_clip)
@@ -95,16 +101,22 @@ class DQNAEAgent(AbstractDQNAgent):
         checkpoint = torch.load(filepath, map_location=torch.device(self.device))
         self.model.load_state_dict(checkpoint["model_state_disct"])
         self.optimizer.load_state_dict(checkpoint["optimizer_state_disct"])
-        self.autoencoder.load_state_dict(checkpoint["autoencoder"])
-        self.autoencoder_optimizer.load_state_dict(checkpoint["autoencoder_optimizer"])
+
+        self.act_obs_ae.load_state_dict(checkpoint["act_obs_ae"])
+        self.act_obs_ae_optimizer.load_state_dict(checkpoint["act_obs_ae_optimizer"])
+        self.obs_ae.load_state_dict(checkpoint["obs_ae"])
+        self.obs_ae_optimizer.load_state_dict(checkpoint["obs_ae_optimizer"])
+
         self.target_model = clone_model(self.model)
 
     def save_weights(self, filepath, overwrite=False):
         tosave = {
             "model_state_disct": self.model.state_dict(),
             "optimizer_state_disct": self.optimizer.state_dict(),
-            "autoencoder": self.autoencoder.state_dict(),
-            "autoencoder_optimizer": self.autoencoder_optimizer.state_dict(),
+            "act_obs_ae": self.act_obs_ae.state_dict(),
+            "act_obs_ae_optimizer": self.act_obs_ae_optimizer.state_dict(),
+            "obs_ae": self.obs_ae.state_dict(),
+            "obs_ae_optimizer": self.obs_ae_optimizer.state_dict(),
         }
         torch.save(tosave, filepath)
 
@@ -122,7 +134,16 @@ class DQNAEAgent(AbstractDQNAgent):
         action_info = {}
         obs = torch.from_numpy(observation).unsqueeze(dim=0).float().to(self.device)
         with torch.no_grad():
-            uncertainties = self.autoencoder.get_uncertainties(obs, device=self.device)
+            uncertainties = []
+            [mu, covar, x] = self.obs_ae(obs)
+            nll_obs = self.obs_ae.nll_loss(mu, x, covar)
+            
+            for i in range(self.nb_actions):
+                act = torch.Tensor([i]).unsqueeze(dim=0).float().to(self.device)
+                [obs_mu_i, act_mu_i, covar_i, (obs_i, act_i)] = self.act_obs_ae(obs, act)
+                nll_act_obs = self.act_obs_ae.nll_loss(obs_mu_i, obs_i, act_mu_i, act_i, covar_i)
+                uncertainties.append(nll_act_obs - nll_obs)
+
         if self.training:
             if hasattr(self.policy, "custom"):
                 action, action_info = self.policy.select_action(q_values)
@@ -241,22 +262,34 @@ class DQNAEAgent(AbstractDQNAgent):
                     .float()
                     .to(self.device)
                 )
-                outputs = self.autoencoder(state0_batch, act_batch)
-                auto_loss = self.autoencoder.loss_function(*outputs)
 
-                self.autoencoder_optimizer.zero_grad()
-                auto_loss["loss"].backward()
-                self.autoencoder_optimizer.step()
+                out_act_obs = self.act_obs_ae(state0_batch, act_batch)
+                act_obs_ae_loss = self.act_obs_ae.loss_function(*out_act_obs)
+                self.act_obs_ae_optimizer.zero_grad()
+                act_obs_ae_loss["loss"].backward()
+                self.act_obs_ae_optimizer.step()
+
+                out_obs = self.obs_ae(state0_batch)
+                obs_ae_loss = self.obs_ae.loss_function(*out_obs)
+                self.obs_ae_optimizer.zero_grad()
+                obs_ae_loss["loss"].backward()
+                self.obs_ae_optimizer.step()
+
 
                 if self.backward_ae_nb % 1000 == 0:
                     tock = timer()
                     wandb.log(
                         {
                             "Q Loss": loss,
-                            "Auto Loss": auto_loss["loss"],
-                            "Obs Loss": auto_loss["Obs Loss"],
-                            "Act Loss": auto_loss["Act Loss"],
-                            "Prob Loss": auto_loss["Prob Loss"],
+                            "A-O Auto Loss": act_obs_ae_loss["loss"],
+                            "A-O Obs Loss": act_obs_ae_loss["Obs Loss"],
+                            "A-O Act Loss": act_obs_ae_loss["Act Loss"],
+                            "A-O Prob Loss": act_obs_ae_loss["Prob Loss"],
+
+                            "O Auto Loss": obs_ae_loss["loss"],
+                            "O Input Loss": obs_ae_loss["Input Loss"],
+                            "O Prob Loss": obs_ae_loss["Prob Loss"],
+
                             "Back time": (tock - tick),
                         }
                     )
@@ -290,88 +323,3 @@ class DQNAEAgent(AbstractDQNAgent):
     def test_policy(self, policy):
         self.__test_policy = policy
         self.__test_policy._set_agent(self)
-
-
-class DQNAEAgent2(DQNAEAgent):
-    def partial_load_weights(self, filepath):
-        checkpoint = torch.load(filepath, map_location=torch.device(self.device))
-        self.model.load_state_dict(checkpoint["model_state_disct"])
-        self.optimizer.load_state_dict(checkpoint["optimizer_state_disct"])
-        self.target_model = clone_model(self.model)
-
-    def backward(self, reward, terminal):
-        # Store most recent experience in memory.
-        if self.step % self.memory_interval == 0:
-            self.memory.append(
-                self.recent_observation,
-                self.recent_action,
-                reward,
-                terminal,
-                training=self.training,
-            )
-
-        metrics = []
-        if not self.training:
-            # We're done here. No need to update the experience memory since we only use the working
-            # memory to obtain the state over the most recent observations.
-            return metrics
-
-        # Train the network on a single stochastic batch.
-        if self.step > self.nb_steps_warmup and self.step % self.train_interval == 0:
-            tick = timer()
-            experiences = self.memory.sample(self.batch_size)
-            assert len(experiences) == self.batch_size
-
-            # Start by extracting the necessary parameters (we use a vectorized implementation).
-            state0_batch = []
-            reward_batch = []
-            action_batch = []
-            terminal1_batch = []
-            state1_batch = []
-            for e in experiences:
-                state0_batch.append(e.state0)
-                state1_batch.append(e.state1)
-                reward_batch.append(e.reward)
-                action_batch.append(e.action)
-                terminal1_batch.append(0.0 if e.terminal1 else 1.0)
-
-            # Prepare and validate parameters.
-            state0_batch = self.process_state_batch(state0_batch)
-            state1_batch = self.process_state_batch(state1_batch)
-            terminal1_batch = np.array(terminal1_batch)
-            reward_batch = np.array(reward_batch)
-            assert reward_batch.shape == (self.batch_size,)
-            assert terminal1_batch.shape == reward_batch.shape
-            assert len(action_batch) == len(reward_batch)
-
-            state0_batch = torch.from_numpy(state0_batch).float().to(self.device)
-            reward_batch = torch.from_numpy(reward_batch).float().to(self.device)
-            # action_batch = torch.from_numpy(action_batch).long().to(self.device)
-            terminal1_batch = torch.from_numpy(terminal1_batch).float().to(self.device)
-            state1_batch = torch.from_numpy(state1_batch).float().to(self.device)
-
-            act_batch = (
-                torch.from_numpy(np.array(action_batch))
-                .unsqueeze(dim=1)
-                .float()
-                .to(self.device)
-            )
-            outputs = self.autoencoder(state0_batch, act_batch)
-            auto_loss = self.autoencoder.loss_function(*outputs)
-
-            self.autoencoder_optimizer.zero_grad()
-            auto_loss["loss"].backward()
-            self.autoencoder_optimizer.step()
-
-            if self.backward_ae_nb % 1000 == 0:
-                tock = timer()
-                wandb.log(
-                    {
-                        "Auto Loss": auto_loss["loss"],
-                        "Obs Loss": auto_loss["Obs Loss"],
-                        "Act Loss": auto_loss["Act Loss"],
-                        "Prob Loss": auto_loss["Prob Loss"],
-                        "Back time": (tock - tick),
-                    }
-                )
-        return metrics
