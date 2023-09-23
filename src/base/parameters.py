@@ -76,5 +76,5 @@ agent_par["obs latent_dim"] = 16
 agent_par["obs input_loss_weight"] = 1
 agent_par["obs prob_loss_weight"] = 1 / 3000
 
-agent_par["update_ae_each"] = 5
-agent_par["min_value"] = 10
+agent_par["update_ae_each"] = 20
+agent_par["min_value"] = 1
