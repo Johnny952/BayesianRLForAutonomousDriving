@@ -56,25 +56,17 @@ agent_par["sample_backward"] = 1
 
 
 ############### DAE ###############
-agent_par["act_obs obs_encoder_arc"] = [64]
-agent_par["act_obs act_encoder_arc"] = [32]
-agent_par["act_obs shared_encoder_arc"] = [32, 16]
-agent_par["act_obs obs_decoder_arc"] = [64]
-agent_par["act_obs act_decoder_arc"] = [32]
-agent_par["act_obs shared_decoder_arc"] = [16, 32]
-agent_par["act_obs covar_decoder_arc"] = [64, 1024]
-agent_par["act_obs latent_dim"] = 16
-agent_par["act_obs act_loss_weight"] = 1
-agent_par["act_obs obs_loss_weight"] = 5
-agent_par["act_obs prob_loss_weight"] = 1 / 3000
-
-agent_par["obs encoder_arc"] = [64]
-agent_par["obs shared_encoder_arc"] = [32, 16]
-agent_par["obs decoder_arc"] = [16, 32]
-agent_par["obs covar_decoder_arc"] = [64, 1024]
-agent_par["obs latent_dim"] = 16
-agent_par["obs input_loss_weight"] = 10
-agent_par["obs prob_loss_weight"] = 1 / 3000
+agent_par["obs_encoder_arc"] = [64]
+agent_par["act_encoder_arc"] = [32]
+agent_par["shared_encoder_arc"] = [32, 16]
+agent_par["obs_decoder_arc"] = [64]
+agent_par["act_decoder_arc"] = [32]
+agent_par["shared_decoder_arc"] = [16, 32]
+agent_par["covar_decoder_arc"] = [64, 1024]
+agent_par["latent_dim"] = 16
+agent_par["act_loss_weight"] = 1
+agent_par["obs_loss_weight"] = 5
+agent_par["prob_loss_weight"] = 1 / 3000
 
 agent_par["update_ae_each"] = 50
 agent_par["min_value"] = 0.2

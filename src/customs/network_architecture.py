@@ -994,6 +994,34 @@ class NetworkAE(nn.Module):
         reconst_obs, reconst_act, covar = self.decode(z)
         return [reconst_obs, reconst_act, covar, (obs, act)]
 
+    def obs_nll_loss(
+        self,
+        obs_mu: torch.Tensor,
+        obs: torch.Tensor,
+        covar: torch.Tensor,
+    ):
+        target_ = torch.flatten(obs, start_dim=1)
+        mu = obs_mu
+        covar_ = covar[:, :self.obs_dim, :self.obs_dim]
+        if True:
+            for i in range(obs_mu.shape[0]):
+                mu_i, covar_i, target_i = mu[i], covar_[i], target_[i]
+                distribution = (
+                    torch.distributions.multivariate_normal.MultivariateNormal(
+                        mu_i, covar_i
+                    )
+                )
+                if i == 0:
+                    log_prob = distribution.log_prob(target_i)
+                else:
+                    log_prob += distribution.log_prob(target_i)
+        else:
+            distribution = torch.distributions.multivariate_normal.MultivariateNormal(
+                mu, covar_
+            )
+            log_prob = distribution.log_prob(target_)
+        return -log_prob
+
     def nll_loss(
         self,
         obs_mu: torch.Tensor,
