@@ -77,4 +77,4 @@ agent_par["obs input_loss_weight"] = 1
 agent_par["obs prob_loss_weight"] = 1 / 3000
 
 agent_par["update_ae_each"] = 50
-agent_par["min_value"] = 0.5
+agent_par["min_value"] = 0.2
