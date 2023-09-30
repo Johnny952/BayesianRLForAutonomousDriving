@@ -911,10 +911,10 @@ if __name__ == "__main__":
         },
         {
             "paths": [
-                "./logs/train_agent_20230828_020015_ae_v22/data.hdf5",
+                "./logs/train_agent_20230925_233336_dae_v4/data.hdf5",
             ],
             # "multiple_test": {
-            #     "base_path": "./logs/train_agent2_20230903_214928_ae_v22_3/",
+            #     "base_path": "./logs/train_agent_20230925_233336_dae_v4/",
             #     "rerun_test_scenarios": {
             #         "u": True,
             #         "nu": True,
@@ -928,13 +928,13 @@ if __name__ == "__main__":
             #         "nu": True,
             #     },
             # },
-            "name": "AE DQN 2",
-            "show_uncertainty": False,
+            "name": "DAE DQN",
+            "show_uncertainty": True,
             "color": "green",
             # "tests": {
             #     "rerun_test_scenarios": None,
-            #     "standstill": "./logs/train_agent2_20230903_214928_ae_v22_3/standstill_NU_2.csv",
-            #     "fast_overtaking": "./logs/train_agent2_20230903_214928_ae_v22_3/fast_overtaking_NU_2.csv",
+            #     "standstill": "./logs/train_agent_20230925_233336_dae_v4/standstill_NU_2.csv",
+            #     "fast_overtaking": "./logs/train_agent_20230925_233336_dae_v4/fast_overtaking_NU_2.csv",
             # },
             # "tests_plots": 5,
             "test_v3": {
@@ -942,8 +942,8 @@ if __name__ == "__main__":
                 "rerun_sufix": "_v5",
                 "mark": "v-",
                 "second_mark": "^-",
-                "base_path": "./logs/train_agent2_20230903_214928_ae_v22_3/",
-                "unc_range": [-600, 1000],
+                "base_path": "./logs/train_agent_20230925_233336_dae_v4/",
+                "unc_range": [-1.37, -1.0],
                 "paths": {
                     "rerun_test_scenarios": {
                         "u": True,
@@ -961,58 +961,58 @@ if __name__ == "__main__":
                 },
             },
         },
-        {
-            "paths": [
-                "./logs/train_agent_20230828_020015_ae_v22/data.hdf5",
-            ],
-            # "multiple_test": {
-            #     "base_path": "./logs/train_agent2_20230903_214928_ae_v22_3/",
-            #     "rerun_test_scenarios": {
-            #         "u": True,
-            #         "nu": True,
-            #     },
-            #     "standstill": {
-            #         "u": True,
-            #         "nu": True,
-            #     },
-            #     "fast_overtaking": {
-            #         "u": True,
-            #         "nu": True,
-            #     },
-            # },
-            "name": "AE DQN",
-            "show_uncertainty": False,
-            "color": "magenta",
-            # "tests": {
-            #     "rerun_test_scenarios": None,
-            #     "standstill": "./logs/train_agent2_20230903_214928_ae_v22_3/standstill_NU_2.csv",
-            #     "fast_overtaking": "./logs/train_agent2_20230903_214928_ae_v22_3/fast_overtaking_NU_2.csv",
-            # },
-            # "tests_plots": 5,
-            "test_v3": {
-                "sufix": "_v3",
-                "rerun_sufix": "_v5",
-                "mark": "v-",
-                "second_mark": "^-",
-                "base_path": "./logs/train_agent_20230828_020015_ae_v22/",
-                "unc_range": [-600, -600],
-                "paths": {
-                    "rerun_test_scenarios": {
-                        "u": True,
-                        "nu": False,
-                        "v0": False,
-                    },
-                    "standstill": {
-                        "u": False,
-                        "nu": True,
-                    },
-                    "fast_overtaking": {
-                        "u": False,
-                        "nu": True,
-                    },
-                },
-            },
-        },
+        # {
+        #     "paths": [
+        #         "./logs/train_agent_20230828_020015_ae_v22/data.hdf5",
+        #     ],
+        #     # "multiple_test": {
+        #     #     "base_path": "./logs/train_agent2_20230903_214928_ae_v22_3/",
+        #     #     "rerun_test_scenarios": {
+        #     #         "u": True,
+        #     #         "nu": True,
+        #     #     },
+        #     #     "standstill": {
+        #     #         "u": True,
+        #     #         "nu": True,
+        #     #     },
+        #     #     "fast_overtaking": {
+        #     #         "u": True,
+        #     #         "nu": True,
+        #     #     },
+        #     # },
+        #     "name": "AE DQN",
+        #     "show_uncertainty": False,
+        #     "color": "magenta",
+        #     # "tests": {
+        #     #     "rerun_test_scenarios": None,
+        #     #     "standstill": "./logs/train_agent2_20230903_214928_ae_v22_3/standstill_NU_2.csv",
+        #     #     "fast_overtaking": "./logs/train_agent2_20230903_214928_ae_v22_3/fast_overtaking_NU_2.csv",
+        #     # },
+        #     # "tests_plots": 5,
+        #     "test_v3": {
+        #         "sufix": "_v3",
+        #         "rerun_sufix": "_v5",
+        #         "mark": "v-",
+        #         "second_mark": "^-",
+        #         "base_path": "./logs/train_agent_20230828_020015_ae_v22/",
+        #         "unc_range": [-600, -600],
+        #         "paths": {
+        #             "rerun_test_scenarios": {
+        #                 "u": True,
+        #                 "nu": False,
+        #                 "v0": False,
+        #             },
+        #             "standstill": {
+        #                 "u": False,
+        #                 "nu": True,
+        #             },
+        #             "fast_overtaking": {
+        #                 "u": False,
+        #                 "nu": True,
+        #             },
+        #         },
+        #     },
+        # },
         {
             "paths": [
                 "./logs/train_agent_20230323_235314_dqn_6M_v3/data.hdf5",
@@ -1068,5 +1068,5 @@ if __name__ == "__main__":
 
     plot_train()
     #### plot_tests2()
-    plot_rerun_test_v3()
+    #plot_rerun_test_v3()
     plot_tests_v3()

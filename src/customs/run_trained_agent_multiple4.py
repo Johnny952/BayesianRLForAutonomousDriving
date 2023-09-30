@@ -32,20 +32,20 @@ debug = False
 q_filepath = "../logs/train_agent_20230323_235314_dqn_6M_v3/"
 q_agent_name = "5950056"
 
-u_filepath = "../logs/train_agent2_20230903_214928_ae_v22_3/"
-u_agent_name = "950045"
+u_filepath = "../logs/train_agent_20230925_233336_dae_v4/"
+u_agent_name = "5950002"
 use_safe_action = True
 
 case = "all"  # 'all', 'uncert'
 
 thresh_range = [
-    502.123819,
-    1387.655940,
-    47.047479,
-    774.364295,
-    4138.710130,
-    7299.475441,
-    9685.352949,
+    -1.1321042611034176,
+    -0.9613961891154094,
+    -1.2206421,
+    -1.14277345,
+    -0.8867764400000022,
+    -0.4438601661000028,
+    1.084417150400072,
     100000,
 ]
 history_length = 20
@@ -186,7 +186,7 @@ elif p.agent_par["model"] == "ae":
     ae = NetworkAE(
         p.agent_par["window_length"],
         nb_observations,
-        ps.sim_params['action_interp'],
+        actions=ps.sim_params['action_interp'],
         obs_encoder_arc=p.agent_par["obs_encoder_arc"],
         act_encoder_arc=p.agent_par["act_encoder_arc"],
         shared_encoder_arc=p.agent_par["shared_encoder_arc"],
@@ -198,7 +198,7 @@ elif p.agent_par["model"] == "ae":
         act_loss_weight=p.agent_par["act_loss_weight"],
         obs_loss_weight=p.agent_par["obs_loss_weight"],
         prob_loss_weight=p.agent_par["prob_loss_weight"],
-        min_covar=p.agent_par["min_covar"],
+        min_value=p.agent_par["min_value"],
     ).to(p.agent_par["device"])
     if p.agent_par["cnn"]:
         u_model = NetworkCNN(

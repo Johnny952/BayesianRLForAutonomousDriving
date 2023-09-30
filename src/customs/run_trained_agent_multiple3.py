@@ -55,8 +55,8 @@ rcParams["pdf.fonttype"] = 42  # To avoid Type 3 fonts in figures
 rcParams["ps.fonttype"] = 42
 
 """ Options: """
-filepath = "../logs/train_agent2_20230903_214928_ae_v22_3/"# train_agent_20230828_020015_ae_v22   train_agent2_20230903_214928_ae_v22_3
-agent_name = "950045"# 5950008   950045
+filepath = "../logs/train_agent_20230925_233336_dae_v4/"# train_agent_20230828_020015_ae_v22   train_agent2_20230903_214928_ae_v22_3
+agent_name = "5950002"# 5950008   950045
 case = "all-no-rerun"  # 'rerun_test_scenarios', 'fast_overtaking', 'standstill', 'all'
 use_safe_action = False
 
@@ -161,7 +161,7 @@ elif p.agent_par["model"] == "ae":
     ae = NetworkAE(
         p.agent_par["window_length"],
         nb_observations,
-        ps.sim_params["action_interp"],
+        actions=ps.sim_params['action_interp'],
         obs_encoder_arc=p.agent_par["obs_encoder_arc"],
         act_encoder_arc=p.agent_par["act_encoder_arc"],
         shared_encoder_arc=p.agent_par["shared_encoder_arc"],
@@ -173,7 +173,7 @@ elif p.agent_par["model"] == "ae":
         act_loss_weight=p.agent_par["act_loss_weight"],
         obs_loss_weight=p.agent_par["obs_loss_weight"],
         prob_loss_weight=p.agent_par["prob_loss_weight"],
-        min_covar=p.agent_par["min_covar"],
+        min_value=p.agent_par["min_value"],
     ).to(p.agent_par["device"])
     if p.agent_par["cnn"]:
         model = NetworkCNN(
