@@ -129,8 +129,8 @@ class DQNAEAgent(AbstractDQNAgent):
                 act = torch.Tensor([i]).unsqueeze(dim=0).float().to(self.device)
                 [obs_mu_i, act_mu_i, covar_i, (obs_i, act_i)] = self.ae(obs, act)
                 nll = self.ae.nll_loss(obs_mu_i, obs_i, act_mu_i, act_i, covar_i)
-                nll_obs = self.ae.obs_nll_loss(obs_mu_i, obs_i, covar_i)
-                uncertainties.append(nll - nll_obs)
+                # nll_obs = self.ae.obs_nll_loss(obs_mu_i, obs_i, covar_i)
+                uncertainties.append(nll)
 
         if self.training:
             if hasattr(self.policy, "custom"):

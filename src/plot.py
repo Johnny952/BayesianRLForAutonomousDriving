@@ -199,10 +199,11 @@ def read_file(path, unc_normalized=True):
 
 
 def plot_train(model_nb=-1):
-    plt.figure(figsize=(13, 8))
+    # plt.figure(figsize=(13, 8))
 
     # Rewards
-    ax2 = plt.subplot(222)
+    plt.figure(figsize=(13, 8))
+    ax2 = plt.subplot(111)
     for model in models:
         model_name = model["name"]
         rewards = []
@@ -235,9 +236,12 @@ def plot_train(model_nb=-1):
     plt.ylabel("Normalized Reward", fontsize=14)
     plt.ticklabel_format(style="sci", axis="x", scilimits=(0, 0), useMathText=True)
     plt.legend()
+    plt.savefig("./videos/train_rewards.png")
+    plt.close()
 
     # Uncertainty
-    ax1 = plt.subplot(221, sharex=ax2)
+    plt.figure(figsize=(13, 8))
+    ax1 = plt.subplot(111)
     for model in models:
         model_name = model["name"]
         if model["show_uncertainty"]:
@@ -259,7 +263,7 @@ def plot_train(model_nb=-1):
                 (uncertainty + uncertainty_std),
                 color=model["color"],
                 alpha=0.2,
-                label="Std",
+                #label="Std",
             )
             # plt.fill_between(
             #     steps,
@@ -272,11 +276,15 @@ def plot_train(model_nb=-1):
     plt.xlabel("Traning step", fontsize=14)
     plt.ylabel("Normalized Uncertainty", fontsize=14)
     plt.ylim((0, 1))
+    plt.legend()
     # plt.yscale('log')
     plt.ticklabel_format(style="sci", axis="x", scilimits=(0, 0), useMathText=True)
+    plt.savefig("./videos/train_uncertainties.png")
+    plt.close()
 
     # Collision rate
-    ax3 = plt.subplot(223, sharex=ax2)
+    plt.figure(figsize=(13, 8))
+    ax3 = plt.subplot(111)
     for model in models:
         model_name = model["name"]
         steps, _, (collision_rate, _), _ = read_file(model["paths"][model_nb])
@@ -290,11 +298,15 @@ def plot_train(model_nb=-1):
     plt.ylabel("Collision Free Episodes", fontsize=14)
     ax3.spines["top"].set_visible(False)
     plt.ylim((-0.05, 1.05))
+    plt.legend()
     plt.ticklabel_format(style="sci", axis="x", scilimits=(0, 0), useMathText=True)
     plt.gca().yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0))
+    plt.savefig("./videos/train_colrate.png")
+    plt.close()
 
     # Collision Speed
-    ax4 = plt.subplot(224, sharex=ax2)
+    plt.figure(figsize=(13, 8))
+    ax4 = plt.subplot(111)
     for model in models:
         model_name = model["name"]
         steps, _, (_, collision_speed), _ = read_file(model["paths"][model_nb])
@@ -323,11 +335,14 @@ def plot_train(model_nb=-1):
     plt.xlabel("Traning step", fontsize=14)
     plt.ylabel("Collision Speed", fontsize=14)
     ax4.spines["top"].set_visible(False)
+    plt.legend()
     plt.ticklabel_format(style="sci", axis="x", scilimits=(0, 0), useMathText=True)
+    plt.savefig("./videos/train_colspeed.png")
+    plt.close()
 
     # plt.show()
-    plt.savefig("./videos/train.png")
-    plt.close()
+    # plt.savefig("./videos/train.png")
+    # plt.close()
 
     # for scenario in '':
     #     fig, axs = plt.subplots(ncols=2, nrows=2)
@@ -449,19 +464,19 @@ def plot_train(model_nb=-1):
     #     # ax2.set_ylim(bottom=-4)
     #     ax2.set_xlim(left=0, right=1)
     #     ax2.set_ylabel("Reward", fontsize=16)
-    #     ax2.set_xlabel("Number Safe actions", fontsize=16)
+    #     ax2.set_xlabel("Safe Action Rate", fontsize=16)
 
     #     ax3.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=0))
     #     ax3.set_ylim(bottom=0)
     #     ax3.set_xlim(left=0, right=1)
     #     ax3.set_ylabel("Collision Rate", fontsize=16)
-    #     ax3.set_xlabel("Number Safe actions", fontsize=16)
+    #     ax3.set_xlabel("Safe Action Rate", fontsize=16)
 
     #     ax4.set_ylim(bottom=0)
     #     ax4.set_xlim(left=0, right=1)
     #     ax4.legend()
     #     ax4.set_ylabel("Collision Speeds", fontsize=16)
-    #     ax4.set_xlabel("Number Safe actions", fontsize=16)
+    #     ax4.set_xlabel("Safe Action Rate", fontsize=16)
 
     #     # plt.show()
     #     plt.savefig(f"./videos/{scenario}.png")
@@ -759,7 +774,7 @@ def plot_rerun_test_v3():
     ax2.set_xlim(left=0)
     ax2.legend()
     ax2.set_ylabel("Reward", fontsize=16)
-    ax2.set_xlabel("Number Safe actions", fontsize=16)
+    ax2.set_xlabel("Safe Action Rate", fontsize=16)
 
     ax3.set_title(f"{scenario}", fontsize=25)
     ax3.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=0))
@@ -767,13 +782,13 @@ def plot_rerun_test_v3():
     ax3.legend()
     ax3.set_xlim(left=0)
     ax3.set_ylabel("Collision Rate", fontsize=16)
-    ax3.set_xlabel("Number Safe actions", fontsize=16)
+    ax3.set_xlabel("Safe Action Rate", fontsize=16)
 
     ax4.set_ylim(bottom=0)
     ax4.set_xlim(left=0)
     ax4.legend()
     ax4.set_ylabel("Collision Speeds", fontsize=16)
-    ax4.set_xlabel("Number Safe actions", fontsize=16)
+    ax4.set_xlabel("Safe Action Rate", fontsize=16)
 
     # plt.show()
     fig1.savefig(f"./videos/{scenario}_compar_v3.png")
@@ -943,7 +958,7 @@ if __name__ == "__main__":
                 "mark": "v-",
                 "second_mark": "^-",
                 "base_path": "./logs/train_agent_20230925_233336_dae_v4/",
-                "unc_range": [-1.37, -1.0],
+                "unc_range": [-60, 40],
                 "paths": {
                     "rerun_test_scenarios": {
                         "u": True,
