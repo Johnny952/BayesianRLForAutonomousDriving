@@ -235,7 +235,7 @@ elif p.agent_par["model"] == "ae":
 
     u_policy = GreedyQPolicy()
     if use_safe_action:
-        u_test_policy = SimpleSafeGreedyPolicyHard(0, safe_action)
+        u_test_policy = SimpleSafeGreedyPolicy(0, safe_action)
     else:
         u_test_policy = GreedyQPolicy()
     u_dqn = DQNAEAgent(
