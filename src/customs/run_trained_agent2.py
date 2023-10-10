@@ -30,8 +30,8 @@ rcParams["ps.fonttype"] = 42
 q_filepath = "../logs/train_agent_20230323_235314_dqn_6M_v3/"
 q_agent_name = "5950056"
 
-u_filepath = "../logs/train_agent_20230925_233336_dae_v4/"# train_agent_20230828_020015_ae_v22/   train_agent2_20230903_214928_ae_v22_3
-u_agent_name = "5950002"# "5950008"   950045
+u_filepath = "../logs/train_agent_20231006_154948_dae_v5/"# train_agent_20230828_020015_ae_v22/   train_agent2_20230903_214928_ae_v22_3
+u_agent_name = "5950036"# "5950008"   950045
 use_safe_action = False
 
 number_episodes=1000

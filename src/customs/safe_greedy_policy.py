@@ -86,3 +86,20 @@ class SimpleSafeGreedyPolicyHard(GreedyQPolicy):
             if self.reduction(torch.stack(uncertainties)) > self.safety_threshold:
                 return self.safe_action, {"safe_action": True, "hard_safe": True}
             return np.argmax(q_values), {"safe_action": False, "hard_safe": False}
+        
+class RandomSafePolicy(GreedyQPolicy):
+    def __init__(self, safety_threshold=None, safe_action=None):
+        super(SimpleSafeGreedyPolicyHard, self).__init__()
+        self.custom = True
+        self.safety_threshold = safety_threshold
+        self.safe_action = safe_action
+        if self.safety_threshold is not None:
+            assert safe_action is not None
+
+    def select_action(self, q_values, *args, **kwargs):
+        if self.safety_threshold is None:
+            return np.argmax(q_values), {}
+        else:
+            if np.random.rand() <= self.safety_threshold:
+                return self.safe_action, {"safe_action": True, "hard_safe": True}
+            return np.argmax(q_values), {"safe_action": False, "hard_safe": False}

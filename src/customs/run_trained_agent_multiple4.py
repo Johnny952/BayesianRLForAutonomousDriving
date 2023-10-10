@@ -32,24 +32,22 @@ debug = False
 q_filepath = "../logs/train_agent_20230323_235314_dqn_6M_v3/"
 q_agent_name = "5950056"
 
-u_filepath = "../logs/train_agent_20230925_233336_dae_v4/"
-u_agent_name = "5950002"
+u_filepath = "../logs/train_agent_20231006_154948_dae_v5/"
+u_agent_name = "5950036"
 use_safe_action = True
 
 case = "all"  # 'all', 'uncert'
 
 thresh_range = [
-    -24.53349224525705,
-    -8.864193267476942,
-    -14.618240100000003,
-    -7.2620689150000235,
-    3.3092736099999867,
-    14.675331269999994,
-    72.73533200000558,
+    -23.598912086897165,
+-7.6908720583329035,
+-13.175728,
+-5.6123715,
+6.165326525000014,
+19.04202440000001,
+81.67095490000519,
     100000,
 ]
-history_length = 20
-start_saving = 3
 if debug:
     save_video = True
     do_save_metrics = False
