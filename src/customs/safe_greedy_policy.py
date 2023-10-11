@@ -89,7 +89,7 @@ class SimpleSafeGreedyPolicyHard(GreedyQPolicy):
         
 class RandomSafePolicy(GreedyQPolicy):
     def __init__(self, safety_threshold=None, safe_action=None):
-        super(SimpleSafeGreedyPolicyHard, self).__init__()
+        super(RandomSafePolicy, self).__init__()
         self.custom = True
         self.safety_threshold = safety_threshold
         self.safe_action = safe_action
