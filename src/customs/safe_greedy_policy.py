@@ -95,6 +95,9 @@ class RandomSafePolicy(GreedyQPolicy):
         self.safe_action = safe_action
         if self.safety_threshold is not None:
             assert safe_action is not None
+    
+    def reset(self):
+        pass
 
     def select_action(self, q_values, *args, **kwargs):
         if self.safety_threshold is None:
