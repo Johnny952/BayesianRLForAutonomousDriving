@@ -198,39 +198,42 @@ def read_file(path, unc_normalized=True):
     )
 
 
-def plot_train(model_nb=-1):
+def plot_train():
     # plt.figure(figsize=(13, 8))
 
     # Rewards
     plt.figure(figsize=(13, 8))
     ax2 = plt.subplot(111)
     for model in models:
-        model_name = model["name"]
-        rewards = []
-        steps = []
-        for path in model["paths"]:
-            step, _, _, reward = read_file(path)
-            rewards.append(reward)
-            steps.append(step)
-        rewards = np.array(rewards)
-        rewards_mean = np.mean(rewards, axis=0)
-        rewards_std = np.std(rewards, axis=0)
-        steps = steps[0]
+        if model["train"]["show"]:
+            model_name = model["name"]
+            model_color = model["color"]
+            paths = model["train"]["paths"]
+            rewards = []
+            steps = []
+            for path in paths:
+                step, _, _, reward = read_file(path)
+                rewards.append(reward)
+                steps.append(step)
+            rewards = np.array(rewards)
+            rewards_mean = np.mean(rewards, axis=0)
+            rewards_std = np.std(rewards, axis=0)
+            steps = steps[0]
 
-        plt.plot(
-            steps,
-            rewards_mean,
-            color=model["color"],
-            label=f"Mean {model_name}",
-        )
-        plt.fill_between(
-            steps,
-            (rewards_mean - rewards_std),
-            (rewards_mean + rewards_std),
-            color=model["color"],
-            alpha=0.2,
-            # label="Std",
-        )
+            plt.plot(
+                steps,
+                rewards_mean,
+                color=model_color,
+                label=f"Mean {model_name}",
+            )
+            plt.fill_between(
+                steps,
+                (rewards_mean - rewards_std),
+                (rewards_mean + rewards_std),
+                color=model_color,
+                alpha=0.2,
+                # label="Std",
+            )
     ax2.spines["top"].set_visible(False)
     plt.xlabel("Traning step", fontsize=14)
     plt.ylabel("Normalized Reward", fontsize=14)
@@ -243,35 +246,39 @@ def plot_train(model_nb=-1):
     plt.figure(figsize=(13, 8))
     ax1 = plt.subplot(111)
     for model in models:
-        model_name = model["name"]
-        if model["show_uncertainty"]:
-            (
-                steps,
-                (uncertainty, uncertainty_up, uncertainty_low, uncertainty_std),
-                _,
-                _,
-            ) = read_file(model["paths"][model_nb])
-            plt.plot(
-                steps,
-                uncertainty,
-                color=model["color"],
-                label=f"Mean {model_name}",
-            )
-            plt.fill_between(
-                steps,
-                (uncertainty - uncertainty_std),
-                (uncertainty + uncertainty_std),
-                color=model["color"],
-                alpha=0.2,
-                #label="Std",
-            )
-            # plt.fill_between(
-            #     steps,
-            #     (uncertainty_up),
-            #     (uncertainty_low),
-            #     color=model["color"],
-            #     alpha=0.1,
-            # )
+        if model["train"]["show"]:
+            model_name = model["name"]
+            model_color = model["color"]
+            paths = model["train"]["paths"]
+            model_nb = model["train"]["model_uncertainty"]
+            if model["train"]["show_uncertainty"]:
+                (
+                    steps,
+                    (uncertainty, _, _, uncertainty_std),
+                    _,
+                    _,
+                ) = read_file(paths[model_nb])
+                plt.plot(
+                    steps,
+                    uncertainty,
+                    color=model_color,
+                    label=f"Mean {model_name}",
+                )
+                plt.fill_between(
+                    steps,
+                    (uncertainty - uncertainty_std),
+                    (uncertainty + uncertainty_std),
+                    color=model_color,
+                    alpha=0.2,
+                    #label="Std",
+                )
+                # plt.fill_between(
+                #     steps,
+                #     (uncertainty_up),
+                #     (uncertainty_low),
+                #     color=model_color,
+                #     alpha=0.1,
+                # )
     ax1.spines["top"].set_visible(False)
     plt.xlabel("Traning step", fontsize=14)
     plt.ylabel("Normalized Uncertainty", fontsize=14)
@@ -286,14 +293,18 @@ def plot_train(model_nb=-1):
     plt.figure(figsize=(13, 8))
     ax3 = plt.subplot(111)
     for model in models:
-        model_name = model["name"]
-        steps, _, (collision_rate, _), _ = read_file(model["paths"][model_nb])
-        plt.plot(
-            steps,
-            1 - collision_rate,
-            color=model["color"],
-            label=f"Mean {model_name}",
-        )
+        if model["train"]["show"]:
+            model_name = model["name"]
+            model_color = model["color"]
+            paths = model["train"]["paths"]
+            model_nb = model["train"]["model_uncertainty"]
+            steps, _, (collision_rate, _), _ = read_file(paths[model_nb])
+            plt.plot(
+                steps,
+                1 - collision_rate,
+                color=model_color,
+                label=f"Mean {model_name}",
+            )
     plt.xlabel("Traning step", fontsize=14)
     plt.ylabel("Collision Free Episodes", fontsize=14)
     ax3.spines["top"].set_visible(False)
@@ -308,30 +319,34 @@ def plot_train(model_nb=-1):
     plt.figure(figsize=(13, 8))
     ax4 = plt.subplot(111)
     for model in models:
-        model_name = model["name"]
-        steps, _, (_, collision_speed), _ = read_file(model["paths"][model_nb])
-        plt.plot(
-            steps,
-            collision_speed,
-            color=model["color"],
-            label=f"Mean {model_name}",
-            alpha=0.1,
-        )
-        filtered_speeds = gaussian_filter1d(collision_speed.astype(np.float32), sigma=2)
-        plt.plot(
-            steps,
-            filtered_speeds,
-            color=model["color"],
-            label=f"Mean {model_name}",
-            alpha=1,
-        )
-        # plt.fill_between(
-        #     steps,
-        #     (collision_speed_up),
-        #     (collision_speed_low),
-        #     color=model["color"],
-        #     alpha=0.1,
-        # )
+        if model["train"]["show"]:
+            model_name = model["name"]
+            model_color = model["color"]
+            paths = model["train"]["paths"]
+            model_nb = model["train"]["model_uncertainty"]
+            steps, _, (_, collision_speed), _ = read_file(paths[model_nb])
+            plt.plot(
+                steps,
+                collision_speed,
+                color=model_color,
+                label=f"Mean {model_name}",
+                alpha=0.1,
+            )
+            filtered_speeds = gaussian_filter1d(collision_speed.astype(np.float32), sigma=2)
+            plt.plot(
+                steps,
+                filtered_speeds,
+                color=model_color,
+                label=f"Mean {model_name}",
+                alpha=1,
+            )
+            # plt.fill_between(
+            #     steps,
+            #     (collision_speed_up),
+            #     (collision_speed_low),
+            #     color=model_color,
+            #     alpha=0.1,
+            # )
     plt.xlabel("Traning step", fontsize=14)
     plt.ylabel("Collision Speed", fontsize=14)
     ax4.spines["top"].set_visible(False)
@@ -339,179 +354,6 @@ def plot_train(model_nb=-1):
     plt.ticklabel_format(style="sci", axis="x", scilimits=(0, 0), useMathText=True)
     plt.savefig("./videos/train_colspeed.png")
     plt.close()
-
-    # plt.show()
-    # plt.savefig("./videos/train.png")
-    # plt.close()
-
-    # for scenario in '':
-    #     fig, axs = plt.subplots(ncols=2, nrows=2)
-    #     fig.set_figwidth(16)
-    #     fig.set_figheight(16)
-    #     ax1 = axs[0, 0]
-    #     ax2 = axs[0, 1]
-    #     ax3 = axs[1, 0]
-    #     ax4 = axs[1, 1]
-
-    #     for model in models:
-    #         base_path = model["multiple_test"]["base_path"]
-    #         model_name = model["name"]
-    #         if model["multiple_test"][scenario]["u"]:
-    #             (
-    #                 _,
-    #                 rewards,
-    #                 collision_rates,
-    #                 nb_safe_actions,
-    #                 nb_safe_action_hard,
-    #                 collision_speeds,
-    #             ) = read_test(f"{base_path}{scenario}_U.csv")
-    #             _, [filtered_rates, filtered_rewards] = collapse_duplicated(
-    #                 collision_rates, rewards
-    #             )
-    #             ax1.plot(
-    #                 filtered_rates,
-    #                 filtered_rewards,
-    #                 ".-",
-    #                 color=model["color"],
-    #                 label=f"{model_name} U",
-    #                 alpha=1,
-    #             )
-
-    #             _, [
-    #                 filtered_safe_action,
-    #                 filtered_rates,
-    #                 filtered_rewards,
-    #                 filtered_speeds,
-    #             ] = collapse_duplicated(
-    #                 nb_safe_actions, collision_rates, rewards, collision_speeds
-    #             )
-    #             ax2.plot(
-    #                 filtered_safe_action,
-    #                 filtered_rewards,
-    #                 ".-",
-    #                 color=model["color"],
-    #                 label=f"{model_name} U",
-    #                 alpha=1,
-    #             )
-    #             ax3.plot(
-    #                 filtered_safe_action,
-    #                 filtered_rates,
-    #                 ".-",
-    #                 color=model["color"],
-    #                 label=f"{model_name} U",
-    #                 alpha=1,
-    #             )
-    #             ax4.plot(
-    #                 filtered_safe_action,
-    #                 filtered_speeds,
-    #                 ".-",
-    #                 color=model["color"],
-    #                 label=f"{model_name} U",
-    #                 alpha=1,
-    #             )
-
-    #         if model["multiple_test"][scenario]["nu"]:
-    #             (
-    #                 _,
-    #                 rewards,
-    #                 collision_rates,
-    #                 _,
-    #                 _,
-    #                 collision_speeds,
-    #             ) = read_test(f"{base_path}{scenario}_NU.csv")
-    #             ax1.plot(
-    #                 collision_rates,
-    #                 rewards,
-    #                 ".",
-    #                 color=model["color"],
-    #                 label=f"{model_name} NU",
-    #                 alpha=1,
-    #                 markersize=14,
-    #             )
-    #             ax2.axhline(
-    #                 y=rewards[0],
-    #                 xmin=0.0,
-    #                 xmax=1.0,
-    #                 color=model["color"],
-    #                 linestyle="--",
-    #             )
-    #             ax3.axhline(
-    #                 y=collision_rates[0],
-    #                 xmin=0.0,
-    #                 xmax=1.0,
-    #                 color=model["color"],
-    #                 linestyle="--",
-    #             )
-    #             ax4.axhline(
-    #                 y=collision_speeds[0],
-    #                 xmin=0.0,
-    #                 xmax=1.0,
-    #                 color=model["color"],
-    #                 linestyle="--",
-    #             )
-
-    #     plt.suptitle(f"{scenario}", fontsize=25)
-    #     ax1.set_xlim(left=0)
-    #     # ax1.set_ylim(bottom=-4)
-    #     ax1.set_ylabel("Rewards", fontsize=16)
-
-    #     # ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
-    #     ax1.xaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=0))
-    #     ax1.set_xlabel("Collision Rate", fontsize=16)
-    #     ax1.legend()
-    #     ax1.grid()
-
-    #     # ax2.set_ylim(bottom=-4)
-    #     ax2.set_xlim(left=0, right=1)
-    #     ax2.set_ylabel("Reward", fontsize=16)
-    #     ax2.set_xlabel("Safe Action Rate", fontsize=16)
-
-    #     ax3.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=0))
-    #     ax3.set_ylim(bottom=0)
-    #     ax3.set_xlim(left=0, right=1)
-    #     ax3.set_ylabel("Collision Rate", fontsize=16)
-    #     ax3.set_xlabel("Safe Action Rate", fontsize=16)
-
-    #     ax4.set_ylim(bottom=0)
-    #     ax4.set_xlim(left=0, right=1)
-    #     ax4.legend()
-    #     ax4.set_ylabel("Collision Speeds", fontsize=16)
-    #     ax4.set_xlabel("Safe Action Rate", fontsize=16)
-
-    #     # plt.show()
-    #     plt.savefig(f"./videos/{scenario}.png")
-    #     plt.close()
-
-
-def plot_tests2():
-    for model in models:
-        plt.figure()
-        fig, axs = plt.subplots(ncols=2, nrows=1)
-        fig.set_figwidth(10)
-        fig.set_figheight(5)
-        plots = {
-            "standstill": axs[0],
-            "fast_overtaking": axs[1],
-        }
-        max_plots = model["tests_plots"]
-        for scenario in model["tests"].keys():
-            filepath = model["tests"][scenario]
-            if filepath:
-                _, _, uncerts = read_test2(filepath)
-                for i, uncert in enumerate(uncerts[:max_plots]):
-                    plots[scenario].plot(uncert, label=f"Run {str(i+1)}")
-        model_name = model["name"]
-        plt.suptitle(f"Model {model_name}")
-
-        for scenario, ax in plots.items():
-            ax.set_ylabel("Uncertainty")
-            ax.set_xlabel(" Timestamp")
-            ax.set_title(scenario)
-        axs[0].legend()
-
-        plt.savefig(f"./videos/{model_name}.png")
-        plt.close()
-
 
 def plot_rerun_test_v3():
     scenario = "rerun_test_scenarios"
@@ -532,13 +374,12 @@ def plot_rerun_test_v3():
     fig4.set_figheight(16)
 
     for model in models:
-        base_path = model["test_v3"]["base_path"]
+        base_path = model["base_path"]
         model_name = model["name"]
-        sufix = model["test_v3"]["rerun_sufix"]
-        mark = model["test_v3"]["mark"]
-        second_mark = model["test_v3"]["second_mark"]
-        use_v0 = model["test_v3"]["paths"][scenario]["v0"]
-        if model["test_v3"]["paths"][scenario]["u"]:
+        model_color = model["color"]
+        mark = model["ROC"]["mark"]
+        scenario_path = model["ROC"]["path"]
+        if model["ROC"]["use_uncertainty"]:
             (
                 thresholds,
                 rewards,
@@ -549,13 +390,13 @@ def plot_rerun_test_v3():
                 _,
                 _,
                 _,
-            ) = read_test(f"{base_path}{scenario}_U{sufix}.csv")
+            ) = read_test(f"{base_path}{scenario_path}")
             print(model_name)
             print("Threshold\tReward\tSafe Actions\tCollision Rates")
-            for i in range(len(thresholds)):
+            for i, thresh in enumerate(thresholds):
                 print(
                     "{:.3f}\t\t{:.3f}\t{:.2f}\t\t\t{:.2f}%".format(
-                        thresholds[i],
+                        thresh,
                         rewards[i],
                         nb_safe_actions[i],
                         collision_rates[i] * 100,
@@ -579,42 +420,12 @@ def plot_rerun_test_v3():
                 collision_speeds,
                 reduction=np.mean,
             )
-
-            if use_v0:
-                (
-                    _,
-                    rewards_v0,
-                    collision_rates_v0,
-                    nb_safe_actions_v0,
-                    _,
-                    collision_speeds_v0,
-                    _,
-                    _,
-                    _,
-                ) = read_test(f"{base_path}{scenario}_U_v0.csv")
-                # _, [filtered_rates_s_v0, filtered_rewards_s_v0] = collapse_duplicated(collision_rates_v0, rewards_v0)
-                _, [filtered_rates_s_v0, filtered_rewards_s_v0] = sort_duplicated(
-                    collision_rates_v0, rewards_v0
-                )
-                # filtered_rates_s_v0, filtered_rewards_s_v0 = collision_rates_v0, rewards_v0
-                _, [
-                    filtered_safe_action_v0,
-                    filtered_rates_v0,
-                    filtered_rewards_v0,
-                    filtered_speeds_v0,
-                ] = collapse_duplicated(
-                    nb_safe_actions_v0,
-                    collision_rates_v0,
-                    rewards_v0,
-                    collision_speeds_v0,
-                    reduction=np.mean,
-                )
             ax1.plot(
                 filtered_rates_s,
                 filtered_rewards_s,
                 mark,
-                color=model["color"],
-                label=f"{model_name} U test v1",
+                color=model_color,
+                label=f"{model_name}",
                 alpha=1,
                 linewidth=2,
             )
@@ -623,62 +434,28 @@ def plot_rerun_test_v3():
                 filtered_safe_action,
                 filtered_rewards,
                 mark,
-                color=model["color"],
-                label=f"{model_name} U test v1",
+                color=model_color,
+                label=f"{model_name}",
                 alpha=1,
             )
             ax3.plot(
                 filtered_safe_action,
                 filtered_rates,
                 mark,
-                color=model["color"],
-                label=f"{model_name} U test v1",
+                color=model_color,
+                label=f"{model_name}",
                 alpha=1,
             )
             ax4.plot(
                 filtered_safe_action,
                 filtered_speeds,
                 mark,
-                color=model["color"],
-                label=f"{model_name} U",
+                color=model_color,
+                label=f"{model_name}",
                 alpha=1,
             )
 
-            if use_v0:
-                ax1.plot(
-                    filtered_rates_s_v0,
-                    filtered_rewards_s_v0,
-                    second_mark,
-                    color=model["color"],
-                    label=f"{model_name} U test v0",
-                    alpha=1,
-                )
-                ax2.plot(
-                    filtered_safe_action_v0,
-                    filtered_rewards_v0,
-                    second_mark,
-                    color=model["color"],
-                    label=f"{model_name} U test v0",
-                    alpha=1,
-                )
-                ax3.plot(
-                    filtered_safe_action_v0,
-                    filtered_rates_v0,
-                    second_mark,
-                    color=model["color"],
-                    label=f"{model_name} U test v0",
-                    alpha=1,
-                )
-                ax4.plot(
-                    filtered_safe_action_v0,
-                    filtered_speeds_v0,
-                    second_mark,
-                    color=model["color"],
-                    label=f"{model_name} U",
-                    alpha=1,
-                )
-
-        if model["test_v3"]["paths"][scenario]["nu"]:
+        else:
             (
                 _,
                 rewards,
@@ -689,74 +466,37 @@ def plot_rerun_test_v3():
                 _,
                 _,
                 _,
-            ) = read_test(f"{base_path}{scenario}_NU{sufix}.csv")
-            if use_v0:
-                (
-                    _,
-                    rewards_v0,
-                    collision_rates_v0,
-                    _,
-                    _,
-                    collision_speeds_v0,
-                    _,
-                    _,
-                    _,
-                ) = read_test(f"{base_path}{scenario}_NU_v0.csv")
+            ) = read_test(f"{base_path}{scenario_path}")
             ax1.plot(
                 collision_rates,
                 rewards,
                 mark,
-                color=model["color"],
-                label=f"{model_name} NU test v1",
+                color=model_color,
+                label=f"{model_name}",
                 alpha=1,
                 markersize=16,
             )
             ax2.axhline(
                 y=rewards[0],
                 xmin=0.0,
-                label=f"{model_name} NU test v1",
-                color=model["color"],
+                label=f"{model_name}",
+                color=model_color,
                 linestyle="--",
             )
             ax3.axhline(
                 y=collision_rates[0],
                 xmin=0.0,
-                label=f"{model_name} NU test v1",
-                color=model["color"],
+                label=f"{model_name}",
+                color=model_color,
                 linestyle="--",
             )
             ax4.axhline(
                 y=collision_speeds[0],
                 xmin=0.0,
-                label=f"{model_name} NU",
-                color=model["color"],
+                label=f"{model_name}",
+                color=model_color,
                 linestyle="--",
             )
-
-            if use_v0:
-                ax1.plot(
-                    collision_rates_v0,
-                    rewards_v0,
-                    second_mark,
-                    color=model["color"],
-                    label=f"{model_name} NU test v0",
-                    alpha=1,
-                )
-                ax2.axhline(
-                    y=rewards_v0[0], xmin=0.0, color=model["color"], linestyle="-."
-                )
-                ax3.axhline(
-                    y=collision_rates_v0[0],
-                    xmin=0.0,
-                    color=model["color"],
-                    linestyle="-.",
-                )
-                ax4.axhline(
-                    y=collision_speeds_v0[0],
-                    xmin=0.0,
-                    color=model["color"],
-                    linestyle="-.",
-                )
 
     ax1.set_title(f"{scenario}", fontsize=25)
     ax1.set_xlim(left=0)
@@ -807,22 +547,21 @@ def plot_tests_v3():
     from matplotlib.ticker import FormatStrFormatter, MaxNLocator
 
     for model in models:
-        fig, axs = plt.subplots(ncols=2, nrows=1)
-        fig.set_figwidth(16)
-        fig.set_figheight(8)
+        if model["unc_heatmap"]["show"]:
+            fig, axs = plt.subplots(ncols=2, nrows=1)
+            fig.set_figwidth(16)
+            fig.set_figheight(8)
 
-        base_path = model["test_v3"]["base_path"]
-        model_name = model["name"]
-        sufix = model["test_v3"]["sufix"]
-        paths = model["test_v3"]["paths"]
+            base_path = model["base_path"]
+            model_name = model["name"]
 
-        fig.suptitle(model_name)
+            fig.suptitle(model_name)
 
-        for idx, scenario in enumerate(
-            ["standstill", "fast_overtaking"]
-        ):  # standstill, "fast_overtaking"
-            if paths[scenario]["nu"]:
-                path = f"{base_path}{scenario}_NU{sufix}.csv"
+            for idx, scenario in enumerate(
+                ["standstill", "fast_overtaking"]
+            ):  # standstill, "fast_overtaking"
+                scenario_path = model["unc_heatmap"][scenario]
+                path = f"{base_path}{scenario_path}"
                 _, pos_vel, unc = read_test2(path, ep_type=float)
                 max_len = len(max(unc, key=len))
                 min_unc = min(unc)
@@ -830,7 +569,7 @@ def plot_tests_v3():
                 for u in unc:
                     flat_unc += u
                 print(model_name, np.min(flat_unc), np.max(flat_unc))
-                unc_range = model["test_v3"]["unc_range"]
+                unc_range = model["unc_heatmap"]["unc_range"]
                 padded_unc = np.ones((len(unc), max_len)) * min_unc
                 for i, row in enumerate(unc):
                     padded_unc[i, : len(row)] = row
@@ -865,223 +604,111 @@ def plot_tests_v3():
                 for i in range(len(xticks) // 2):
                     xticks[2 * i + 1].set_visible(False)
 
-        # plt.show()
-        plt.savefig(f"./videos/{model_name}_v3.png")
-        plt.close()
+            # plt.show()
+            plt.savefig(f"./videos/{model_name}_v3.png")
+            plt.close()
 
 
 if __name__ == "__main__":
     models = [
         {
-            "paths": [
-                "./logs/train_agent_20230715_211722_rpf_v14/data.hdf5",
-            ],
-            # "multiple_test": {
-            #     "base_path": "./logs/train_agent_20230715_211722_rpf_v14/",
-            #     "rerun_test_scenarios": {
-            #         "u": True,
-            #         "nu": True,
-            #     },
-            #     "standstill": {
-            #         "u": True,
-            #         "nu": True,
-            #     },
-            #     "fast_overtaking": {
-            #         "u": True,
-            #         "nu": True,
-            #     },
-            # },
             "name": "Ensemble RPF DQN",
-            "show_uncertainty": True,
             "color": "red",
-            # "tests": {
-            #     "rerun_test_scenarios": None,
-            #     "standstill": "./logs/train_agent_20230715_211722_rpf_v14/standstill_NU_2.csv",
-            #     "fast_overtaking": "./logs/train_agent_20230715_211722_rpf_v14/fast_overtaking_NU_2.csv",
-            # },
-            # "tests_plots": 5,
-            "test_v3": {
-                "sufix": "_v3",
-                "rerun_sufix": "_v5",
+            "train": {
+                "show": True,
+                "paths": [
+                    "./logs/train_agent_20230715_211722_rpf_v14/data.hdf5",
+                ],
+                "show_uncertainty": True,
+                "model_uncertainty": 0,
+            },
+            "base_path": "./logs/train_agent_20230715_211722_rpf_v14/",
+
+            "ROC": {
+                "use_uncertainty": True,
+                "path": "rerun_test_scenarios_U_v5.csv",
                 "mark": "X-",
-                "second_mark": "D-",
-                "base_path": "./logs/train_agent_20230715_211722_rpf_v14/",
+            },
+
+            "unc_heatmap": {
+                "show": True,
+                "fast_overtaking": "fast_overtaking_NU_v3.csv",
+                "standstill": "standstill_NU_v3.csv",
                 "unc_range": [0.012, 0.08],
-                "paths": {
-                    "rerun_test_scenarios": {
-                        "u": True,
-                        "nu": False,
-                        "v0": False,
-                    },
-                    "standstill": {
-                        "u": False,
-                        "nu": True,
-                    },
-                    "fast_overtaking": {
-                        "u": False,
-                        "nu": True,
-                    },
-                },
-            },
+            }
         },
         {
-            "paths": [
-                "./logs/train_agent_20231006_154948_dae_v5/data.hdf5",
-            ],
-            # "multiple_test": {
-            #     "base_path": "./logs/train_agent_20231006_154948_dae_v5/",
-            #     "rerun_test_scenarios": {
-            #         "u": True,
-            #         "nu": True,
-            #     },
-            #     "standstill": {
-            #         "u": True,
-            #         "nu": True,
-            #     },
-            #     "fast_overtaking": {
-            #         "u": True,
-            #         "nu": True,
-            #     },
-            # },
-            "name": "DAE DQN",
-            "show_uncertainty": True,
+            "name": "DAE DQN K=1",
             "color": "green",
-            # "tests": {
-            #     "rerun_test_scenarios": None,
-            #     "standstill": "./logs/train_agent_20231006_154948_dae_v5/standstill_NU_2.csv",
-            #     "fast_overtaking": "./logs/train_agent_20231006_154948_dae_v5/fast_overtaking_NU_2.csv",
-            # },
-            # "tests_plots": 5,
-            "test_v3": {
-                "sufix": "_v3",
-                "rerun_sufix": "_v5",
+            "train": {
+                "show": True,
+                "paths": [
+                    "./logs/train_agent_20231006_154948_dae_v5/data.hdf5",
+                ],
+                "show_uncertainty": True,
+                "model_uncertainty": 0,
+            },
+
+            "base_path": "./logs/train_agent_20231006_154948_dae_v5/",
+
+            "ROC": {
+                "use_uncertainty": True,
+                "path": "rerun_test_scenarios_U_v5.csv",
                 "mark": "v-",
-                "second_mark": "^-",
-                "base_path": "./logs/train_agent_20231006_154948_dae_v5/",
+            },
+
+            "unc_heatmap": {
+                "show": True,
+                "fast_overtaking": "fast_overtaking_NU_v3.csv",
+                "standstill": "standstill_NU_v3.csv",
                 "unc_range": [-60, 50],
-                "paths": {
-                    "rerun_test_scenarios": {
-                        "u": True,
-                        "nu": False,
-                        "v0": False,
-                    },
-                    "standstill": {
-                        "u": False,
-                        "nu": True,
-                    },
-                    "fast_overtaking": {
-                        "u": False,
-                        "nu": True,
-                    },
-                },
             },
         },
-        # {
-        #     "paths": [
-        #         "./logs/train_agent_20230828_020015_ae_v22/data.hdf5",
-        #     ],
-        #     # "multiple_test": {
-        #     #     "base_path": "./logs/train_agent2_20230903_214928_ae_v22_3/",
-        #     #     "rerun_test_scenarios": {
-        #     #         "u": True,
-        #     #         "nu": True,
-        #     #     },
-        #     #     "standstill": {
-        #     #         "u": True,
-        #     #         "nu": True,
-        #     #     },
-        #     #     "fast_overtaking": {
-        #     #         "u": True,
-        #     #         "nu": True,
-        #     #     },
-        #     # },
-        #     "name": "AE DQN",
-        #     "show_uncertainty": False,
-        #     "color": "magenta",
-        #     # "tests": {
-        #     #     "rerun_test_scenarios": None,
-        #     #     "standstill": "./logs/train_agent2_20230903_214928_ae_v22_3/standstill_NU_2.csv",
-        #     #     "fast_overtaking": "./logs/train_agent2_20230903_214928_ae_v22_3/fast_overtaking_NU_2.csv",
-        #     # },
-        #     # "tests_plots": 5,
-        #     "test_v3": {
-        #         "sufix": "_v3",
-        #         "rerun_sufix": "_v5",
-        #         "mark": "v-",
-        #         "second_mark": "^-",
-        #         "base_path": "./logs/train_agent_20230828_020015_ae_v22/",
-        #         "unc_range": [-600, -600],
-        #         "paths": {
-        #             "rerun_test_scenarios": {
-        #                 "u": True,
-        #                 "nu": False,
-        #                 "v0": False,
-        #             },
-        #             "standstill": {
-        #                 "u": False,
-        #                 "nu": True,
-        #             },
-        #             "fast_overtaking": {
-        #                 "u": False,
-        #                 "nu": True,
-        #             },
-        #         },
-        #     },
-        # },
         {
-            "paths": [
-                "./logs/train_agent_20230323_235314_dqn_6M_v3/data.hdf5",
-            ],
-            # "multiple_test": {
-            #     "base_path": "./logs/train_agent_20230323_235314_dqn_6M_v3/",
-            #     "rerun_test_scenarios": {
-            #         "u": False,
-            #         "nu": True,
-            #     },
-            #     "standstill": {
-            #         "u": False,
-            #         "nu": True,
-            #     },
-            #     "fast_overtaking": {
-            #         "u": False,
-            #         "nu": True,
-            #     },
-            # },
+            "name": "Random DQN",
+            "color": "magenta",
+            "train": {
+                "show": False,
+            },
+
+            "base_path": "./logs/random_agent/",
+
+            "ROC": {
+                "use_uncertainty": True,
+                "path": "rerun_test_scenarios_U_v5.csv",
+                "mark": "v-",
+            },
+
+            "unc_heatmap": {
+                "show": False,
+            },
+        },
+        {
             "name": "Standard DQN",
-            "show_uncertainty": False,
             "color": "blue",
-            # "tests": {
-            #     "rerun_test_scenarios": None,
-            #     "standstill": None,
-            #     "fast_overtaking": None,
-            # },
-            # "tests_plots": 5,
-            "test_v3": {
-                "sufix": "_v5",
-                "rerun_sufix": "_v5",
+            "train": {
+                "show": True,
+                "paths": [
+                    "./logs/train_agent_20230323_235314_dqn_6M_v3/data.hdf5",
+                ],
+                "show_uncertainty": False,
+                "model_uncertainty": 0,
+            },
+
+            "base_path": "./logs/train_agent_20230323_235314_dqn_6M_v3/",
+
+            "ROC": {
+                "use_uncertainty": False,
+                "path": "rerun_test_scenarios_NU_v5.csv",
                 "mark": ".",
-                "second_mark": "*",
-                "base_path": "./logs/train_agent_20230323_235314_dqn_6M_v3/",
-                "paths": {
-                    "rerun_test_scenarios": {
-                        "u": False,
-                        "nu": True,
-                        "v0": False,
-                    },
-                    "standstill": {
-                        "u": False,
-                        "nu": False,
-                    },
-                    "fast_overtaking": {
-                        "u": False,
-                        "nu": False,
-                    },
-                },
+            },
+
+            "unc_heatmap": {
+                "show": False,
             },
         },
     ]
 
     plot_train()
-    #### plot_tests2()
     plot_rerun_test_v3()
     plot_tests_v3()

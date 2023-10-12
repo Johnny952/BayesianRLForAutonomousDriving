@@ -2,6 +2,7 @@ import sys
 import os
 import numpy as np
 from rl.memory import Memory
+from rl.policy import GreedyQPolicy
 from keras.models import model_from_json
 from keras.optimizers import Adam
 
@@ -10,6 +11,7 @@ from base.run_agent_utils import rerun_test_scenarios_v3
 from base.dqn_standard import DQNAgent
 from matplotlib import rcParams
 from safe_greedy_policy import RandomSafePolicy
+from base.dqn_mix import MixDQNAgent, MixTestPolicy
 
 np.warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
 
@@ -71,10 +73,10 @@ memory = Memory(
     window_length=p.agent_par["window_length"]
 )  # Not used, simply needed to create the agent
 
-q_policy = RandomSafePolicy(safety_threshold=0, safe_action=safe_action)
 q_dqn = DQNAgent(
     model=q_model,
-    policy=q_policy,
+    policy=GreedyQPolicy(),
+    test_policy=GreedyQPolicy(),
     enable_double_dqn=p.agent_par["double_q"],
     enable_dueling_network=False,
     nb_actions=nb_actions,
@@ -92,14 +94,22 @@ q_dqn.load_weights(q_filepath + q_agent_name)
 q_dqn.training = False
 
 
+policy = RandomSafePolicy(safety_threshold=0, safe_action=safe_action)
+dqn = MixDQNAgent(
+    q_model=q_dqn,
+    u_model=q_dqn,
+    policy=policy,
+)
+
+
 def change_thresh_fn(thresh):
-    q_dqn.policy.safety_threshold = thresh
+    dqn.policy.safety_threshold = thresh
 
 if not os.path.exists(save_path):
     os.makedirs(save_path)
 
 rerun_test_scenarios_v3(
-    q_dqn,
+    dqn,
     save_path,
     ps,
     change_thresh_fn=change_thresh_fn,

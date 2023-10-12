@@ -27,6 +27,7 @@ class DQNAEAgent(AbstractDQNAgent):
         enable_dueling_network=False,
         dueling_type="avg",
         update_ae_each=1,
+        K=1,
         *args,
         **kwargs
     ):
@@ -39,6 +40,7 @@ class DQNAEAgent(AbstractDQNAgent):
         self.enable_dueling_network = enable_dueling_network
         self.dueling_type = dueling_type
         self.update_ae_each = update_ae_each
+        self.K = K
 
         # Related objects.
         self.model = model
@@ -129,8 +131,8 @@ class DQNAEAgent(AbstractDQNAgent):
                 act = torch.Tensor([i]).unsqueeze(dim=0).float().to(self.device)
                 [obs_mu_i, act_mu_i, covar_i, (obs_i, act_i)] = self.ae(obs, act)
                 nll = self.ae.nll_loss(obs_mu_i, obs_i, act_mu_i, act_i, covar_i)
-                # nll_obs = self.ae.obs_nll_loss(obs_mu_i, obs_i, covar_i)
-                uncertainties.append(nll)
+                nll_obs = self.ae.obs_nll_loss(obs_mu_i, obs_i, covar_i)
+                uncertainties.append(nll_obs + self.K * (nll - nll_obs))
 
         if self.training:
             if hasattr(self.policy, "custom"):
