@@ -653,14 +653,36 @@ if __name__ == "__main__":
 
             "ROC": {
                 "use_uncertainty": True,
-                "path": "rerun_test_scenarios_U_v5.csv",
+                "path": "rerun_test_scenarios_U_v5_k1.csv",
                 "mark": "v-",
             },
 
             "unc_heatmap": {
                 "show": True,
-                "fast_overtaking": "fast_overtaking_NU_v3.csv",
-                "standstill": "standstill_NU_v3.csv",
+                "fast_overtaking": "fast_overtaking_NU_v3_k1.csv",
+                "standstill": "standstill_NU_v3_k1.csv",
+                "unc_range": [-60, 50],
+            },
+        },
+        {
+            "name": "DAE DQN K=10",
+            "color": "orange",
+            "train": {
+                "show": False,
+            },
+
+            "base_path": "./logs/train_agent_20231006_154948_dae_v5/",
+
+            "ROC": {
+                "use_uncertainty": True,
+                "path": "rerun_test_scenarios_U_v5_k10.csv",
+                "mark": "v-",
+            },
+
+            "unc_heatmap": {
+                "show": True,
+                "fast_overtaking": "fast_overtaking_NU_v3_k10.csv",
+                "standstill": "standstill_NU_v3_k10.csv",
                 "unc_range": [-60, 50],
             },
         },
@@ -710,5 +732,5 @@ if __name__ == "__main__":
     ]
 
     plot_train()
-    plot_rerun_test_v3()
+    # plot_rerun_test_v3()
     plot_tests_v3()

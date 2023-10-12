@@ -97,21 +97,21 @@ if __name__ == "__main__":
             "range": (0, 0.035),
         },
         {
-            "name": "DAE DQN",
+            "name": "DAE DQN K=1",
             "path": "./logs/train_agent_20231006_154948_dae_v5/data.hdf5",
-            "csv": "./logs/train_agent_20231006_154948_dae_v5/rerun_test_scenarios_NU_uncerts.csv",
+            "csv": "./logs/train_agent_20231006_154948_dae_v5/rerun_test_scenarios_NU_uncerts_k1.csv",
             "custom_marks": [],
             "bins": 100,
             "range": (-50, 100),
         },
-        # {
-        #     "name": "DAE DQN",
-        #     "path": "./logs/train_agent_20230828_020015_ae_v22/data.hdf5",
-        #     "csv": "./logs/train_agent_20230828_020015_ae_v22/rerun_test_scenarios_NU_uncerts.csv",
-        #     "custom_marks": [],
-        #     "bins": 100,
-        #     "range": (-700, 0),
-        # }
+        {
+            "name": "DAE DQN K=10",
+            "path": "./logs/train_agent_20231006_154948_dae_v5/data.hdf5",
+            "csv": "./logs/train_agent_20231006_154948_dae_v5/rerun_test_scenarios_NU_uncerts_k10.csv",
+            "custom_marks": [],
+            "bins": 100,
+            "range": (-50, 100),
+        },
     ]
 
     plot_distributions(models, mode="csv")
