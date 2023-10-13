@@ -27,7 +27,7 @@ class DQNAEAgent(AbstractDQNAgent):
         enable_dueling_network=False,
         dueling_type="avg",
         update_ae_each=1,
-        K=10,
+        K=100,
         *args,
         **kwargs
     ):
