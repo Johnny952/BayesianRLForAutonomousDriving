@@ -113,12 +113,12 @@ if __name__ == "__main__":
             "range": (-100, 100),
         },
         {
-            "name": "DAE DQN K=100",
+            "name": "DAE DQN K=0",
             "path": "./logs/train_agent_20231006_154948_dae_v5/data.hdf5",
-            "csv": "./logs/train_agent_20231006_154948_dae_v5/rerun_test_scenarios_NU_uncerts_k100.csv",
+            "csv": "./logs/train_agent_20231006_154948_dae_v5/rerun_test_scenarios_NU_uncerts_k0.csv",
             "custom_marks": [],
             "bins": 100,
-            "range": (-200, 100),
+            "range": (-100, 100),
         },
     ]
 
