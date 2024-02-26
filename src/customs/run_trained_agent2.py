@@ -1,3 +1,6 @@
+""" 
+    Mixture model run on traning episodes
+"""
 import sys
 import numpy as np
 from rl.policy import GreedyQPolicy
@@ -15,11 +18,11 @@ from network_architecture import (
     NetworkMLP,
     NetworkCNN,
 )
-from base.run_agent_utils import rerun_test_scenarios_v3, rerun_test_scenarios_v0
+from base.run_agent_utils import rerun_test_scenarios_v0
 from base.dqn_mix import MixDQNAgent, MixTestPolicy
 from base.dqn_standard import DQNAgent
 from matplotlib import rcParams
-from safe_greedy_policy import SafeGreedyPolicy, SimpleSafeGreedyPolicy, SimpleSafeGreedyPolicyHard
+from safe_greedy_policy import SafeGreedyPolicy, SimpleSafeGreedyPolicyHard
 
 np.warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)
 

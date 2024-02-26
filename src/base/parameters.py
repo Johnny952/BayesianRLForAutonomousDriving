@@ -5,7 +5,7 @@ The meaning of the different parameters are described below.
 Setting debug_run = True allows a shorter run, only for debugging purposes.
 """
 
-debug_run = False
+debug_run = True
 env_seed = 13
 random_seed = env_seed+1
 
@@ -43,7 +43,7 @@ agent_par["tensorboard_log"] = "../logs/"
 
 
 
-agent_par["device"] = 'cuda'
+agent_par["device"] = 'cpu'
 agent_par["model"] = 'ae' # bnn or ae
 
 

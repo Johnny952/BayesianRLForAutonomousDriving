@@ -1,3 +1,6 @@
+""" 
+    BASIC AGENT TRAINING
+"""
 import random  # Required to set random seed for replay memory
 import os
 import datetime

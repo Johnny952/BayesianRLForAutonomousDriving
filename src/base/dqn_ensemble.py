@@ -7,12 +7,12 @@ from __future__ import division
 import warnings
 from keras.layers import Lambda, Input
 from keras.optimizers import Adam
-from core import Agent
+from base.core import Agent
 from rl.policy import EpsGreedyQPolicy, GreedyQPolicy
 from rl.util import *
 from keras.callbacks import Callback
 import multiprocessing as mp
-from network_architecture import NetworkMLP, NetworkCNN
+from base.network_architecture import NetworkMLP, NetworkCNN
 
 
 class AbstractDQNAgent(Agent):

@@ -45,11 +45,11 @@ rcParams["pdf.fonttype"] = 42  # To avoid Type 3 fonts in figures
 rcParams["ps.fonttype"] = 42
 
 """ Options: """
-filepath = "../logs/train_agent_20230715_211724_ae_v14/"
-name = 'ae'
-agent_name = "5950097"
-case = "fast_overtaking"  # 'rerun_test_scenarios', 'fast_overtaking', 'standstill'
-safety_threshold = -80  # Only used if ensemble test policy is chosen BNN: 0.0045, AE: 0.7
+filepath = "../logs/train_agent_20231006_154948_dae_v5/"
+name = 'dae'
+agent_name = "5950036"
+case = "standstill"  # 'rerun_test_scenarios', 'fast_overtaking', 'standstill'
+safety_threshold = 0  # Only used if ensemble test policy is chosen BNN: 0.0045, AE: 0.7
 save_video = True
 use_safe_action = False
 """ End options """
@@ -145,7 +145,7 @@ elif p.agent_par["model"] == 'ae':
     ae = NetworkAE(
         p.agent_par["window_length"],
         nb_observations,
-        nb_actions,
+        actions=ps.sim_params['action_interp'],
         obs_encoder_arc=p.agent_par["obs_encoder_arc"],
         act_encoder_arc=p.agent_par["act_encoder_arc"],
         shared_encoder_arc=p.agent_par["shared_encoder_arc"],
@@ -157,8 +157,8 @@ elif p.agent_par["model"] == 'ae':
         act_loss_weight=p.agent_par["act_loss_weight"],
         obs_loss_weight=p.agent_par["obs_loss_weight"],
         prob_loss_weight=p.agent_par["prob_loss_weight"],
-        min_covar=p.agent_par["min_covar"],
-    ).to(p.agent_par['device'])
+        min_value=p.agent_par["min_value"],
+    ).to(p.agent_par["device"])
     if p.agent_par["cnn"]:
         model = NetworkCNN(
             env.nb_ego_states,

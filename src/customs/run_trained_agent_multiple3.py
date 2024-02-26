@@ -1,28 +1,5 @@
 """
-Run trained agent on test episodes or special cases.
-
-This script should be called from the folder src, where the script is located.
-
-The options for what to run are set below, after the import statements. The options are:
-- Which agent to run, defined by:
-   - filepath = '../logs/train_agent_DATE_TIME_NAME/', which is the folder name of log file for a specific run
-   - agent name = 'STEP', which chooses the agent that was saved after STEP training steps.
-                          In case of ensemble, only use STEP and do not include _N, where N is the ensemble index.
-- Which case to run:
-   - case = 'CASE_NAME', options 'rerun_test_scenarios', 'fast_overtaking', 'standstill'
-- Ensemble test policy:
-   - use_ensemble_test_policy = True/False, which specifies it the ensemble safety policy should be used or not
-   - safety_threshold = e.g. 0.02, which defines the maximum allowed coefficient of variation for an action
-- Save run as video:
-   - save_video = True/False, if True, a set of images are stored in '../Videos/', which can be used to create a video
-
-The different cases are:
-- rerun_test_scenarios: This option will run the trained agent on the same test episodes that are used to evaluate
-                        the performance of the agent during the training process.
-- fast_overtaking: This option demonstrates how the safety criterion of the ensemble RPF agent can be used,
-                   and is the same as was included in the paper.
-- standstill: This option demonstrates how the safety criterion of the ensemble RPF agent can be used,
-              and is the same as was included in the paper.
+    Threshold sweep test episodes
 """
 
 import sys

@@ -1,3 +1,7 @@
+"""
+    Threshold sweep test episodes with mixture model
+"""
+
 import sys
 import numpy as np
 from rl.policy import GreedyQPolicy

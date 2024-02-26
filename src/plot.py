@@ -202,7 +202,7 @@ def plot_train():
     # plt.figure(figsize=(13, 8))
 
     # Rewards
-    plt.figure(figsize=(13, 8))
+    plt.figure(figsize=(9.6, 6.4)) #3 2
     ax2 = plt.subplot(111)
     for model in models:
         if model["train"]["show"]:
@@ -235,15 +235,17 @@ def plot_train():
                 # label="Std",
             )
     ax2.spines["top"].set_visible(False)
-    plt.xlabel("Traning step", fontsize=14)
-    plt.ylabel("Normalized Reward", fontsize=14)
+    plt.xlabel("Traning step", fontsize=24)
+    plt.ylabel("Normalized Reward", fontsize=24)
     plt.ticklabel_format(style="sci", axis="x", scilimits=(0, 0), useMathText=True)
-    plt.legend()
+    plt.yticks(fontsize=18)
+    plt.xticks(fontsize=18)
+    plt.legend(fontsize=16)
     plt.savefig("./videos/train_rewards.png")
     plt.close()
 
     # Uncertainty
-    plt.figure(figsize=(13, 8))
+    plt.figure(figsize=(9.6, 6.4))
     ax1 = plt.subplot(111)
     for model in models:
         if model["train"]["show"]:
@@ -280,17 +282,19 @@ def plot_train():
                 #     alpha=0.1,
                 # )
     ax1.spines["top"].set_visible(False)
-    plt.xlabel("Traning step", fontsize=14)
-    plt.ylabel("Normalized Uncertainty", fontsize=14)
+    plt.xlabel("Traning step", fontsize=24)
+    plt.ylabel("Normalized Uncertainty", fontsize=24)
+    plt.yticks(fontsize=18)
+    plt.xticks(fontsize=18)
     plt.ylim((0, 1))
-    plt.legend()
+    plt.legend(fontsize=16)
     # plt.yscale('log')
     plt.ticklabel_format(style="sci", axis="x", scilimits=(0, 0), useMathText=True)
     plt.savefig("./videos/train_uncertainties.png")
     plt.close()
 
     # Collision rate
-    plt.figure(figsize=(13, 8))
+    plt.figure(figsize=(9.6, 6.4))
     ax3 = plt.subplot(111)
     for model in models:
         if model["train"]["show"]:
@@ -305,18 +309,20 @@ def plot_train():
                 color=model_color,
                 label=f"Mean {model_name}",
             )
-    plt.xlabel("Traning step", fontsize=14)
-    plt.ylabel("Collision Free Episodes", fontsize=14)
+    plt.xlabel("Traning step", fontsize=24)
+    plt.ylabel("Collision Free Episodes", fontsize=24)
+    plt.yticks(fontsize=18)
+    plt.xticks(fontsize=18)
     ax3.spines["top"].set_visible(False)
     plt.ylim((-0.05, 1.05))
-    plt.legend()
+    plt.legend(fontsize=16)
     plt.ticklabel_format(style="sci", axis="x", scilimits=(0, 0), useMathText=True)
     plt.gca().yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0))
     plt.savefig("./videos/train_colrate.png")
     plt.close()
 
     # Collision Speed
-    plt.figure(figsize=(13, 8))
+    plt.figure(figsize=(9.6, 6.4))
     ax4 = plt.subplot(111)
     for model in models:
         if model["train"]["show"]:
@@ -329,7 +335,7 @@ def plot_train():
                 steps,
                 collision_speed,
                 color=model_color,
-                label=f"Mean {model_name}",
+                #label=f"Mean {model_name}",
                 alpha=0.1,
             )
             filtered_speeds = gaussian_filter1d(collision_speed.astype(np.float32), sigma=2)
@@ -347,10 +353,12 @@ def plot_train():
             #     color=model_color,
             #     alpha=0.1,
             # )
-    plt.xlabel("Traning step", fontsize=14)
-    plt.ylabel("Collision Speed", fontsize=14)
+    plt.xlabel("Traning step", fontsize=24)
+    plt.ylabel("Collision Speed", fontsize=24)
+    plt.yticks(fontsize=18)
+    plt.xticks(fontsize=18)
     ax4.spines["top"].set_visible(False)
-    plt.legend()
+    plt.legend(fontsize=16)
     plt.ticklabel_format(style="sci", axis="x", scilimits=(0, 0), useMathText=True)
     plt.savefig("./videos/train_colspeed.png")
     plt.close()
@@ -358,20 +366,20 @@ def plot_train():
 def plot_rerun_test_v3():
     scenario = "rerun_test_scenarios"
     fig1, ax1 = plt.subplots(ncols=1, nrows=1)
-    fig1.set_figwidth(16)
-    fig1.set_figheight(16)
+    fig1.set_figwidth(7)
+    fig1.set_figheight(7)
 
     fig2, ax2 = plt.subplots(ncols=1, nrows=1)
-    fig2.set_figwidth(16)
-    fig2.set_figheight(16)
+    fig2.set_figwidth(7)
+    fig2.set_figheight(7)
 
     fig3, ax3 = plt.subplots(ncols=1, nrows=1)
-    fig3.set_figwidth(16)
-    fig3.set_figheight(16)
+    fig3.set_figwidth(7)
+    fig3.set_figheight(7)
 
     fig4, ax4 = plt.subplots(ncols=1, nrows=1)
-    fig4.set_figwidth(16)
-    fig4.set_figheight(16)
+    fig4.set_figwidth(7)
+    fig4.set_figheight(7)
 
     for model in models:
         base_path = model["base_path"]
@@ -548,18 +556,17 @@ def plot_tests_v3():
 
     for model in models:
         if model["unc_heatmap"]["show"]:
-            fig, axs = plt.subplots(ncols=2, nrows=1)
-            fig.set_figwidth(16)
-            fig.set_figheight(8)
-
             base_path = model["base_path"]
             model_name = model["name"]
 
-            fig.suptitle(model_name)
+            # fig.suptitle(model_name, fontsize=24)
 
             for idx, scenario in enumerate(
                 ["standstill", "fast_overtaking"]
             ):  # standstill, "fast_overtaking"
+                fig, ax = plt.subplots(ncols=1, nrows=1)
+                fig.set_figwidth(16)
+                fig.set_figheight(8)
                 scenario_path = model["unc_heatmap"][scenario]
                 path = f"{base_path}{scenario_path}"
                 _, pos_vel, unc = read_test2(path, ep_type=float)
@@ -585,8 +592,8 @@ def plot_tests_v3():
                 sn.heatmap(
                     df_cm.T,
                     annot=False,
-                    ax=axs[ax_idx],
-                    cbar_kws={"label": "uncertainty"},
+                    ax=ax,
+                    cbar_kws={"label": "Uncertainty"},
                     vmin=unc_range[0],
                     vmax=unc_range[1],
                 )
@@ -595,18 +602,19 @@ def plot_tests_v3():
                     if scenario == "standstill"
                     else "Fast vehicle speed"
                 )
-                axs[ax_idx].set_xlabel(xlabel, fontsize=16)
-                axs[ax_idx].set_ylabel("Step", fontsize=16)
-                axs[ax_idx].set_title(scenario, fontsize=16)
-                axs[ax_idx].tick_params(labelrotation=45)
+                ax.set_xlabel(xlabel, fontsize=20)
+                ax.set_ylabel("Step", fontsize=20)
+                ax.set_title(scenario, fontsize=20)
+                ax.tick_params(labelrotation=45)
+                ax.figure.axes[-1].yaxis.label.set_size(20)
 
-                xticks = axs[ax_idx].xaxis.get_major_ticks()
+                xticks = ax.xaxis.get_major_ticks()
                 for i in range(len(xticks) // 2):
                     xticks[2 * i + 1].set_visible(False)
 
-            # plt.show()
-            plt.savefig(f"./videos/{model_name}_v3.png")
-            plt.close()
+                # plt.show()
+                plt.savefig(f"./videos/{model_name}_{scenario}_v3.png")
+                plt.close()
 
 
 if __name__ == "__main__":
@@ -627,7 +635,7 @@ if __name__ == "__main__":
             "ROC": {
                 "use_uncertainty": True,
                 "path": "rerun_test_scenarios_U_v5.csv",
-                "mark": "X-",
+                "mark": "o-",
             },
 
             "unc_heatmap": {
@@ -654,7 +662,7 @@ if __name__ == "__main__":
             "ROC": {
                 "use_uncertainty": True,
                 "path": "rerun_test_scenarios_U_v5_k1.csv",
-                "mark": "v-",
+                "mark": "o-",
             },
 
             "unc_heatmap": {
@@ -676,7 +684,7 @@ if __name__ == "__main__":
             "ROC": {
                 "use_uncertainty": True,
                 "path": "rerun_test_scenarios_U_v5_k10.csv",
-                "mark": "v-",
+                "mark": "o-",
             },
 
             "unc_heatmap": {
@@ -698,7 +706,7 @@ if __name__ == "__main__":
         #     "ROC": {
         #         "use_uncertainty": True,
         #         "path": "rerun_test_scenarios_U_v5_k100.csv",
-        #         "mark": "v-",
+        #         "mark": "o-",
         #     },
 
         #     "unc_heatmap": {
@@ -720,7 +728,7 @@ if __name__ == "__main__":
             "ROC": {
                 "use_uncertainty": True,
                 "path": "rerun_test_scenarios_U_v5_k0.csv",
-                "mark": "v-",
+                "mark": "o-",
             },
 
             "unc_heatmap": {
@@ -742,7 +750,7 @@ if __name__ == "__main__":
             "ROC": {
                 "use_uncertainty": True,
                 "path": "rerun_test_scenarios_U_v5.csv",
-                "mark": "v-",
+                "mark": "o-",
             },
 
             "unc_heatmap": {
@@ -776,5 +784,5 @@ if __name__ == "__main__":
     ]
 
     plot_train()
-    # plot_rerun_test_v3()
+    plot_rerun_test_v3()
     plot_tests_v3()
