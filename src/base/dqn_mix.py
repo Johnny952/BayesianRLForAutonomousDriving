@@ -7,10 +7,11 @@ import wandb
 
 
 class RPFDAEAgent(DQNAgentEnsembleParallel):
-    def __init__(self, nb_models, learning_rate, nb_ego_states, nb_states_per_vehicle, nb_vehicles, nb_conv_layers, nb_conv_filters, nb_hidden_fc_layers, nb_hidden_neurons, network_seed, prior_scale_factor, window_length, policy=None, test_policy=None, enable_double_dqn=True, enable_dueling_network=False, dueling_type='avg', *args, **kwargs):
+    def __init__(self, update_ae_each, nb_models, learning_rate, nb_ego_states, nb_states_per_vehicle, nb_vehicles, nb_conv_layers, nb_conv_filters, nb_hidden_fc_layers, nb_hidden_neurons, network_seed, prior_scale_factor, window_length, policy=None, test_policy=None, enable_double_dqn=True, enable_dueling_network=False, dueling_type='avg', *args, **kwargs):
         super().__init__(nb_models, learning_rate, nb_ego_states, nb_states_per_vehicle, nb_vehicles, nb_conv_layers, nb_conv_filters, nb_hidden_fc_layers, nb_hidden_neurons, network_seed, prior_scale_factor, window_length, policy, test_policy, enable_double_dqn, enable_dueling_network, dueling_type, *args, **kwargs)
         wandb.init(project="highway-rpf-dae")
         self.backward_dae_nb = 0
+        self.update_ae_each = update_ae_each
 
     def set_uncertainty_model(self, model, optimizer, device):
         self.u_model = model
@@ -98,11 +99,12 @@ class RPFDAEAgent(DQNAgentEnsembleParallel):
         metrics = [np.nan for _ in self.metrics_names]
         if self.training:
             if self.step > self.nb_steps_warmup and self.step % self.train_interval == 0:
-                for net in range(self.nb_models):
-                    experiences = self.memory.sample(net, self.batch_size)
-                    assert len(experiences) == self.batch_size
-                    self.input_queues[net].put(['train', experiences])
-                    self.update_dae(experiences)
+                if self.step % self.update_ae_each == 0:
+                    for net in range(self.nb_models):
+                        experiences = self.memory.sample(net, self.batch_size)
+                        assert len(experiences) == self.batch_size
+                        self.input_queues[net].put(['train', experiences])
+                        self.update_dae(experiences)
 
                 for net in range(self.nb_models):   # Wait for all workers to finish
                     output = self.output_queues[net].get()

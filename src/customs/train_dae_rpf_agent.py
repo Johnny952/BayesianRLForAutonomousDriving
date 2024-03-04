@@ -65,7 +65,7 @@ policy = GreedyQPolicy()
 test_policy = EnsembleTestPolicy('mean')
 memory = BootstrappingMemory(nb_nets=p.agent_par['number_of_networks'], limit=p.agent_par['buffer_size'],
                                 adding_prob=p.agent_par["adding_prob"], window_length=p.agent_par["window_length"])
-dqn = RPFDAEAgent(nb_models=nb_models, learning_rate=p.agent_par['learning_rate'],
+dqn = RPFDAEAgent(update_ae_each=p.agent_par['update_ae_each'], nb_models=nb_models, learning_rate=p.agent_par['learning_rate'],
                                 nb_ego_states=env.nb_ego_states, nb_states_per_vehicle=env.nb_states_per_vehicle,
                                 nb_vehicles=ps.sim_params['sensor_nb_vehicles'],
                                 nb_conv_layers=p.agent_par['nb_conv_layers'],
