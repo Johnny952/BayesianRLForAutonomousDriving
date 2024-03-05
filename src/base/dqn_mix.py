@@ -11,6 +11,7 @@ class RPFDAEAgent(DQNAgentEnsembleParallel):
         super().__init__(nb_models, learning_rate, nb_ego_states, nb_states_per_vehicle, nb_vehicles, nb_conv_layers, nb_conv_filters, nb_hidden_fc_layers, nb_hidden_neurons, network_seed, prior_scale_factor, window_length, policy, test_policy, enable_double_dqn, enable_dueling_network, dueling_type, *args, **kwargs)
         wandb.init(project="highway-rpf-dae")
         self.backward_dae_nb = 0
+        self.nb_backwards = 0
         self.update_ae_each = update_ae_each
 
     def set_uncertainty_model(self, model, optimizer, device):
@@ -99,7 +100,7 @@ class RPFDAEAgent(DQNAgentEnsembleParallel):
         metrics = [np.nan for _ in self.metrics_names]
         if self.training:
             if self.step > self.nb_steps_warmup and self.step % self.train_interval == 0:
-                if self.step % self.update_ae_each == 0:
+                if self.nb_backwards % self.update_ae_each == 0:
                     for net in range(self.nb_models):
                         experiences = self.memory.sample(net, self.batch_size)
                         assert len(experiences) == self.batch_size
@@ -113,6 +114,8 @@ class RPFDAEAgent(DQNAgentEnsembleParallel):
                     assert(output[0] == 'training_done_' + str(net))
 
                     metrics += [self.active_model]
+            
+            self.nb_backwards += 1
 
         if self.target_model_update >= 1 and self.step % self.target_model_update == 0:
             self.update_target_model_hard()
