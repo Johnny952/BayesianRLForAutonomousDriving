@@ -100,11 +100,11 @@ class RPFDAEAgent(DQNAgentEnsembleParallel):
         metrics = [np.nan for _ in self.metrics_names]
         if self.training:
             if self.step > self.nb_steps_warmup and self.step % self.train_interval == 0:
-                if self.nb_backwards % self.update_ae_each == 0:
-                    for net in range(self.nb_models):
-                        experiences = self.memory.sample(net, self.batch_size)
-                        assert len(experiences) == self.batch_size
-                        self.input_queues[net].put(['train', experiences])
+                for net in range(self.nb_models):
+                    experiences = self.memory.sample(net, self.batch_size)
+                    assert len(experiences) == self.batch_size
+                    self.input_queues[net].put(['train', experiences])
+                    if self.nb_backwards % self.update_ae_each == 0:
                         self.update_dae(experiences)
 
                 for net in range(self.nb_models):   # Wait for all workers to finish
