@@ -37,23 +37,32 @@ from dqn_standard import DQNAgent
 from dqn_ensemble import DQNAgentEnsemble
 from policy import EnsembleTestPolicy
 
-from run_agent_utils import rerun_test_scenarios_v2, fast_overtaking_v2, standstill_v2, rerun_test_scenarios_v0
+from run_agent_utils import rerun_test_scenarios_v3, fast_overtaking_v2, standstill_v2
 
 rcParams["pdf.fonttype"] = 42  # To avoid Type 3 fonts in figures
 rcParams["ps.fonttype"] = 42
 
 """ Options: """
-filepath = "../logs/train_agent_20230715_211722_rpf_v14/"#"../logs/train_agent_20230323_235219_rpf_6M_v3/", "../logs/train_agent_20230323_235314_dqn_6M_v3/"
+filepath = "../logs/train_agent_20230715_211722_rpf_v14/"#"../logs/train_agent_20230715_211722_rpf_v14/", "../logs/train_agent_20230323_235314_dqn_6M_v3/"
 agent_name = "5950023"#rpf: "5950033", dqn: "5950056"
-case = "all-no-rerun"  # 'rerun_test_scenarios', 'fast_overtaking', 'standstill', 'all'
-use_ensemble_test_policy = False
+case = "rerun_test_scenarios"  # 'rerun_test_scenarios', 'all-no-rerun'
+use_ensemble_test_policy = True
 
-thresh_range = [0]
+thresh_range = [
+    0.018733895607714914,
+    0.02182466209477983,
+    0.01993404775,
+    0.021279978449999997,
+    0.023367345289999997,
+    0.02548624245000003,
+    0.03320669617200001,
+    0.15390997,
+]
 save_video = False
 do_save_metrics = True
-do_save_uncert = True
+do_save_uncert = False
 number_tests = 1
-number_episodes=100
+number_episodes=2000
 csv_sufix='_v3'
 position_steps=100
 use_gui=False
@@ -135,7 +144,7 @@ def change_thresh_fn(thresh):
 
 
 if case == "rerun_test_scenarios":
-    rerun_test_scenarios_v2(
+    rerun_test_scenarios_v3(
         dqn,
         filepath,
         ps,
@@ -143,58 +152,19 @@ if case == "rerun_test_scenarios":
         thresh_range=thresh_range,
         use_safe_action=use_ensemble_test_policy,
         save_video=save_video,
-        do_save_metrics=True,
+        do_save_metrics=do_save_metrics,
         number_tests=number_tests,
         use_gui=use_gui,
         number_episodes=number_episodes,
         csv_sufix=csv_sufix,
-        do_save_uncert=False,
-    )
-    rerun_test_scenarios_v0(
-        dqn,
-        filepath,
-        ps,
-        change_thresh_fn=change_thresh_fn,
-        thresh_range=thresh_range,
-        use_safe_action=use_ensemble_test_policy,
-        save_video=save_video,
-        do_save_metrics=True,
-        number_tests=number_tests,
-        use_gui=use_gui,
-        number_episodes=number_episodes,
-        do_save_uncert=False,
-    )
-elif case == "fast_overtaking":
-    fast_overtaking_v2(
-        dqn,
-        filepath,
-        ps,
-        use_safe_action=False,
-        save_video=save_video,
-        position_steps=position_steps,
-        use_gui=use_gui,
-        csv_sufix=csv_sufix,
-        do_save_uncert=True,
-    )
-
-elif case == "standstill":
-    standstill_v2(
-        dqn,
-        filepath,
-        ps,
-        use_safe_action=False,
-        save_video=save_video,
-        position_steps=position_steps,
-        use_gui=use_gui,
-        csv_sufix=csv_sufix,
-        do_save_uncert=True,
+        do_save_uncert=do_save_uncert,
     )
 elif case == "all-no-rerun":
     fast_overtaking_v2(
         dqn,
         filepath,
         ps,
-        use_safe_action=False,
+        use_safe_action=use_ensemble_test_policy,
         save_video=save_video,
         position_steps=position_steps,
         use_gui=use_gui,
@@ -205,88 +175,7 @@ elif case == "all-no-rerun":
         dqn,
         filepath,
         ps,
-        use_safe_action=False,
-        save_video=save_video,
-        position_steps=position_steps,
-        use_gui=use_gui,
-        csv_sufix=csv_sufix,
-        do_save_uncert=True,
-    )
-elif case == "all":
-    rerun_test_scenarios_v2(
-        dqn,
-        filepath,
-        ps,
-        change_thresh_fn=change_thresh_fn,
-        thresh_range=thresh_range,
-        use_safe_action=False,
-        save_video=save_video,
-        do_save_metrics=True,
-        number_tests=number_tests,
-        use_gui=use_gui,
-        number_episodes=number_episodes,
-        csv_sufix=csv_sufix,
-        do_save_uncert=False,
-    )
-    rerun_test_scenarios_v2(
-        dqn,
-        filepath,
-        ps,
-        change_thresh_fn=change_thresh_fn,
-        thresh_range=thresh_range,
-        use_safe_action=True,
-        save_video=save_video,
-        do_save_metrics=True,
-        number_tests=number_tests,
-        use_gui=use_gui,
-        number_episodes=number_episodes,
-        csv_sufix=csv_sufix,
-        do_save_uncert=False,
-    )
-    rerun_test_scenarios_v0(
-        dqn,
-        filepath,
-        ps,
-        change_thresh_fn=change_thresh_fn,
-        thresh_range=thresh_range,
-        use_safe_action=False,
-        save_video=save_video,
-        do_save_metrics=True,
-        number_tests=number_tests,
-        use_gui=use_gui,
-        number_episodes=number_episodes,
-        do_save_uncert=False,
-    )
-    rerun_test_scenarios_v0(
-        dqn,
-        filepath,
-        ps,
-        change_thresh_fn=change_thresh_fn,
-        thresh_range=thresh_range,
-        use_safe_action=True,
-        save_video=save_video,
-        do_save_metrics=True,
-        number_tests=number_tests,
-        use_gui=use_gui,
-        number_episodes=number_episodes,
-        do_save_uncert=False,
-    )
-    fast_overtaking_v2(
-        dqn,
-        filepath,
-        ps,
-        use_safe_action=False,
-        save_video=save_video,
-        position_steps=position_steps,
-        use_gui=use_gui,
-        csv_sufix=csv_sufix,
-        do_save_uncert=True,
-    )
-    standstill_v2(
-        dqn,
-        filepath,
-        ps,
-        use_safe_action=False,
+        use_safe_action=use_ensemble_test_policy,
         save_video=save_video,
         position_steps=position_steps,
         use_gui=use_gui,

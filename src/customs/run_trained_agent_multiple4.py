@@ -301,7 +301,7 @@ if case == "all":
     #     ps,
     #     change_thresh_fn=change_thresh_fn,
     #     thresh_range=thresh_range,
-    #     use_safe_action=True,
+    #     use_safe_action=use_safe_action,
     #     save_video=save_video,
     #     do_save_metrics=do_save_metrics,
     #     number_tests=number_tests,

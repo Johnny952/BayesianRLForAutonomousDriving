@@ -642,7 +642,7 @@ if __name__ == "__main__":
                 "show": True,
                 "fast_overtaking": "fast_overtaking_NU_v3.csv",
                 "standstill": "standstill_NU_v3.csv",
-                "unc_range": [0.012, 0.08],
+                "unc_range": [0.02, 0.07],
             }
         },
         {
@@ -661,81 +661,42 @@ if __name__ == "__main__":
 
             "ROC": {
                 "use_uncertainty": True,
-                "path": "rerun_test_scenarios_U_v5_k1.csv",
+                "path": "rerun_test_scenarios_U_v5.csv",
                 "mark": "o-",
             },
 
             "unc_heatmap": {
                 "show": True,
-                "fast_overtaking": "fast_overtaking_NU_v3_k1.csv",
-                "standstill": "standstill_NU_v3_k1.csv",
+                "fast_overtaking": "fast_overtaking_NU_v3.csv",
+                "standstill": "standstill_NU_v3.csv",
                 "unc_range": [-60, 50],
             },
         },
         {
-            "name": "DAE DQN K=10",
+            "name": "DAE Ensemble RPF DQN K=1",
             "color": "orange",
             "train": {
-                "show": False,
+                "show": True,
+                "paths": [
+                    "./logs/train_dae_rpf_agent_20240319_204634/data.hdf5",
+                ],
+                "show_uncertainty": True,
+                "model_uncertainty": 0,
             },
 
-            "base_path": "./logs/train_agent_20231006_154948_dae_v5/",
+            "base_path": "./logs/train_dae_rpf_agent_20240319_204634/",
 
             "ROC": {
                 "use_uncertainty": True,
-                "path": "rerun_test_scenarios_U_v5_k10.csv",
+                "path": "rerun_test_scenarios_U_v5.csv",
                 "mark": "o-",
             },
 
             "unc_heatmap": {
                 "show": True,
-                "fast_overtaking": "fast_overtaking_NU_v3_k10.csv",
-                "standstill": "standstill_NU_v3_k10.csv",
-                "unc_range": [-60, 50],
-            },
-        },
-        # {
-        #     "name": "DAE DQN K=100",
-        #     "color": "purple",
-        #     "train": {
-        #         "show": False,
-        #     },
-
-        #     "base_path": "./logs/train_agent_20231006_154948_dae_v5/",
-
-        #     "ROC": {
-        #         "use_uncertainty": True,
-        #         "path": "rerun_test_scenarios_U_v5_k100.csv",
-        #         "mark": "o-",
-        #     },
-
-        #     "unc_heatmap": {
-        #         "show": True,
-        #         "fast_overtaking": "fast_overtaking_NU_v3_k100.csv",
-        #         "standstill": "standstill_NU_v3_k100.csv",
-        #         "unc_range": [-200, 100],
-        #     },
-        # },
-        {
-            "name": "DAE DQN K=0",
-            "color": "purple",
-            "train": {
-                "show": False,
-            },
-
-            "base_path": "./logs/train_agent_20231006_154948_dae_v5/",
-
-            "ROC": {
-                "use_uncertainty": True,
-                "path": "rerun_test_scenarios_U_v5_k0.csv",
-                "mark": "o-",
-            },
-
-            "unc_heatmap": {
-                "show": True,
-                "fast_overtaking": "fast_overtaking_NU_v3_k0.csv",
-                "standstill": "standstill_NU_v3_k0.csv",
-                "unc_range": [-60, 50],
+                "fast_overtaking": "fast_overtaking_NU_v3.csv",
+                "standstill": "standstill_NU_v3.csv",
+                "unc_range": [97.7, 99],
             },
         },
         {
@@ -784,5 +745,5 @@ if __name__ == "__main__":
     ]
 
     plot_train()
-    plot_rerun_test_v3()
+    # plot_rerun_test_v3()
     plot_tests_v3()

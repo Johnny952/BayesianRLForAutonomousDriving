@@ -35,6 +35,29 @@ class RPFDAEAgent(DQNAgentEnsembleParallel):
         self.u_model.load_state_dict(checkpoint["model_state_disct"])
         self.u_optimizer.load_state_dict(checkpoint["optimizer_state_disct"])
 
+    def forward(self, observation):
+        action, info = super().forward(observation)
+
+        uncertainties = []
+        obs = torch.from_numpy(observation).unsqueeze(dim=0).float().to(self.device)
+        with torch.no_grad():
+            uncertainties = []
+            
+            for i in range(self.nb_actions):
+                act = torch.Tensor([i]).unsqueeze(dim=0).float().to(self.device)
+                [obs_mu_i, act_mu_i, covar_i, (obs_i, act_i)] = self.u_model(obs, act)
+                nll = self.u_model.nll_loss(obs_mu_i, obs_i, act_mu_i, act_i, covar_i)
+                nll_obs = self.u_model.obs_nll_loss(obs_mu_i, obs_i, covar_i)
+                uncertainties.append(nll_obs + 1 * (nll - nll_obs))
+
+        if not self.training and hasattr(self.test_policy, "custom"):
+            action, action_info = self.test_policy.select_action(
+                info['q_values_all_nets'], uncertainties
+            )
+        
+        info["coefficient_of_variation"] = np.array([u.data.cpu().numpy() for u in uncertainties])
+
+        return action, info
 
     def update_dae(self, experiences):
         # Start by extracting the necessary parameters (we use a vectorized implementation).
