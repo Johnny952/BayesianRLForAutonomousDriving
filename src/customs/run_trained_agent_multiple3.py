@@ -36,21 +36,21 @@ rcParams["pdf.fonttype"] = 42  # To avoid Type 3 fonts in figures
 rcParams["ps.fonttype"] = 42
 
 """ Options: """
-filepath = "../logs/train_dae_rpf_agent_20240319_204634/"# train_agent_20231006_154948_dae_v5
-agent_name = "5950001"# 5950036
-case = "all-no-rerun"  # 'rerun_test_scenarios', 'all-no-rerun'
-use_safe_action = False
-dae_rpf = True
+filepath = "../logs/train_agent_20231006_154948_dae_v5/"# train_agent_20231006_154948_dae_v5
+agent_name = "5950036"# 5950036
+case = "all-no-rerun_test_scenarios"  # 'rerun_test_scenarios', 'all-no-rerun'
+use_safe_action = True
+dae_rpf = False
 
 thresh_range = [
-    -302.74082,
-    -260.7271164,
-    -304.989225,
-    -295.09937125,
-    -281.326306,
-    -268.3212155,
-    -183.396484,
-    5000,
+    -26.543808245786998,
+    -12.127775933973577,
+    -14.78148625,
+    -8.008728249999999,
+    0.4863517730000147,
+    7.592224469999947,
+    29.536766820000178,
+    254.86372,
 ]
 save_video = False
 do_save_metrics = True
