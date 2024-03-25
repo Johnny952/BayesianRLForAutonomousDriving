@@ -38,7 +38,7 @@ rcParams["ps.fonttype"] = 42
 """ Options: """
 filepath = "../logs/train_agent_20231006_154948_dae_v5/"# train_agent_20231006_154948_dae_v5
 agent_name = "5950036"# 5950036
-case = "all-no-rerun_test_scenarios"  # 'rerun_test_scenarios', 'all-no-rerun'
+case = "rerun_test_scenarios"  # 'rerun_test_scenarios', 'all-no-rerun'
 use_safe_action = True
 dae_rpf = False
 
