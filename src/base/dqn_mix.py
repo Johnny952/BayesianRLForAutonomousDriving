@@ -50,12 +50,13 @@ class RPFDAEAgent(DQNAgentEnsembleParallel):
                 nll_obs = self.u_model.obs_nll_loss(obs_mu_i, obs_i, covar_i)
                 uncertainties.append(nll_obs + 1 * (nll - nll_obs))
 
+        unc = np.array([u.data.cpu().numpy() for u in uncertainties])
         if not self.training and hasattr(self.test_policy, "custom"):
             action, action_info = self.test_policy.select_action(
-                info['q_values_all_nets'], uncertainties
+                info['q_values_all_nets'], unc
             )
         
-        info["coefficient_of_variation"] = np.array([u.data.cpu().numpy() for u in uncertainties])
+        info["coefficient_of_variation"] = unc
 
         return action, info
 

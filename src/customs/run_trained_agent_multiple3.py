@@ -24,7 +24,7 @@ from base.run_agent_utils import (
     rerun_test_scenarios_v3,
 )
 from matplotlib import rcParams
-from safe_greedy_policy import SafeGreedyPolicy, SimpleSafeGreedyPolicy, SimpleSafeGreedyPolicyHard
+from safe_greedy_policy import SafeGreedyPolicy, SimpleSafeGreedyPolicy, SafeEnsembleTestPolicy
 from base.policy import EnsembleTestPolicy
 from base.dqn_mix import RPFDAEAgent
 from base.memory import BootstrappingMemory
@@ -81,7 +81,10 @@ if dae_rpf:
     env.close()
     nb_models = p.agent_par['number_of_networks']
     policy = GreedyQPolicy()
-    test_policy = EnsembleTestPolicy('mean')
+    if use_safe_action:
+        test_policy = SafeEnsembleTestPolicy('mean', 0, safe_action)
+    else:
+        test_policy = EnsembleTestPolicy('mean')
     memory = BootstrappingMemory(nb_nets=p.agent_par['number_of_networks'], limit=p.agent_par['buffer_size'],
                                     adding_prob=p.agent_par["adding_prob"], window_length=p.agent_par["window_length"])
     dqn = RPFDAEAgent(update_ae_each=p.agent_par['update_ae_each'], nb_models=nb_models, learning_rate=p.agent_par['learning_rate'],
@@ -243,7 +246,7 @@ else:
 
         policy = GreedyQPolicy()
         if use_safe_action:
-            test_policy = SimpleSafeGreedyPolicyHard(0, safe_action)
+            test_policy = SimpleSafeGreedyPolicy(0, safe_action)
         else:
             test_policy = GreedyQPolicy()
         dqn = DQNAEAgent(
@@ -281,7 +284,7 @@ def change_thresh_fn(thresh):
             safety_threshold=thresh, safe_action=safe_action
         )
     elif p.agent_par["model"] == "ae":
-        dqn.test_policy = SimpleSafeGreedyPolicyHard(thresh, safe_action)
+        dqn.test_policy = SimpleSafeGreedyPolicy(thresh, safe_action)
 
 
 if case == "rerun_test_scenarios":
