@@ -323,7 +323,13 @@ class Highway(object):
         done = False
         if collision:
             colliding_ids = traci.simulation.getCollidingVehiclesIDList()
-            colliding_positions = [traci.vehicle.getPosition(veh) for veh in colliding_ids]
+            def getPosition(veh):
+                try:
+                    return traci.vehicle.getPosition(veh)
+                except Exception:
+                    pass
+
+            colliding_positions = [getPosition(veh) for veh in colliding_ids]
 
             # If "collision" because violating minGap distance. Don't consider this as a collision,
             # but a near collision and give negative reward.
