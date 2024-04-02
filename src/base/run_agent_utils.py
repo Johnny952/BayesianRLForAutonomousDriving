@@ -90,7 +90,7 @@ def save_metrics(
     collision_speeds,
     stop_events=[],
     fast_events=[],
-    mean_speeds=[],
+    mean_ego_speeds=[],
 ):
     with open(filepath + case + ".csv", "a+") as file:
         writer = csv.writer(file)
@@ -108,8 +108,8 @@ def save_metrics(
             to_write.append(np.mean(stop_events))
         if len(fast_events) > 0:
             to_write.append(np.mean(fast_events))
-        if len(mean_speeds) > 0:
-            to_write.append(np.mean(mean_speeds))
+        if len(mean_ego_speeds) > 0:
+            to_write.append(np.mean(mean_ego_speeds))
         writer.writerow(to_write)
 
 
@@ -1575,5 +1575,6 @@ def rerun_test_scenarios_v3(
                 collision_speeds,
                 stop_events=stop_events,
                 fast_events=fast_events,
+                mean_speeds=mean_speeds,
             )
     env.close()
