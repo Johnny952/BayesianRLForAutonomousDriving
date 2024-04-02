@@ -90,6 +90,7 @@ def save_metrics(
     collision_speeds,
     stop_events=[],
     fast_events=[],
+    mean_speeds=[],
 ):
     with open(filepath + case + ".csv", "a+") as file:
         writer = csv.writer(file)
@@ -107,6 +108,8 @@ def save_metrics(
             to_write.append(np.mean(stop_events))
         if len(fast_events) > 0:
             to_write.append(np.mean(fast_events))
+        if len(mean_speeds) > 0:
+            to_write.append(np.mean(mean_speeds))
         writer.writerow(to_write)
 
 
@@ -1391,6 +1394,7 @@ def rerun_test_scenarios_v3(
         nb_safe_hard_actions_per_episode = []
         collissions = 0
         collision_speeds = []
+        mean_speeds = []
         stop_events = []
         fast_events = []
         if use_safe_action:
@@ -1412,6 +1416,7 @@ def rerun_test_scenarios_v3(
             frozen_steps = 0
             stop_vehicle_step = 0
             fast_vehcile_step = 0
+            mean_speed = 0
 
             ep_stop_events = 0
             ep_fast_events = 0
@@ -1439,6 +1444,7 @@ def rerun_test_scenarios_v3(
                     }, {})
                 obs, rewards, done, _, more_info = env.step(action, action_info)
                 reward_no_col = more_info["reward_no_col"]
+                mean_speed += more_info["ego_speed"]
                 episode_reward += reward_no_col
                 step += 1
                 if more_info["ego_collision"]:
@@ -1544,6 +1550,7 @@ def rerun_test_scenarios_v3(
             episode_steps.append(step)
             nb_safe_actions_per_episode.append(nb_safe_actions)
             nb_safe_hard_actions_per_episode.append(nb_hard_safe_actions)
+            mean_speeds.append(mean_speed)
             stop_events.append(ep_stop_events)
             fast_events.append(ep_fast_events)
             ep_log(i, step, episode_reward, nb_safe_actions, nb_hard_safe_actions)

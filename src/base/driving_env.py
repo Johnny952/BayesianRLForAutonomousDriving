@@ -350,6 +350,7 @@ class Highway(object):
         # near collision
         more_info["collision"] = False
         more_info["ego_collision"] = False
+        more_info["ego_speed"] = traci.vehicle.getSpeed(self.ego_id)
         if collision:
             info.append(colliding_ids)
             info.append(colliding_positions)
@@ -366,7 +367,6 @@ class Highway(object):
                     ego_collision = True
                     done = True
                     more_info["ego_collision"] = True
-                    more_info["ego_speed"] = traci.vehicle.getSpeed(self.ego_id)
                 else:
                     warnings.warn('Collision not involving ego vehicle. This should normally not happen.')
                     print(self.step_, info)
