@@ -1575,6 +1575,6 @@ def rerun_test_scenarios_v3(
                 collision_speeds,
                 stop_events=stop_events,
                 fast_events=fast_events,
-                mean_speeds=mean_speeds,
+                mean_ego_speeds=mean_speeds,
             )
     env.close()
