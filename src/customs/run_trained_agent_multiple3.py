@@ -279,12 +279,15 @@ dqn.training = False
 
 
 def change_thresh_fn(thresh):
-    if p.agent_par["model"] == "bnn":
-        dqn.test_policy = SafeGreedyPolicy(
-            safety_threshold=thresh, safe_action=safe_action
-        )
-    elif p.agent_par["model"] == "ae":
-        dqn.test_policy = SimpleSafeGreedyPolicy(thresh, safe_action)
+    if dae_rpf:
+        dqn.test_policy = SafeEnsembleTestPolicy('mean', thresh, safe_action)
+    else:
+        if p.agent_par["model"] == "bnn":
+            dqn.test_policy = SafeGreedyPolicy(
+                safety_threshold=thresh, safe_action=safe_action
+            )
+        elif p.agent_par["model"] == "ae":
+            dqn.test_policy = SimpleSafeGreedyPolicy(thresh, safe_action)
 
 
 if case == "rerun_test_scenarios":
