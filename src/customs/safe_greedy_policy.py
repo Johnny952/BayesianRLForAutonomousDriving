@@ -113,6 +113,22 @@ class SafeEnsembleTestPolicy(Policy):
         if self.safety_threshold is not None:
             assert(safe_action is not None)
 
+    def select_action(self, q_values_all_nets):
+        if self.policy_type == 'mean':
+            mean_q_values = np.mean(q_values_all_nets, axis=0)
+            return np.argmax(mean_q_values), {}
+        elif self.policy_type == 'voting':
+            action_votes = np.argmax(q_values_all_nets, axis=1)
+            actions, counts = np.unique(action_votes, return_counts=True)
+            max_actions = np.flatnonzero(counts == max(counts))
+            action = actions[np.random.choice(max_actions)]
+            if self.safety_threshold is None:
+                return action, {}
+            else:
+                raise Exception('Voting policy for safe actions is not yet implemented.')
+        else:
+            raise Exception('Unvalid policy type defined.')
+
     def select_action(self, q_values_all_nets, uncertainties):
         if self.policy_type == 'mean':
             mean_q_values = np.mean(q_values_all_nets, axis=0)
