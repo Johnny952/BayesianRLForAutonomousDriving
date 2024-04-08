@@ -113,26 +113,22 @@ class SafeEnsembleTestPolicy(Policy):
         if self.safety_threshold is not None:
             assert(safe_action is not None)
 
-    def select_action(self, q_values_all_nets):
-        if self.policy_type == 'mean':
-            mean_q_values = np.mean(q_values_all_nets, axis=0)
-            return np.argmax(mean_q_values), {}
-        elif self.policy_type == 'voting':
-            action_votes = np.argmax(q_values_all_nets, axis=1)
-            actions, counts = np.unique(action_votes, return_counts=True)
-            max_actions = np.flatnonzero(counts == max(counts))
-            action = actions[np.random.choice(max_actions)]
-            if self.safety_threshold is None:
-                return action, {}
-            else:
-                raise Exception('Voting policy for safe actions is not yet implemented.')
+    def select_action(self, *args, **kwds):
+        
+        if "q_values_all_nets" in kwds:
+            q_values_all_nets = kwds["q_values_all_nets"]
         else:
-            raise Exception('Unvalid policy type defined.')
+            q_values_all_nets = args[0]
+        
+        uncertainties = None
+        if "uncertainties" in kwds:
+            uncertainties = kwds["uncertainties"]
+        elif len(args) > 1:
+            uncertainties = args[1]
 
-    def select_action(self, q_values_all_nets, uncertainties):
         if self.policy_type == 'mean':
             mean_q_values = np.mean(q_values_all_nets, axis=0)
-            if self.safety_threshold is None:
+            if self.safety_threshold is None or uncertainties is None:
                 return np.argmax(mean_q_values), {}
             else:
                 sorted_q_indexes = mean_q_values.argsort()[::-1]
