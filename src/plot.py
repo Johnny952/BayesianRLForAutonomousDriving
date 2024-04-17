@@ -59,6 +59,7 @@ def read_test(path):
     steps = []
     stop_events = []
     fast_events = []
+    velocities = []
     with open(path, "r") as f:
         csv_reader = csv.reader(f, delimiter=",")
         for row in csv_reader:
@@ -69,9 +70,12 @@ def read_test(path):
             nb_safe_action_hard.append(float(row[4]))
             collision_speeds.append(float(row[5]))
             steps.append(float(row[6]))
-            if len(row) == 9:
+            if len(row) >= 8:
                 stop_events.append(float(row[7]))
+            if len(row) >= 9:
                 fast_events.append(float(row[8]))
+            if len(row) >= 10:
+                velocities.append(float(row[9]))
     return (
         np.array(thresholds),
         np.array(rewards),
@@ -82,6 +86,7 @@ def read_test(path):
         np.array(steps),
         np.array(stop_events),
         np.array(fast_events),
+        np.array(velocities)
     )
 
 
@@ -398,6 +403,7 @@ def plot_rerun_test_v3():
                 _,
                 _,
                 _,
+                _,
             ) = read_test(f"{base_path}{scenario_path}")
             print(model_name)
             print("Threshold\tReward\tSafe Actions\tCollision Rates")
@@ -471,6 +477,7 @@ def plot_rerun_test_v3():
                 _,
                 _,
                 collision_speeds,
+                _,
                 _,
                 _,
                 _,
@@ -634,7 +641,7 @@ if __name__ == "__main__":
 
             "ROC": {
                 "use_uncertainty": True,
-                "path": "rerun_test_scenarios_U_v5.csv",
+                "path": "rerun_test_scenarios_U_v3.csv",
                 "mark": "o-",
             },
 
@@ -661,7 +668,7 @@ if __name__ == "__main__":
 
             "ROC": {
                 "use_uncertainty": True,
-                "path": "rerun_test_scenarios_U_v5.csv",
+                "path": "rerun_test_scenarios_U_v3.csv",
                 "mark": "o-",
             },
 
@@ -688,7 +695,7 @@ if __name__ == "__main__":
 
             "ROC": {
                 "use_uncertainty": True,
-                "path": "rerun_test_scenarios_U_v5.csv",
+                "path": "rerun_test_scenarios_U_v3.csv",
                 "mark": "o-",
             },
 
@@ -699,25 +706,25 @@ if __name__ == "__main__":
                 "unc_range": [97.7, 99],
             },
         },
-        {
-            "name": "Random DQN",
-            "color": "magenta",
-            "train": {
-                "show": False,
-            },
+        # {
+        #     "name": "Random DQN",
+        #     "color": "magenta",
+        #     "train": {
+        #         "show": False,
+        #     },
 
-            "base_path": "./logs/random_agent/",
+        #     "base_path": "./logs/random_agent/",
 
-            "ROC": {
-                "use_uncertainty": True,
-                "path": "rerun_test_scenarios_U_v5.csv",
-                "mark": "o-",
-            },
+        #     "ROC": {
+        #         "use_uncertainty": True,
+        #         "path": "rerun_test_scenarios_U_v3.csv",
+        #         "mark": "o-",
+        #     },
 
-            "unc_heatmap": {
-                "show": False,
-            },
-        },
+        #     "unc_heatmap": {
+        #         "show": False,
+        #     },
+        # },
         {
             "name": "Standard DQN",
             "color": "blue",
@@ -734,7 +741,7 @@ if __name__ == "__main__":
 
             "ROC": {
                 "use_uncertainty": False,
-                "path": "rerun_test_scenarios_NU_v5.csv",
+                "path": "rerun_test_scenarios_NU_v3.csv",
                 "mark": ".",
             },
 
@@ -745,5 +752,5 @@ if __name__ == "__main__":
     ]
 
     plot_train()
-    # plot_rerun_test_v3()
+    plot_rerun_test_v3()
     plot_tests_v3()

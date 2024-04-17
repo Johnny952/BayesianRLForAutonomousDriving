@@ -54,7 +54,7 @@ thresh_range = [
 ]
 save_video = False
 do_save_metrics = True
-do_save_uncert = True
+do_save_uncert = False
 number_tests = 1
 number_episodes = 2000
 csv_sufix = "_v3"
