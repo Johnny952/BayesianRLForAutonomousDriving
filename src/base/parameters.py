@@ -68,5 +68,5 @@ agent_par["act_loss_weight"] = 1
 agent_par["obs_loss_weight"] = 5
 agent_par["prob_loss_weight"] = 1 / 3000
 
-agent_par["update_ae_each"] = 100 #50
-agent_par["min_value"] = 1 #0.2
+agent_par["update_ae_each"] = 50
+agent_par["min_value"] = 0.8
