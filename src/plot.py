@@ -685,13 +685,13 @@ if __name__ == "__main__":
             "train": {
                 "show": True,
                 "paths": [
-                    "./logs/train_dae_rpf_agent_20240319_204634/data.hdf5",
+                    "./logs/train_dae_rpf_agent_20240421_171846/data.hdf5",
                 ],
                 "show_uncertainty": True,
                 "model_uncertainty": 0,
             },
 
-            "base_path": "./logs/train_dae_rpf_agent_20240319_204634/",
+            "base_path": "./logs/train_dae_rpf_agent_20240421_171846/",
 
             "ROC": {
                 "use_uncertainty": True,
@@ -752,5 +752,5 @@ if __name__ == "__main__":
     ]
 
     plot_train()
-    plot_rerun_test_v3()
-    plot_tests_v3()
+    # plot_rerun_test_v3()
+    # plot_tests_v3()

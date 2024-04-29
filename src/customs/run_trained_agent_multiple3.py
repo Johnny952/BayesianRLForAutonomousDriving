@@ -35,26 +35,35 @@ np.warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
 rcParams["pdf.fonttype"] = 42  # To avoid Type 3 fonts in figures
 rcParams["ps.fonttype"] = 42
 
+test = 2
+
 """ Options: """
-filepath = "../logs/train_dae_rpf_agent_20240319_204634/"# train_agent_20231006_154948_dae_v5
-agent_name = "5950001"# 5950036
-case = "rerun_test_scenarios"  # 'rerun_test_scenarios', 'all-no-rerun'
-use_safe_action = True
+filepath = "../logs/train_dae_rpf_agent_20240421_171846/"# train_agent_20231006_154948_dae_v5
+agent_name = "5950020"# 5950036
 dae_rpf = True
+if test == 1:
+    case = "all-no-rerun"  # 'rerun_test_scenarios', 'all-no-rerun'
+    use_safe_action = False
+    do_save_metrics = False
+    do_save_uncert = True
+elif test == 2:
+    case = "rerun_test_scenarios"  # 'rerun_test_scenarios', 'all-no-rerun'
+    use_safe_action = True
+    do_save_metrics = True
+    do_save_uncert = False
 
 thresh_range = [
-    98.84366401957924,
-    99.3749454465485,
-    99.2181165,
-    99.4810255,
-    99.84619509999997,
-    100.17531661999999,
-    101.54583867400002,
-    117.27432,
+    99.31904519807995,
+    100.0740765429599,
+    99.71165875,
+    100.0417375,
+    100.5090662,
+    100.92246787,
+    102.3692832340001,
+    200,
 ]
+
 save_video = False
-do_save_metrics = True
-do_save_uncert = False
 number_tests = 1
 number_episodes = 2000
 csv_sufix = "_v3"
