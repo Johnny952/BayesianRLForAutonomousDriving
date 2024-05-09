@@ -38,8 +38,8 @@ rcParams["ps.fonttype"] = 42
 test = 2
 
 """ Options: """
-filepath = "../logs/train_dae_rpf_agent_20240421_171846/"# train_agent_20231006_154948_dae_v5
-agent_name = "5950020"# 5950036
+filepath = "../logs/train_dae_rpf_agent_20240502_213902_v2/"# train_agent_20231006_154948_dae_v5
+agent_name = "5950019"# 5950036
 dae_rpf = True
 if test == 1:
     case = "all-no-rerun"  # 'rerun_test_scenarios', 'all-no-rerun'
@@ -53,14 +53,14 @@ elif test == 2:
     do_save_uncert = False
 
 thresh_range = [
-    99.31904519807995,
-    100.0740765429599,
-    99.71165875,
-    100.0417375,
-    100.5090662,
-    100.92246787,
-    102.3692832340001,
-    200,
+    88.29188898327604,
+    89.32893213934207,
+    88.325645,
+    88.6813595,
+    89.1818111,
+    89.661897145,
+    93.41825912000003,
+    250,
 ]
 
 save_video = False

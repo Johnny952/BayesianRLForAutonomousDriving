@@ -31,8 +31,8 @@ rcParams["pdf.fonttype"] = 42  # To avoid Type 3 fonts in figures
 rcParams["ps.fonttype"] = 42
 
 """ Options: """
-filepath = "../logs/train_dae_rpf_agent_20240421_171846/"# train_agent_20230828_020015_ae_v22/   train_agent2_20230903_214928_ae_v22_3
-agent_name = "5950020"# "5950008"   950045
+filepath = "../logs/train_dae_rpf_agent_20240502_213902_v2/"# train_agent_20230828_020015_ae_v22/   train_agent2_20230903_214928_ae_v22_3
+agent_name = "5950019"# "5950008"   950045
 use_safe_action = False
 dae_rpf = True
 
