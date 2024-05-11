@@ -114,7 +114,6 @@ class SafeEnsembleTestPolicy(Policy):
             assert(safe_action is not None)
 
     def select_action(self, *args, **kwds):
-        
         if "q_values_all_nets" in kwds:
             q_values_all_nets = kwds["q_values_all_nets"]
         else:

@@ -58,7 +58,7 @@ class RPFDAEAgent(DQNAgentEnsembleParallel):
         
         info["coefficient_of_variation"] = unc
 
-        return action, info
+        return action, {**info, **action_info}
 
     def update_dae(self, experiences):
         # Start by extracting the necessary parameters (we use a vectorized implementation).

@@ -753,4 +753,4 @@ if __name__ == "__main__":
 
     plot_train()
     plot_tests_v3()
-    # plot_rerun_test_v3()
+    plot_rerun_test_v3()
