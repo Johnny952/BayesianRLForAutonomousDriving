@@ -403,7 +403,7 @@ def plot_rerun_test_v3():
                 _,
                 _,
                 _,
-                _,
+                velocities,
             ) = read_test(f"{base_path}{scenario_path}")
             print(model_name)
             print("Threshold\tReward\tSafe Actions\tCollision Rates")
@@ -516,7 +516,7 @@ def plot_rerun_test_v3():
     ax1.set_title(f"{scenario}", fontsize=25)
     ax1.set_xlim(left=0)
     # ax1.set_ylim(bottom=-4)
-    ax1.set_ylabel("Rewards", fontsize=16)
+    ax1.set_ylabel("Reward (no collision)", fontsize=16)
 
     # ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
     ax1.xaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=0))

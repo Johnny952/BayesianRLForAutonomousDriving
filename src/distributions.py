@@ -106,8 +106,8 @@ if __name__ == "__main__":
         },
         {
             "name": "DAE Ensemble RPF DQN K=1",
-            "path": "./logs/train_dae_rpf_agent_20240502_213902_v2/data.hdf5",
-            "csv": "./logs/train_dae_rpf_agent_20240502_213902_v2/rerun_test_scenarios_NU_uncerts.csv",
+            "path": "./logs/train_dae_rpf_agent_20240421_171846/data.hdf5",
+            "csv": "./logs/train_dae_rpf_agent_20240421_171846/rerun_test_scenarios_NU_uncerts.csv",
             "custom_marks": [],
             "bins": 100,
             "range": (86, 91),
